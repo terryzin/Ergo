@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergo - AI管家</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #1d1d1f;
+            --bg-tertiary: #2d2d2f;
+            --text-primary: #f5f5f7;
+            --text-secondary: #86868b;
+            --accent: #2997ff;
+            --accent-hover: #0071e3;
+            --border: #3d3d3f;
+            --card-bg: #1d1d1f;
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+        
+        .header {
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #2997ff 0%, #a855f7 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(46, 204, 113, 0.15);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #2ecc71;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 60px 0 80px;
+        }
+        
+        .hero h2 {
+            font-size: 56px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #86868b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 24px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 20px;
+            padding-left: 4px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 28px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px var(--shadow);
+            border-color: rgba(41, 151, 255, 0.3);
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+        }
+        
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .card-icon.blue { background: linear-gradient(135deg, #2997ff 0%, #0071e3 100%); }
+        .card-icon.purple { background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); }
+        .card-icon.green { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+        .card-icon.orange { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+        .card-icon.red { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+        .card-icon.pink { background: linear-gradient(135deg, #ff6b9d 0%, #ff4757 100%); }
+        
+        .card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+        
+        .card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .card-arrow {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card:hover .card-arrow {
+            color: var(--accent);
+            transform: translateY(-50%) translateX(4px);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        /* Quick Actions Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border);
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .modal h3 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .modal-content {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+        
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--accent);
+            color: white;
+        }
+        
+        .modal-btn:hover {
+            background: var(--accent-hover);
+        }
+        
+        .modal-close {
+            background: var(--bg-tertiary);
+            margin-left: 12px;
+        }
+        
+        .modal-close:hover {
+            background: var(--border);
+        }
+
+        /* Status indicators */
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .status-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .status-value {
+            font-size: 12px;
+            color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🐕</div>
+                <span class="logo-text">Ergo - AI管家</span>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                在线
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="hero">
+            <h2>欢迎回来</h2>
+            <p>一切尽在掌控</p>
+        </div>
+
+        <div class="section-title">快捷入口</div>
+        <div class="grid">
+            <div class="card" onclick="openClawDashboard()">
+                <div class="card-icon blue">🚀</div>
+                <h3>OpenClaw Dashboard</h3>
+                <p>管理 Gateway、Agents、Cron 任务和实时日志</p>
+                <span class="card-arrow">→</span>
+            </div>
+            
+            <div class="card" onclick="showModal('gateway')">
+                <div class="card-icon green">⚡</div>
+                <h3>Gateway 状态</h3>
+                <p>查看 OpenClaw Gateway 运行状态、端口和进程信息</p>
+                <div class="status-row">
+                    <span class="status-label">状态:</span>
+                    <span class="status-value" id="gateway-status">检测中...</span>
+                </div>
+                <span class="card-arrow">→</span>
+            </div>
+            
+            <div class="card" onclick="showModal('cpolar')">
+                <div class="card-icon purple">🌐</div>
+                <h3>Cpolar 穿透</h3>
+                <p>远程访问服务状态，查看公网链接</p>
+                <div class="status-row">
+                    <span class="status-label">地址:</span>
+                    <span class="status-value">terryzin.cpolar.top</span>
+                </div>
+                <span class="card-arrow">→</span>
+            </div>
+            
+            <div class="card" onclick="showModal('files')">
+                <div class="card-icon orange">📁</div>
+                <h3>项目文件</h3>
+                <p>管理工作空间文件，浏览和编辑代码</p>
+                <span class="card-arrow">→</span>
+            </div>
+            
+            <div class="card" onclick="showModal('cron')">
+                <div class="card-icon red">⏰</div>
+                <h3>定时任务</h3>
+                <p>查看和管理 Cron 计划任务执行日志</p>
+                <span class="card-arrow">→</span>
+            </div>
+            
+            <div class="card" onclick="showModal('terminal')">
+                <div class="card-icon pink">💻</div>
+                <h3>终端命令</h3>
+                <p>执行快速命令，操作本地系统</p>
+                <span class="card-arrow">→</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Ergo AI 管家 · 让技术更有温度
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <h3 id="modal-title">标题</h3>
+            <div class="modal-content" id="modal-content">内容</div>
+            <button class="modal-btn" onclick="closeModal()">知道了</button>
+        </div>
+    </div>
+
+    <script>
+        // Gateway 状态检测
+        async function checkGatewayStatus() {
+            try {
+                const resp = await fetch('http://localhost:18789/api/status');
+                if (resp.ok) {
+                    document.getElementById('gateway-status').textContent = '运行中';
+                    document.getElementById('gateway-status').style.color = '#2ecc71';
+                }
+            } catch {
+                document.getElementById('gateway-status').textContent = '未运行';
+                document.getElementById('gateway-status').style.color = '#e74c3c';
+            }
+        }
+        
+        checkGatewayStatus();
+        
+        function openClawDashboard() {
+            window.open('https://ergo-gateway.cpolar.top/#token=f2009973e92e96b0e31c30b30500e997', '_blank');
+        }
+        
+        const modalData = {
+            gateway: {
+                title: '⚡ Gateway 状态',
+                content: 'OpenClaw Gateway 正在后台运行。<br><br>端口: 18789<br>状态: 正常<br>Token: f2009973e92e96b0e31c30b30500e997<br><br>如需重启，请在终端执行: openclaw gateway restart'
+            },
+            cpolar: {
+                title: '🌐 Cpolar 穿透',
+                content: '远程访问已配置完成！<br><br>• Ergo Dashboard: <a href="https://terryzin.cpolar.top" target="_blank" style="color:#2997ff">https://terryzin.cpolar.top</a><br>• OpenClaw Gateway: <a href="https://ergo-gateway.cpolar.top" target="_blank" style="color:#2997ff">https://ergo-gateway.cpolar.top</a><br><br>专业套餐，固定域名长效稳定。'
+            },
+            files: {
+                title: '📁 项目文件',
+                content: '工作空间文件管理功能开发中...<br><br>当前可访问目录:<br>• D:\\.openclaw\\workspace<br>• D:\\.openclaw\\workspace\\my-dashboard<br><br>即将支持: 在线浏览、编辑、创建文件'
+            },
+            cron: {
+                title: '⏰ 定时任务',
+                content: '当前配置的 Cron 任务:<br><br>1. OpenClaw最佳实践收集 - 每4小时<br>2. Gateway稳定性复盘 - 每周一 9:00<br>3. Gateway健康检查 - 每15分钟<br><br>更多任务正在配置中...'
+            },
+            terminal: {
+                title: '💻 终端命令',
+                content: '终端功能开发中...<br><br>将支持快速执行:<br>• Gateway 控制 (启动/停止/重启)<br>• 文件操作 (ls/cd/cat)<br>• 自定义脚本<br><br>如有紧急需求，可通过飞书直接对话执行。'
+            }
+        };
+        
+        function showModal(key) {
+            const data = modalData[key];
+            document.getElementById('modal-title').textContent = data.title;
+            document.getElementById('modal-content').innerHTML = data.content;
+            document.getElementById('modal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

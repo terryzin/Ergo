@@ -1,0 +1,13 @@
+{
+  "name": "ergo-dashboard",
+  "version": "1.0.0",
+  "description": "Ergo 二狗 - 个人AI助理控制台",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["ai", "dashboard", "ergo"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
