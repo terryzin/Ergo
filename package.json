@@ -2,12 +2,45 @@
   "name": "ergo-dashboard",
   "version": "1.0.0",
   "description": "Ergo 二狗 - 个人AI助理控制台",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ui": "jest --coverage --watchAll=false",
+    "start": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000 -l",
+    "lint": "echo 'No lint script configured'"
   },
-  "keywords": ["ai", "dashboard", "ergo"],
+  "keywords": [
+    "ai",
+    "dashboard",
+    "ergo"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/*.min.js"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "verbose": true
+  }
 }
