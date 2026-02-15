@@ -310,6 +310,94 @@ async function fetchAllData() {
     return { gateway, agents, cronJobs, services };
 }
 
+// ============================
+// API 响应验证
+// ============================
+
+/**
+ * 验证 Gateway 状态响应格式
+ * @param {Object} data - API 响应数据
+ * @returns {boolean}
+ */
+function validateGatewayResponse(data) {
+    if (!data || typeof data !== 'object') return false;
+    return (
+        typeof data.status === 'string' &&
+        typeof data.uptime === 'number' &&
+        typeof data.version === 'string'
+    );
+}
+
+/**
+ * 验证 Agent 响应格式
+ * @param {Array} data - API 响应数据
+ * @returns {boolean}
+ */
+function validateAgentsResponse(data) {
+    if (!Array.isArray(data)) return false;
+    return data.every(agent =>
+        typeof agent.name === 'string' &&
+        typeof agent.status === 'string'
+    );
+}
+
+/**
+ * 验证 Cron Jobs 响应格式
+ * @param {Array} data - API 响应数据
+ * @returns {boolean}
+ */
+function validateCronResponse(data) {
+    if (!Array.isArray(data)) return false;
+    return data.every(job =>
+        typeof job.name === 'string' &&
+        typeof job.lastStatus === 'string'
+    );
+}
+
+/**
+ * 验证 Dev Services 响应格式
+ * @param {Array} data - API 响应数据
+ * @returns {boolean}
+ */
+function validateServicesResponse(data) {
+    if (!Array.isArray(data)) return false;
+    return data.every(svc =>
+        typeof svc.name === 'string' &&
+        typeof svc.status === 'string'
+    );
+}
+
+// ============================
+// 健康检查
+// ============================
+
+/**
+ * 执行完整的健康检查
+ * @returns {Promise<Object>}
+ */
+async function healthCheck() {
+    const results = {
+        gateway: { status: 'unknown', message: '' },
+        agents: { status: 'unknown', message: '' },
+        cron: { status: 'unknown', message: '' },
+        services: { status: 'unknown', message: '' }
+    };
+
+    // Check Gateway
+    try {
+        const gateway = await fetchGatewayStatus();
+        if (validateGatewayResponse(gateway)) {
+            results.gateway = { status: 'ok', message: `v${gateway.version}` };
+        } else {
+            results.gateway = { status: 'invalid', message: '响应格式无效' };
+        }
+    } catch (error) {
+        results.gateway = { status: 'error', message: error.message };
+    }
+
+    return results;
+}
+
 // Export for testing
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -325,6 +413,13 @@ if (typeof module !== 'undefined' && module.exports) {
         restartGateway,
         fetchAllData,
         delay,
-        request
+        request,
+        // Validation
+        validateGatewayResponse,
+        validateAgentsResponse,
+        validateCronResponse,
+        validateServicesResponse,
+        // Health check
+        healthCheck
     };
 }

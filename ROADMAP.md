@@ -155,11 +155,14 @@ Ergo（二狗）是基于 OpenClaw 平台的个人 AI 管家控制台。
 - [x] Mock 失败回退
 - [x] 网络状态检测
 - [x] `fetchAllData()` 批量加载
+- [x] API 响应格式验证函数
+- [x] 健康检查函数
+- [x] index.html 与 API 模块集成
 - [x] 测试更新 (21 tests pass)
 
 ### 待完成
 - [ ] 真实 API 端点测试
-- [ ] API 响应格式验证
+- [ ] 实时数据刷新机制
 
 ---
 

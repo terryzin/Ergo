@@ -1014,33 +1014,47 @@
         }
 
         // ============================
-        // ACTIONS
+        // ACTIONS (v1.2: 使用 API 模块)
         // ============================
-        function openDashboard() {
-            if (MOCK_MODE) {
-                showToast('Mock 模式：将在新窗口打开 Dashboard');
-                return;
+        async function openDashboard() {
+            try {
+                // 在真实 API 模式下打开 Dashboard
+                const { isMockMode } = window;
+                if (isMockMode && isMockMode()) {
+                    showToast('Mock 模式：将在新窗口打开 Dashboard');
+                    return;
+                }
+                window.open('http://localhost:18789/openclaw', '_blank');
+            } catch (e) {
+                showToast('无法打开 Dashboard');
             }
-            window.open(`${API_BASE}/openclaw`, '_blank');
         }
 
         function openUrl(url) {
             window.open(url, '_blank');
         }
 
-        function restartGateway() {
+        async function restartGateway() {
             closeSheet();
-            showToast('Mock 模式：Gateway 重启指令已发送');
+            showToast('正在重启 Gateway...');
 
-            // Simulate restart
+            // 更新 UI 状态
             document.getElementById('gatewayStatus').innerHTML = '<span>重启中...</span>';
             document.getElementById('gatewayStatus').className = 'status-pill warn';
 
-            setTimeout(() => {
-                document.getElementById('gatewayStatus').innerHTML = '<span class="status-dot"></span><span>运行中</span>';
-                document.getElementById('gatewayStatus').className = 'status-pill ok';
-                showToast('Gateway 重启成功');
-            }, 2000);
+            try {
+                const result = await window.restartGateway();
+                if (result) {
+                    showToast('Gateway 重启成功');
+                } else {
+                    showToast('重启失败，请稍后重试');
+                }
+                // 重新加载数据
+                loadData();
+            } catch (error) {
+                showToast('重启失败: ' + error.message);
+                renderError();
+            }
         }
     </script>
 </body>
