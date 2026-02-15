@@ -1,44 +1,65 @@
 /**
- * API Module Tests
+ * API Module Tests (v1.2)
  */
 
-const { fetchGatewayStatus, fetchAgents, fetchCronJobs, fetchDevServices, restartGateway, MOCK_MODE } = require('../src/api');
+const {
+    isMockMode,
+    ENV,
+    CONFIG,
+    checkNetworkStatus,
+    getNetworkState,
+    fetchGatewayStatus,
+    fetchAgents,
+    fetchCronJobs,
+    fetchDevServices,
+    restartGateway,
+    fetchAllData,
+    delay
+} = require('../src/api');
 
-// Mock fetch
-global.fetch = jest.fn();
-
-describe('API Module', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
+describe('API Module (v1.2)', () => {
+    describe('CONFIG', () => {
+        test('has correct default values', () => {
+            expect(CONFIG.API_BASE).toBe('http://localhost:18789');
+            expect(CONFIG.TIMEOUT).toBe(5000);
+            expect(CONFIG.RETRY_COUNT).toBe(3);
+            expect(CONFIG.RETRY_DELAY).toBe(1000);
+            expect(CONFIG.MOCK_FALLBACK).toBe(true);
+        });
     });
 
-    describe('MOCK_MODE', () => {
-        test('mock mode is enabled by default', () => {
-            expect(MOCK_MODE).toBe(true);
+    describe('ENV', () => {
+        test('has getHostname method', () => {
+            expect(typeof ENV.getHostname).toBe('function');
+        });
+
+        test('has isProduction getter', () => {
+            expect(ENV.isProduction).toBeDefined();
+        });
+
+        test('has isDevelopment getter', () => {
+            expect(ENV.isDevelopment).toBeDefined();
+        });
+    });
+
+    describe('delay', () => {
+        test('creates a delay', async () => {
+            const start = Date.now();
+            await delay(100);
+            const elapsed = Date.now() - start;
+            expect(elapsed).toBeGreaterThanOrEqual(90);
         });
     });
 
     describe('fetchGatewayStatus', () => {
-        test('returns mock data in mock mode', async () => {
+        test('returns mock data with _source property', async () => {
             const result = await fetchGatewayStatus();
 
             expect(result).toHaveProperty('status', 'online');
             expect(result).toHaveProperty('uptime', 259200);
             expect(result).toHaveProperty('version', '0.9.5');
             expect(result).toHaveProperty('port', 18789);
-        });
-
-        test('fetches from real API when mock mode disabled', async () => {
-            // This test would require actually disabling mock mode
-            // For now we just verify mock returns expected structure
-            const result = await fetchGatewayStatus();
-
-            expect(result).toEqual({
-                status: 'online',
-                uptime: 259200,
-                version: '0.9.5',
-                port: 18789
-            });
+            expect(result).toHaveProperty('_source', 'mock');
         });
     });
 
@@ -107,8 +128,34 @@ describe('API Module', () => {
 
     describe('restartGateway', () => {
         test('returns true in mock mode', async () => {
+            // Mock mode should return true
             const result = await restartGateway();
             expect(result).toBe(true);
+        });
+    });
+
+    describe('fetchAllData', () => {
+        test('fetches all data in parallel', async () => {
+            const result = await fetchAllData();
+
+            expect(result).toHaveProperty('gateway');
+            expect(result).toHaveProperty('agents');
+            expect(result).toHaveProperty('cronJobs');
+            expect(result).toHaveProperty('services');
+
+            expect(Array.isArray(result.agents)).toBe(true);
+            expect(Array.isArray(result.cronJobs)).toBe(true);
+            expect(Array.isArray(result.services)).toBe(true);
+        });
+    });
+
+    describe('getNetworkState', () => {
+        test('returns state object', () => {
+            const state = getNetworkState();
+
+            expect(state).toHaveProperty('isOnline');
+            expect(state).toHaveProperty('lastError');
+            expect(state).toHaveProperty('retryCount');
         });
     });
 });
