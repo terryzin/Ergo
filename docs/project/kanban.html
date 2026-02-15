@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergo 项目看板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #000000;
+            --card: #1c1c1e;
+            --card-hover: #2c2c2e;
+            --text: #f5f5f7;
+            --text-2: #8e8e93;
+            --border: rgba(255,255,255,0.1);
+            --brand: #2997ff;
+            --brand-bg: rgba(41,151,255,0.12);
+            --ok: #30d158;
+            --ok-bg: rgba(48,209,88,0.12);
+            --warn: #ff9f0a;
+            --warn-bg: rgba(255,159,10,0.12);
+            --err: #ff453a;
+            --err-bg: rgba(255,69,58,0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            max-width: 1400px;
+            margin: 0 auto 30px;
+            padding: 20px;
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-2);
+            font-size: 14px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat.total { background: var(--brand-bg); color: var(--brand); }
+        .stat.done { background: var(--ok-bg); color: var(--ok); }
+        .stat.todo { background: var(--warn-bg); color: var(--warn); }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .column {
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .column-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .column-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .column-count {
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-2);
+        }
+
+        .task-list {
+            padding: 12px;
+        }
+
+        .task {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .task:hover {
+            background: var(--card-hover);
+            border-color: var(--border);
+        }
+
+        .task:last-child {
+            margin-bottom: 0;
+        }
+
+        .task-checkbox {
+            display: none;
+        }
+
+        .task-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .task-check {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--text-2);
+            border-radius: 4px;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .task.completed .task-check {
+            background: var(--ok);
+            border-color: var(--ok);
+        }
+
+        .task.completed .task-check::after {
+            content: '✓';
+            color: #000;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .task.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-2);
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .task-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--card-hover);
+            color: var(--text-2);
+        }
+
+        .task-tag.feature { background: rgba(41,151,255,0.2); color: var(--brand); }
+        .task-tag.bugfix { background: rgba(255,69,58,0.2); color: var(--err); }
+        .task-tag.enhance { background: rgba(48,209,88,0.2); color: var(--ok); }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--bg);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--ok);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        /* Version Cards */
+        .version-card {
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .version-header {
+            padding: 16px 20px;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .version-header:hover {
+            background: var(--card-hover);
+        }
+
+        .version-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .version-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .version-badge.done { background: var(--ok-bg); color: var(--ok); }
+        .version-badge.active { background: var(--brand-bg); color: var(--brand); }
+        .version-badge.pending { background: var(--warn-bg); color: var(--warn); }
+
+        .version-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .version-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-2);
+            font-size: 14px;
+        }
+
+        .version-body {
+            display: none;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .version-body.open {
+            display: block;
+        }
+
+        .version-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Quick links */
+        .quick-links {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-link {
+            padding: 10px 16px;
+            background: var(--card);
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .quick-link:hover {
+            background: var(--card-hover);
+            border-color: var(--brand);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Ergo 项目看板</h1>
+        <div class="header-meta">
+            <span>基于 OpenClaw 平台的 AI 管家控制台</span>
+            <span>|</span>
+            <span>更新: <span id="lastUpdate">2026-02-15</span></span>
+        </div>
+        <div class="stats">
+            <div class="stat total">总任务: <span id="totalCount">0</span></div>
+            <div class="stat done">已完成: <span id="doneCount">0</span></div>
+            <div class="stat todo">待完成: <span id="todoCount">0</span></div>
+        </div>
+    </div>
+
+    <div class="board" id="board">
+        <!-- Dynamic content -->
+    </div>
+
+    <div style="max-width: 1400px; margin: 30px auto;">
+        <h3 style="margin-bottom: 16px; color: var(--text-2); font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">快速链接</h3>
+        <div class="quick-links">
+            <a href="index.html" class="quick-link">← 返回控制台</a>
+            <a href="ROADMAP.md" class="quick-link">📋 任务路线图</a>
+            <a href="docs/prototype.html" class="quick-link">🎨 产品原型</a>
+            <a href="docs/PRD.md" class="quick-link">📄 产品需求</a>
+        </div>
+    </div>
+
+    <script>
+        const projectData = {
+            versions: [
+                {
+                    id: 'v1.0',
+                    name: 'v1.0 基础功能',
+                    status: 'done',
+                    progress: 100,
+                    tasks: [
+                        { title: '项目初始化 (index.html 单文件架构)', done: true },
+                        { title: 'Apple 风格深色主题 UI', done: true },
+                        { title: '顶部导航栏 + 毛玻璃效果', done: true },
+                        { title: '卡片列表布局', done: true },
+                        { title: '响应式设计', done: true },
+                        { title: 'Gateway 状态监控卡片', done: true },
+                        { title: 'Agents 在线状态显示', done: true },
+                        { title: 'Cron 任务列表', done: true },
+                        { title: '开发服务入口', done: true },
+                        { title: '主题切换 (浅色/深色/自动)', done: true },
+                        { title: 'Toast 通知系统', done: true },
+                        { title: 'Action Sheet 操作确认', done: true }
+                    ]
+                },
+                {
+                    id: 'v1.1',
+                    name: 'v1.1 测试与文档',
+                    status: 'done',
+                    progress: 100,
+                    tasks: [
+                        { title: 'Jest 集成', done: true },
+                        { title: 'jsdom 测试环境', done: true },
+                        { title: 'API 模块测试 (10 tests)', done: true },
+                        { title: '纯函数测试 (6 tests)', done: true },
+                        { title: '测试覆盖率配置', done: true },
+                        { title: 'README.md 文档', done: true },
+                        { title: 'package.json 脚本配置', done: true },
+                        { title: 'src/api.js 模块化', done: true },
+                        { title: 'src/app.js 模块化', done: true }
+                    ]
+                },
+                {
+                    id: 'v1.2',
+                    name: 'v1.2 Gateway API 集成',
+                    status: 'active',
+                    progress: 0,
+                    tasks: [
+                        { title: 'fetchGatewayStatus() 真实 API 集成', done: false },
+                        { title: 'fetchAgents() 真实 API 集成', done: false },
+                        { title: 'fetchCronJobs() 真实 API 集成', done: false },
+                        { title: 'fetchDevServices() 真实 API 集成', done: false },
+                        { title: 'restartGateway() 重启功能', done: false },
+                        { title: 'Gateway 离线状态检测', done: false },
+                        { title: '网络错误提示', done: false },
+                        { title: '重连机制', done: false },
+                        { title: 'Mock 模式切换开关', done: false },
+                        { title: '生产环境自动禁用 Mock', done: false }
+                    ]
+                },
+                {
+                    id: 'v1.3',
+                    name: 'v1.3 增强功能',
+                    status: 'pending',
+                    progress: 0,
+                    tasks: [
+                        { title: '工作空间文件浏览', done: false },
+                        { title: '文件上传/下载', done: false },
+                        { title: '文件夹创建/删除', done: false },
+                        { title: '终端命令输入', done: false },
+                        { title: '命令历史记录', done: false },
+                        { title: '执行结果展示', done: false },
+                        { title: 'WebSocket 实时更新', done: false },
+                        { title: '状态变化自动刷新', done: false },
+                        { title: '异常告警通知', done: false }
+                    ]
+                },
+                {
+                    id: 'v1.4',
+                    name: 'v1.4 体验优化',
+                    status: 'pending',
+                    progress: 0,
+                    tasks: [
+                        { title: '懒加载非关键资源', done: false },
+                        { title: '缓存策略', done: false },
+                        { title: '增量数据更新', done: false },
+                        { title: '键盘快捷键', done: false },
+                        { title: '深色模式过渡动画', done: false },
+                        { title: '加载状态骨架屏', done: false },
+                        { title: '错误边界处理', done: false },
+                        { title: 'ARIA 标签', done: false },
+                        { title: '键盘导航', done: false },
+                        { title: '屏幕阅读器兼容', done: false }
+                    ]
+                }
+            ]
+        };
+
+        function renderBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+
+            let totalTasks = 0;
+            let doneTasks = 0;
+
+            projectData.versions.forEach(version => {
+                totalTasks += version.tasks.length;
+                doneTasks += version.tasks.filter(t => t.done).length;
+
+                const column = document.createElement('div');
+                column.className = 'column';
+                column.innerHTML = `
+                    <div class="column-header">
+                        <span class="column-title">${version.name}</span>
+                        <span class="column-count">${version.tasks.filter(t => t.done).length}/${version.tasks.length}</span>
+                    </div>
+                    <div class="task-list">
+                        ${version.tasks.map((task, idx) => `
+                            <div class="task ${task.done ? 'completed' : ''}" onclick="toggleTask('${version.id}', ${idx})">
+                                <label class="task-label">
+                                    <div class="task-check"></div>
+                                    <div>
+                                        <div class="task-title">${task.title}</div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: ${task.done ? '100' : '0'}%"></div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                board.appendChild(column);
+            });
+
+            document.getElementById('totalCount').textContent = totalTasks;
+            document.getElementById('doneCount').textContent = doneTasks;
+            document.getElementById('todoCount').textContent = totalTasks - doneTasks;
+        }
+
+        function toggleTask(versionId, taskIdx) {
+            const version = projectData.versions.find(v => v.id === versionId);
+            if (version) {
+                version.tasks[taskIdx].done = !version.tasks[taskIdx].done;
+                version.progress = Math.round(version.tasks.filter(t => t.done).length / version.tasks.length * 100);
+                renderBoard();
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('ergo-kanban', JSON.stringify(projectData));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('ergo-kanban');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    // Merge saved data with structure
+                    projectData.versions.forEach((v, i) => {
+                        if (parsed.versions[i]) {
+                            v.tasks = parsed.versions[i].tasks;
+                            v.progress = parsed.versions[i].progress;
+                            v.status = parsed.versions[i].status;
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to load saved data:', e);
+                }
+            }
+        }
+
+        loadData();
+        renderBoard();
+    </script>
+</body>
+</html>

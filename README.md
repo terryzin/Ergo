@@ -74,8 +74,17 @@ Ergo/
 │
 └── docs/                   # 文档
     ├── PRD.md              # 产品需求文档
-    └── prototype.html      # 产品原型
+    ├── prototype.html      # 产品原型
+    └── project/
+        └── kanban.html     # 项目看板
 ```
+
+## 项目看板
+
+- **[ROADMAP.md](ROADMAP.md)** - Markdown 格式任务路线图
+- **[docs/project/kanban.html](docs/project/kanban.html)** - 交互式看板页面
+
+访问看板可实时查看任务进度，支持点击完成任务标记（数据保存在本地存储）。
 
 ## 配置说明
 
