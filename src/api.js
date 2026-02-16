@@ -54,9 +54,9 @@
             { name: 'main', status: 'active', model: 'MiniMax-M2.5' }
         ],
         cron: [
-            { name: '最佳实践收集', status: 'success', nextRun: '18:00' },
-            { name: 'Gateway健康检查', status: 'success', nextRun: '每15分钟' },
-            { name: '稳定性复盘', status: 'success', nextRun: '每周一 9:00' }
+            { id: '9d6d36ae-c8c8-49ed-a6a5-f798b7884a63', name: '最佳实践收集', lastStatus: 'success', nextRun: '18:00' },
+            { id: 'f691da5c-5cf6-4b05-9e8d-3a77a6d60a06', name: 'Gateway健康检查', lastStatus: 'success', nextRun: '每15分钟' },
+            { id: '3148008b-1941-4357-ad0f-0f92fa7f9746', name: '稳定性复盘', lastStatus: 'success', nextRun: '每周一 9:00' }
         ]
     };
 
@@ -270,6 +270,21 @@
         }
     }
 
+    // 手动触发 Cron 任务
+    async function triggerCronJob(jobId) {
+        try {
+            const data = await request('cron:run', { jobId });
+            return { success: true, result: data };
+        } catch (e) {
+            console.error('[Ergo] Trigger cron error:', e);
+            // Mock 模式模拟成功
+            if (CONFIG.MOCK_FALLBACK) {
+                return { success: true, mock: true };
+            }
+            throw e;
+        }
+    }
+
     // 获取网络状态
     function getNetworkState() {
         return {
@@ -290,6 +305,7 @@
         fetchGatewayStatus,
         fetchAgents,
         fetchCronJobs,
+        triggerCronJob,
         getNetworkState
     };
 })();

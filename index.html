@@ -998,11 +998,22 @@
         function renderCronList(jobs) {
             const container = document.getElementById('cronList');
             container.innerHTML = jobs.map(job => `
-                <div class="info-row">
+                <div class="info-row" style="justify-content:space-between;">
                     <span class="info-label">${job.name}</span>
-                    <span class="info-value" style="color: ${job.lastStatus === 'success' ? 'var(--ok)' : 'var(--err)'}">
-                        ${job.lastStatus === 'success' ? '✓ 成功' : '✗ 失败'}
-                    </span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="info-value" style="color: ${job.lastStatus === 'success' ? 'var(--ok)' : 'var(--err)'}">
+                            ${job.lastStatus === 'success' ? '✓' : '✗'}
+                        </span>
+                        <button onclick="triggerCron('${job.id}')" style="
+                            background:var(--brand);
+                            border:none;
+                            color:#fff;
+                            padding:4px 10px;
+                            border-radius:6px;
+                            font-size:11px;
+                            cursor:pointer;
+                        ">触发</button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -1120,6 +1131,28 @@
                 document.getElementById('gatewayStatus').className = 'status-pill ok';
                 showToast('Gateway 重启成功');
             }, 2000);
+        }
+
+        async function triggerCron(jobId) {
+            if (!jobId) {
+                showToast('无法获取任务ID');
+                return;
+            }
+            
+            showToast('触发任务执行...');
+            
+            try {
+                if (window.ErgoAPI && window.ErgoAPI.triggerCronJob) {
+                    await window.ErgoAPI.triggerCronJob(jobId);
+                    showToast('任务已触发');
+                } else {
+                    // Mock 模式
+                    showToast('Mock 模式：任务已触发');
+                }
+            } catch (error) {
+                console.error('Trigger cron error:', error);
+                showToast('触发失败: ' + error.message);
+            }
         }
     </script>
 </body>
