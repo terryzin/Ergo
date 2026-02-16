@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ergo 更新日志</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --brand: #2997FF;
+            --bg-page: #000000;
+            --bg-card: rgba(28,28,30, 0.72);
+            --bg-card-solid: #1C1C1E;
+            --text-1: #F5F5F7;
+            --text-2: #8E8E93;
+            --text-3: #48484A;
+            --border: rgba(255,255,255, 0.06);
+            --ok: #30D158;
+            --err: #FF453A;
+        }
+        [data-theme="light"] {
+            --bg-page: #F5F5F7;
+            --bg-card: rgba(255,255,255, 0.85);
+            --bg-card-solid: #FFFFFF;
+            --text-1: #000000;
+            --text-2: #3D3D3D;
+            --text-3: #767676;
+            --border: rgba(0,0,0, 0.06);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            background: var(--bg-page);
+            color: var(--text-1);
+            min-height: 100vh;
+            line-height: 1.5;
+            padding: 20px;
+        }
+        .header {
+            max-width: 600px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .back {
+            color: var(--brand);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back:hover { text-decoration: underline; }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            max-width: 600px;
+            margin: 0 auto 24px;
+        }
+        .timeline {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .item {
+            position: relative;
+            padding-left: 52px;
+            padding-bottom: 32px;
+        }
+        .item:last-child { padding-bottom: 0; }
+        .dot {
+            position: absolute;
+            left: 12px;
+            top: 4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--brand);
+            border: 3px solid var(--bg-page);
+        }
+        .version {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .date {
+            font-size: 13px;
+            color: var(--text-3);
+            margin-bottom: 12px;
+        }
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        .tag.added { background: rgba(48,209,88,0.2); color: var(--ok); }
+        .tag.changed { background: rgba(255,159,10,0.2); color: #FF9F0A; }
+        .tag.fixed { background: rgba(41,151,255,0.2); color: var(--brand); }
+        .tag.deprecated { background: rgba(255,69,58,0.2); color: var(--err); }
+        .changes {
+            margin-top: 12px;
+        }
+        .change-type {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .change-list {
+            font-size: 14px;
+            color: var(--text-2);
+            padding-left: 12px;
+        }
+        .change-list li { margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="index.html" class="back">← 返回</a>
+    </div>
+    <h1>📋 更新日志</h1>
+    
+    <div class="timeline">
+        <!-- v1.2.1 -->
+        <div class="item">
+            <div class="dot"></div>
+            <div class="version">v1.2.1</div>
+            <div class="date">2026-02-16</div>
+            <div class="card">
+                <span class="tag fixed">Fixed</span>
+                <div class="changes">
+                    <div class="change-type">Bug 修复</div>
+                    <ul class="change-list">
+                        <li>OpenClaw链接修复：API_BASE变量未定义导致跳转失败</li>
+                        <li>测试更新：重写tests/api.test.js支持WebSocket mock</li>
+                    </ul>
+                </div>
+                <div class="changes" style="margin-top:16px;">
+                    <div class="change-type">变更</div>
+                    <ul class="change-list">
+                        <li>Dashboard链接改为直接使用cpolar URL</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- v1.2.0 -->
+        <div class="item">
+            <div class="dot"></div>
+            <div class="version">v1.2.0</div>
+            <div class="date">2026-02-15</div>
+            <div class="card">
+                <span class="tag added">Added</span>
+                <div class="changes">
+                    <div class="change-type">新功能</div>
+                    <ul class="change-list">
+                        <li>WebSocket API集成（进行中）</li>
+                        <li>6个功能卡片基础框架</li>
+                        <li>Apple风格UI界面</li>
+                    </ul>
+                </div>
+                <div class="changes" style="margin-top:16px;">
+                    <div class="change-type">变更</div>
+                    <ul class="change-list">
+                        <li>从HTTP API切换到WebSocket连接Gateway</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- v1.1.0 -->
+        <div class="item">
+            <div class="dot"></div>
+            <div class="version">v1.1.0</div>
+            <div class="date">2026-02-14</div>
+            <div class="card">
+                <span class="tag added">Added</span>
+                <div class="changes">
+                    <div class="change-type">新功能</div>
+                    <ul class="change-list">
+                        <li>测试框架搭建</li>
+                        <li>项目文档完善</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- v1.0.0 -->
+        <div class="item">
+            <div class="dot"></div>
+            <div class="version">v1.0.0</div>
+            <div class="date">2026-02-13</div>
+            <div class="card">
+                <span class="tag added">Added</span>
+                <div class="changes">
+                    <div class="change-type">初始发布</div>
+                    <ul class="change-list">
+                        <li>基础Dashboard界面</li>
+                        <li>OpenClaw状态展示</li>
+                        <li>Cpolar公网地址展示</li>
+                        <li>Gateway状态监控</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

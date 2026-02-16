@@ -767,10 +767,10 @@
         <section class="section">
             <div class="section-header">
                 <span class="section-title">更新日志</span>
-                <span style="font-size:12px;color:var(--text-3)">v1.2.1</span>
+                <a href="changelog.html" style="font-size:12px;color:var(--brand);text-decoration:none;">更多 ›</a>
             </div>
             <div class="card-list">
-                <div class="list-row" onclick="togglePanel('changelog')">
+                <div class="list-row" onclick="window.location.href='changelog.html'">
                     <div class="list-icon purple">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -780,54 +780,10 @@
                         </svg>
                     </div>
                     <div class="list-content">
-                        <div class="list-title">v1.2.1 (2026-02-16)</div>
-                        <div class="list-desc">OpenClaw链接修复 · 测试更新</div>
+                        <div class="list-title">v1.2.1 - OpenClaw链接修复</div>
+                        <div class="list-desc">2026-02-16 · 点击查看完整日志</div>
                     </div>
                     <span class="list-arrow">›</span>
-                </div>
-                <div class="panel" id="changelogPanel">
-                    <div class="panel-inner">
-                        <div class="panel-content" style="font-size:13px;line-height:1.6;">
-                            <div style="margin-bottom:8px;"><strong>Fixed:</strong></div>
-                            <div style="color:var(--text-2);padding-left:12px;margin-bottom:12px;">
-                                • OpenClaw链接修复：API_BASE变量未定义<br>
-                                • 测试更新：重写tests/api.test.js支持WebSocket
-                            </div>
-                            <div style="margin-bottom:8px;"><strong>Changed:</strong></div>
-                            <div style="color:var(--text-2);padding-left:12px;">
-                                • Dashboard链接改为直接使用cpolar URL
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="list-row" onclick="togglePanel('changelog-v120')">
-                    <div class="list-icon" style="background:linear-gradient(135deg,#8E8E93,#636366)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14,2 14,8 20,8"/>
-                        </svg>
-                    </div>
-                    <div class="list-content">
-                        <div class="list-title">v1.2.0 (2026-02-15)</div>
-                        <div class="list-desc">WebSocket API集成开发中</div>
-                    </div>
-                    <span class="list-arrow">›</span>
-                </div>
-                <div class="panel" id="changelog-v120Panel">
-                    <div class="panel-inner">
-                        <div class="panel-content" style="font-size:13px;line-height:1.6;">
-                            <div style="margin-bottom:8px;"><strong>Added:</strong></div>
-                            <div style="color:var(--text-2);padding-left:12px;margin-bottom:12px;">
-                                • WebSocket API集成（进行中）<br>
-                                • 6个功能卡片基础框架
-                            </div>
-                            <div style="margin-bottom:8px;"><strong>Changed:</strong></div>
-                            <div style="color:var(--text-2);padding-left:12px;">
-                                • 从HTTP API切换到WebSocket连接Gateway
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
