@@ -1,46 +1,23 @@
 {
   "name": "ergo-dashboard",
-  "version": "1.0.0",
-  "description": "Ergo 二狗 - 个人AI助理控制台",
-  "main": "src/app.js",
+  "version": "1.2.1",
+  "description": "Ergo - 基于OpenClaw的个人AI管家控制台",
+  "main": "index.html",
   "scripts": {
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
-    "test:ui": "jest --coverage --watchAll=false",
-    "start": "npx serve . -p 3000",
-    "dev": "npx serve . -p 3000 -l",
-    "lint": "echo 'No lint script configured'"
+    "start": "python -m http.server 8081",
+    "dev": "python -m http.server 8081",
+    "test": "node tests/api.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terryzin/Ergo.git"
   },
   "keywords": [
-    "ai",
-    "dashboard",
-    "ergo"
+    "openclaw",
+    "ai-assistant",
+    "dashboard"
   ],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^30.2.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/*.min.js"
-    ],
-    "coverageDirectory": "coverage",
-    "coverageReporters": [
-      "text",
-      "lcov",
-      "html"
-    ],
-    "verbose": true
-  }
+  "author": "terryzin",
+  "license": "MIT",
+  "homepage": "https://github.com/terryzin/Ergo#readme"
 }
