@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.2.2] - 2026-02-17
+
+### Added
+- 定时任务手动触发功能：每个Cron任务增加"触发"按钮
+- triggerCronJob API 方法
+
+---
+
 ## [v1.2.1] - 2026-02-16
 
 ### Fixed
