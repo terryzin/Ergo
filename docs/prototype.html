@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Ergo · AI 管家</title>
+    <link rel="icon" type="image/png" href="design/ergo-logo.png">
+    <style>
+        /* ============================
+           ERGO v2 — Apple-grade UI
+           Duarte: Bold, Graphic, Intentional
+           ============================ */
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        :root {
+            /* — Light Theme (default) — */
+            --brand: #0071E3;
+            --brand-light: #2997FF;
+            --brand-bg: rgba(0, 113, 227, 0.08);
+            --bg-page: #F5F5F7;
+            --bg-card: rgba(255,255,255, 0.85);
+            --bg-card-solid: #FFFFFF;
+            --bg-card-hover: rgba(255,255,255, 1);
+            --bg-elevated: rgba(255,255,255, 0.85);
+            --bg-inset: rgba(0,0,0, 0.03);
+            --text-1: #000000;
+            --text-2: #3D3D3D;
+            --text-3: #767676;
+            --border: rgba(0,0,0, 0.06);
+            --border-vivid: rgba(0,0,0, 0.1);
+            --ok: #34C759;
+            --ok-bg: rgba(52,199,89, 0.10);
+            --err: #FF3B30;
+            --err-bg: rgba(255,59,48, 0.10);
+            --warn: #FF9500;
+            --warn-bg: rgba(255,149,0, 0.10);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 2px 4px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+            --shadow-lg: 0 4px 8px rgba(0,0,0,0.06), 0 16px 48px rgba(0,0,0,0.08);
+            --glass-blur: saturate(180%) blur(20px);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+            /* — Spacing — */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 20px;
+            --space-6: 24px;
+            --space-8: 32px;
+
+            /* — Typography — */
+            --text-xs: 12px;
+            --text-sm: 14px;
+            --text-base: 16px;
+            --text-lg: 18px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+
+            /* — Duration — */
+            --duration-fast: 150ms;
+            --duration-base: 200ms;
+            --duration-slow: 300ms;
+            --ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        /* — Dark Theme — */
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --brand: #2997FF;
+                --brand-light: #64D2FF;
+                --brand-bg: rgba(41,151,255, 0.12);
+                --bg-page: #000000;
+                --bg-card: rgba(28,28,30, 0.72);
+                --bg-card-solid: #1C1C1E;
+                --bg-card-hover: rgba(44,44,46, 0.85);
+                --bg-elevated: rgba(44,44,46, 0.82);
+                --bg-inset: rgba(255,255,255, 0.04);
+                --text-1: #F5F5F7;
+                --text-2: #8E8E93;
+                --text-3: #48484A;
+                --border: rgba(255,255,255, 0.06);
+                --border-vivid: rgba(255,255,255, 0.1);
+                --ok: #30D158;
+                --ok-bg: rgba(48,209,88, 0.12);
+                --err: #FF453A;
+                --err-bg: rgba(255,69,58, 0.12);
+                --warn: #FF9F0A;
+                --warn-bg: rgba(255,159,10, 0.12);
+                --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+                --shadow-md: 0 2px 4px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.25);
+                --shadow-lg: 0 4px 8px rgba(0,0,0,0.25), 0 16px 48px rgba(0,0,0,0.3);
+            }
+        }
+        [data-theme="dark"] {
+            --brand: #2997FF;
+            --brand-light: #64D2FF;
+            --brand-bg: rgba(41,151,255, 0.12);
+            --bg-page: #000000;
+            --bg-card: rgba(28,28,30, 0.72);
+            --bg-card-solid: #1C1C1E;
+            --bg-card-hover: rgba(44,44,46, 0.85);
+            --bg-elevated: rgba(44,44,46, 0.82);
+            --bg-inset: rgba(255,255,255, 0.04);
+            --text-1: #F5F5F7;
+            --text-2: #8E8E93;
+            --text-3: #48484A;
+            --border: rgba(255,255,255, 0.06);
+            --border-vivid: rgba(255,255,255, 0.1);
+            --ok: #30D158;
+            --ok-bg: rgba(48,209,88, 0.12);
+            --err: #FF453A;
+            --err-bg: rgba(255,69,58, 0.12);
+            --warn: #FF9F0A;
+            --warn-bg: rgba(255,159,10, 0.12);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+            --shadow-md: 0 2px 4px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.25);
+            --shadow-lg: 0 4px 8px rgba(0,0,0,0.25), 0 16px 48px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", sans-serif;
+            background: var(--bg-page);
+            color: var(--text-1);
+            min-height: 100dvh;
+            line-height: 1.47;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Ambient glow behind page — subtle depth */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: -20%;
+            width: 140%;
+            height: 80%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0,113,227,0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 60%, rgba(52,199,89,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) body::before {
+                background: radial-gradient(ellipse at 30% 10%, rgba(41,151,255,0.08) 0%, transparent 50%),
+                            radial-gradient(ellipse at 80% 50%, rgba(48,209,88,0.04) 0%, transparent 50%);
+            }
+        }
+        [data-theme="dark"] body::before {
+            background: radial-gradient(ellipse at 30% 10%, rgba(41,151,255,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 50%, rgba(48,209,88,0.04) 0%, transparent 50%);
+        }
+        [data-theme="light"] body::before {
+            background: radial-gradient(ellipse at 30% 20%, rgba(0,113,227,0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 60%, rgba(52,199,89,0.04) 0%, transparent 50%);
+        }
+
+        /* ===== Header — frosted glass ===== */
+        .header {
+            position: sticky; top: 0; z-index: 100;
+            padding: calc(10px + var(--safe-top)) 20px 10px;
+            background: var(--bg-elevated);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        .header-inner {
+            max-width: 620px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 44px;
+        }
+
+        .logo { display:flex; align-items:center; gap:10px; }
+
+        .logo-mark {
+            width: 36px; height: 36px; border-radius: 10px;
+            overflow: hidden; flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .logo-mark img { width:100%; height:100%; object-fit:cover; }
+
+        .logo-name {
+            font-size: 21px; font-weight: 700;
+            letter-spacing: -0.4px;
+        }
+
+        .header-right { display:flex; align-items:center; gap:10px; }
+
+        .pill-status {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 14px 5px 10px;
+            border-radius: 20px;
+            font-size: 13px; font-weight: 600;
+            background: var(--ok-bg); color: var(--ok);
+            border: 1px solid rgba(52,199,89,0.15);
+            transition: all 0.3s;
+        }
+        .pill-status.err { background: var(--err-bg); color: var(--err); border-color: rgba(255,59,48,0.15); }
+
+        .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 6px currentColor;
+            animation: glow 2.5s ease-in-out infinite;
+        }
+        @keyframes glow {
+            0%,100% { opacity:1; box-shadow: 0 0 6px currentColor; }
+            50%     { opacity:0.5; box-shadow: 0 0 2px currentColor; }
+        }
+
+        .btn-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--border-vivid);
+            background: var(--bg-card); color: var(--text-2);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 16px;
+            transition: all 0.2s;
+            backdrop-filter: blur(8px);
+        }
+        .btn-circle:hover { background: var(--bg-card-hover); }
+        .btn-circle:active { transform: scale(0.92); }
+
+        /* ===== Layout ===== */
+        .page { position: relative; z-index: 1; max-width: 620px; margin: 0 auto; padding: 0 16px; }
+
+        /* ===== Status Grid — glass cards ===== */
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 20px 0 8px;
+        }
+
+        .metric {
+            position: relative;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .metric:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+        /* Gradient glow strip */
+        .metric::before {
+            content: '';
+            position: absolute; top:0; left:0; right:0; height: 3px;
+            opacity: 0.9;
+        }
+        .metric.ok::before    { background: linear-gradient(90deg, #34C759, #30D158, #5AC8FA); }
+        .metric.err::before   { background: linear-gradient(90deg, #FF3B30, #FF6961); }
+        .metric.warn::before  { background: linear-gradient(90deg, #FF9500, #FFB340); }
+        .metric.brand::before { background: linear-gradient(90deg, #007AFF, #5AC8FA); }
+
+        .metric-label {
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.5px; color: var(--text-2); margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 26px; font-weight: 700; letter-spacing: -0.8px;
+            line-height: 1.1;
+        }
+        .metric-value small {
+            font-size: 14px; font-weight: 500; color: var(--text-2);
+            letter-spacing: 0;
+        }
+
+        .metric-sub {
+            font-size: 12px; color: var(--text-2); margin-top: 4px;
+        }
+
+        /* ===== Section ===== */
+        .section { margin-top: 12px; margin-bottom: 28px; }
+
+        .section-label {
+            font-size: 13px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.8px; color: var(--text-2);
+            padding: 16px 4px 10px;
+        }
+
+        /* ===== Glass List Group ===== */
+        .glass-list {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .row {
+            display: flex; align-items: center;
+            padding: 15px 18px; gap: 14px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .row:active { background: var(--bg-inset); }
+        .row + .row, .row + .expand-panel + .row { border-top: 0.5px solid var(--border); }
+
+        .row-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .row-icon.i-green  { background: linear-gradient(145deg, #30D158, #34C759); }
+        .row-icon.i-orange { background: linear-gradient(145deg, #FF9F0A, #FF9500); }
+        .row-icon.i-purple { background: linear-gradient(145deg, #BF5AF2, #AF52DE); }
+        .row-icon.i-blue   { background: linear-gradient(145deg, #0A84FF, #007AFF); }
+        .row-icon.i-teal   { background: linear-gradient(145deg, #64D2FF, #5AC8FA); }
+
+        /* SVG icons inside row-icon */
+        .row-icon svg { width: 22px; height: 22px; fill: white; }
+
+        .row-body { flex: 1; min-width: 0; }
+        .row-title { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+        .row-desc  { font-size: 13px; color: var(--text-2); margin-top: 1px; }
+
+        .row-end { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+        .tag {
+            font-size: 12px; font-weight: 600; padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .tag-ok   { background: var(--ok-bg); color: var(--ok); }
+        .tag-err  { background: var(--err-bg); color: var(--err); }
+        .tag-warn { background: var(--warn-bg); color: var(--warn); }
+
+        .arrow {
+            color: var(--text-3); font-size: 18px; font-weight: 300;
+            transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+            display: inline-block;
+        }
+
+        /* ===== Expand Panel ===== */
+        .expand-panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .expand-panel.open { grid-template-rows: 1fr; }
+        .expand-inner {
+            overflow: hidden;
+        }
+
+        .expand-body {
+            padding: 2px 18px 18px;
+            background: var(--bg-inset);
+            border-top: 0.5px solid var(--border);
+        }
+
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 11px 0; font-size: 14px;
+        }
+        .info-row + .info-row { border-top: 0.5px solid var(--border); }
+        .info-label { color: var(--text-2); }
+        .info-val   { font-weight: 600; font-variant-numeric: tabular-nums; }
+        .info-val.mono { font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; }
+
+        .link-val {
+            color: var(--brand); cursor: pointer; font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
+            transition: opacity 0.15s;
+        }
+        .link-val:hover { opacity: 0.7; }
+
+        /* ===== Buttons ===== */
+        .btn-bar { display: flex; gap: 10px; margin-top: 16px; }
+
+        .btn {
+            flex: 1; padding: 12px 16px; border-radius: 12px;
+            border: none; font-size: 15px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-filled {
+            background: var(--brand); color: white;
+            box-shadow: 0 2px 8px rgba(0,113,227,0.25);
+        }
+        .btn-filled:hover { box-shadow: 0 4px 16px rgba(0,113,227,0.3); }
+
+        .btn-tinted {
+            background: var(--brand-bg); color: var(--brand);
+        }
+
+        .btn-soft {
+            background: var(--bg-inset); color: var(--text-1);
+            border: 1px solid var(--border-vivid);
+        }
+
+        .btn-warn {
+            background: var(--err-bg); color: var(--err);
+            border: 1px solid rgba(255,59,48,0.12);
+        }
+
+        /* ===== Service Cards ===== */
+        .svc-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 12px;
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .svc-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+        .svc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+
+        .svc-name {
+            font-size: 16px; font-weight: 700; letter-spacing: -0.2px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .svc-port {
+            font-size: 13px; color: var(--text-2); font-weight: 500;
+            font-family: "SF Mono", ui-monospace, monospace;
+            background: var(--bg-inset); padding: 2px 8px; border-radius: 6px;
+        }
+
+        .svc-meta {
+            display: flex; gap: 16px; font-size: 13px;
+            color: var(--text-2); margin-bottom: 14px;
+        }
+
+        .svc-btns { display: flex; gap: 8px; }
+
+        .btn-sm {
+            padding: 8px 16px; border-radius: 10px; border: none;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-sm:active { transform: scale(0.96); }
+        .btn-sm-fill { background: var(--brand); color: white; box-shadow: 0 1px 4px rgba(0,113,227,0.2); }
+        .btn-sm-soft { background: var(--bg-inset); color: var(--text-1); border: 1px solid var(--border-vivid); }
+
+        .dot-live {
+            width: 8px; height: 8px; border-radius: 50%;
+            display: inline-block;
+        }
+        .dot-live.ok  { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+        .dot-live.err { background: var(--err); box-shadow: 0 0 6px var(--err); }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center; padding: 40px 16px calc(24px + var(--safe-bottom));
+            font-size: 12px; color: var(--text-3);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .footer img { width: 24px; height: 24px; border-radius: 6px; opacity: 0.4; }
+
+        /* ===== Dialog — iOS action sheet ===== */
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(4px);
+            z-index: 300;
+            align-items: flex-end; justify-content: center;
+            padding: 0 8px calc(12px + var(--safe-bottom));
+        }
+        .overlay.open { display: flex; }
+
+        .sheet {
+            width: 100%; max-width: 420px;
+            animation: sheetUp 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        @keyframes sheetUp {
+            from { opacity:0; transform: translateY(40px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+
+        .sheet-card {
+            background: var(--bg-elevated);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .sheet-head { padding: 20px 24px 12px; }
+        .sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+        .sheet-desc  { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+        .sheet-btn {
+            width: 100%; padding: 16px; border: none;
+            font-size: 17px; font-weight: 600; cursor: pointer;
+            border-top: 0.5px solid var(--border);
+            background: transparent; color: var(--brand);
+            transition: background 0.15s;
+        }
+        .sheet-btn:active { background: var(--bg-inset); }
+        .sheet-btn.danger { color: var(--err); }
+
+        .sheet-cancel {
+            background: var(--bg-elevated);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px; width: 100%;
+            font-size: 17px; font-weight: 700;
+            color: var(--brand); cursor: pointer;
+            text-align: center;
+        }
+        .sheet-cancel:active { background: var(--bg-inset); }
+
+        /* ===== Toast ===== */
+        .toast-wrap {
+            position: fixed; top: calc(68px + var(--safe-top));
+            left: 50%; transform: translateX(-50%) translateY(-16px) scale(0.96);
+            z-index: 400; pointer-events: none;
+            opacity: 0; transition: all 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        .toast-wrap.show { opacity:1; transform: translateX(-50%) translateY(0) scale(1); }
+
+        .toast-body {
+            background: var(--bg-elevated);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 10px 20px;
+            font-size: 14px; font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            white-space: nowrap;
+        }
+
+        /* ===== Prototype ribbon ===== */
+        .ribbon {
+            position: fixed; bottom: calc(16px + var(--safe-bottom));
+            left: 50%; transform: translateX(-50%);
+            background: var(--text-1); color: var(--bg-page);
+            padding: 7px 18px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+            z-index: 500; opacity: 0.85;
+            transition: opacity 0.5s;
+        }
+
+        /* ===== Responsive ===== */
+        @media (min-width: 768px) {
+            .page { max-width: 720px; }
+            .metrics { grid-template-columns: repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== Header ===== -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-mark"><img src="design/ergo-logo.png" alt="Ergo"></div>
+                <span class="logo-name">Ergo</span>
+            </div>
+            <div class="header-right">
+                <div class="pill-status" id="globalPill">
+                    <span class="dot"></span>
+                    系统正常
+                </div>
+                <button class="btn-circle" onclick="toggleTheme()" title="切换主题">
+                    <span id="themeIcon">◑</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== Page ===== -->
+    <main class="page">
+
+        <!-- Metrics -->
+        <div class="metrics">
+            <div class="metric ok">
+                <div class="metric-label">Gateway</div>
+                <div class="metric-value">运行中</div>
+                <div class="metric-sub">已运行 2天 14小时</div>
+            </div>
+            <div class="metric ok">
+                <div class="metric-label">Agents</div>
+                <div class="metric-value">3<small> / 3 在线</small></div>
+                <div class="metric-sub">全部正常</div>
+            </div>
+            <div class="metric ok">
+                <div class="metric-label">定时任务</div>
+                <div class="metric-value">5<small> 成功</small></div>
+                <div class="metric-sub">24h · 0 失败</div>
+            </div>
+            <div class="metric brand">
+                <div class="metric-label">网络穿透</div>
+                <div class="metric-value">已连接</div>
+                <div class="metric-sub">cpolar.top</div>
+            </div>
+        </div>
+
+        <!-- ===== OpenClaw ===== -->
+        <section class="section">
+            <div class="section-label">OpenClaw 运维</div>
+            <div class="glass-list">
+
+                <!-- Gateway -->
+                <div class="row" onclick="toggle('gw')">
+                    <div class="row-icon i-green">
+                        <svg viewBox="0 0 24 24"><path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 1.37-.35 2.66-.95 3.79l1.49 1.49A9.96 9.96 0 0022 12c0-5.18-3.95-9.45-9-9.95zM12 20a8 8 0 01-7.93-7H2.05A9.95 9.95 0 0012 22c2.07 0 3.98-.63 5.57-1.71l-1.46-1.46A7.96 7.96 0 0112 20zM11 2.05C6.05 2.55 2.05 6.82 2.05 12c0 1.72.44 3.33 1.2 4.74l1.49-1.49A7.89 7.89 0 014.07 12c0-3.93 2.84-7.19 6.58-7.86L11 2.05zM12 6a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg>
+                    </div>
+                    <div class="row-body">
+                        <div class="row-title">Gateway 管控</div>
+                        <div class="row-desc">运行状态 · 重启 · 日志</div>
+                    </div>
+                    <div class="row-end">
+                        <span class="tag tag-ok">运行中</span>
+                        <span class="arrow" id="gw-arrow">›</span>
+                    </div>
+                </div>
+                <div class="expand-panel" id="gw-panel">
+                    <div class="expand-inner">
+                        <div class="expand-body">
+                            <div class="info-row">
+                                <span class="info-label">状态</span>
+                                <span class="info-val" style="color:var(--ok)">● 运行中</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">运行时长</span>
+                                <span class="info-val">2 天 14 小时 32 分</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">端口</span>
+                                <span class="info-val mono">18789</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">公网地址</span>
+                                <span class="link-val" onclick="copy('https://ergo-gateway.cpolar.top',event)">
+                                    ergo-gateway.cpolar.top
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z"/></svg>
+                                </span>
+                            </div>
+                            <div class="btn-bar">
+                                <button class="btn btn-warn" onclick="showSheet(event)">重启 Gateway</button>
+                                <button class="btn btn-soft">查看日志</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cron -->
+                <div class="row" onclick="toggle('cron')">
+                    <div class="row-icon i-orange">
+                        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+                    </div>
+                    <div class="row-body">
+                        <div class="row-title">定时任务</div>
+                        <div class="row-desc">5 个任务 · 最近全部成功</div>
+                    </div>
+                    <div class="row-end">
+                        <span class="tag tag-ok">5/5</span>
+                        <span class="arrow" id="cron-arrow">›</span>
+                    </div>
+                </div>
+                <div class="expand-panel" id="cron-panel">
+                    <div class="expand-inner">
+                        <div class="expand-body">
+                            <div class="info-row"><span class="info-label">最佳实践收集</span><span class="info-val" style="color:var(--ok)">✓ 每4小时</span></div>
+                            <div class="info-row"><span class="info-label">稳定性复盘</span><span class="info-val" style="color:var(--ok)">✓ 每周一</span></div>
+                            <div class="info-row"><span class="info-label">健康检查</span><span class="info-val" style="color:var(--ok)">✓ 每15分钟</span></div>
+                            <div class="info-row"><span class="info-label">日志清理</span><span class="info-val" style="color:var(--ok)">✓ 每天 3:00</span></div>
+                            <div class="info-row"><span class="info-label">系统备份</span><span class="info-val" style="color:var(--ok)">✓ 每天 2:00</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agents -->
+                <div class="row" onclick="toggle('agent')">
+                    <div class="row-icon i-purple">
+                        <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 110 2h-1.09A7.01 7.01 0 0113 22h-2a7.01 7.01 0 01-6.91-6H3a1 1 0 110-2h1a7 7 0 017-7h1V5.73A2 2 0 0112 2zM9.5 13a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>
+                    </div>
+                    <div class="row-body">
+                        <div class="row-title">Agent 管理</div>
+                        <div class="row-desc">3 个在线 · 0 个异常</div>
+                    </div>
+                    <div class="row-end">
+                        <span class="tag tag-ok">3 在线</span>
+                        <span class="arrow" id="agent-arrow">›</span>
+                    </div>
+                </div>
+                <div class="expand-panel" id="agent-panel">
+                    <div class="expand-inner">
+                        <div class="expand-body">
+                            <div class="info-row"><span class="info-label"><span style="color:var(--ok)">●</span> 智能助手</span><span class="info-val">已处理 128 条</span></div>
+                            <div class="info-row"><span class="info-label"><span style="color:var(--ok)">●</span> 数据分析</span><span class="info-val">已处理 56 条</span></div>
+                            <div class="info-row"><span class="info-label"><span style="color:var(--ok)">●</span> 文档处理</span><span class="info-val">已处理 34 条</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Config -->
+                <div class="row" onclick="toggle('cfg')">
+                    <div class="row-icon i-blue">
+                        <svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 000-1.88l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96a7.04 7.04 0 00-1.62-.94l-.36-2.54a.48.48 0 00-.48-.41h-3.84a.48.48 0 00-.48.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87a.48.48 0 00.12.61l2.03 1.58a7.07 7.07 0 000 1.88l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.61 3.61 0 0112 15.6z"/></svg>
+                    </div>
+                    <div class="row-body">
+                        <div class="row-title">配置管理</div>
+                        <div class="row-desc">查看和修改系统配置</div>
+                    </div>
+                    <div class="row-end">
+                        <span class="arrow" id="cfg-arrow">›</span>
+                    </div>
+                </div>
+                <div class="expand-panel" id="cfg-panel">
+                    <div class="expand-inner">
+                        <div class="expand-body">
+                            <div class="info-row"><span class="info-label">Gateway 端口</span><span class="info-val mono">18789</span></div>
+                            <div class="info-row"><span class="info-label">请求超时</span><span class="info-val">30s</span></div>
+                            <div class="info-row"><span class="info-label">最大并发</span><span class="info-val">10</span></div>
+                            <div class="info-row"><span class="info-label">日志级别</span><span class="info-val">INFO</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard link -->
+                <div class="row" onclick="toast('正在打开 OpenClaw Dashboard...')">
+                    <div class="row-icon i-teal">
+                        <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                    </div>
+                    <div class="row-body">
+                        <div class="row-title">OpenClaw Dashboard</div>
+                        <div class="row-desc">打开完整管理界面</div>
+                    </div>
+                    <div class="row-end">
+                        <span class="arrow">↗</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== Dev Services ===== -->
+        <section class="section">
+            <div class="section-label">开发服务</div>
+
+            <div class="svc-card">
+                <div class="svc-top">
+                    <div class="svc-name">
+                        <span class="dot-live ok"></span>
+                        my-dashboard
+                        <span class="svc-port">:3000</span>
+                    </div>
+                    <span class="tag tag-ok">运行中</span>
+                </div>
+                <div class="svc-meta">
+                    <span>5小时23分</span>
+                    <span>Vite Dev Server</span>
+                </div>
+                <div class="svc-btns">
+                    <button class="btn-sm btn-sm-fill" onclick="toast('正在打开页面...')">打开</button>
+                    <button class="btn-sm btn-sm-soft" onclick="copy('https://terryzin.cpolar.top:3000',event)">复制链接</button>
+                    <button class="btn-sm btn-sm-soft">日志</button>
+                </div>
+            </div>
+
+            <div class="svc-card">
+                <div class="svc-top">
+                    <div class="svc-name">
+                        <span class="dot-live ok"></span>
+                        api-server
+                        <span class="svc-port">:8080</span>
+                    </div>
+                    <span class="tag tag-ok">运行中</span>
+                </div>
+                <div class="svc-meta">
+                    <span>2天1小时</span>
+                    <span>Node.js Express</span>
+                </div>
+                <div class="svc-btns">
+                    <button class="btn-sm btn-sm-fill" onclick="toast('正在打开页面...')">打开</button>
+                    <button class="btn-sm btn-sm-soft" onclick="copy('https://terryzin.cpolar.top:8080',event)">复制链接</button>
+                    <button class="btn-sm btn-sm-soft">日志</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <img src="design/ergo-logo.png" alt="">
+        Ergo · 远程运维控制台
+    </footer>
+
+    <!-- ===== Action Sheet ===== -->
+    <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()">
+        <div class="sheet">
+            <div class="sheet-card">
+                <div class="sheet-head">
+                    <div class="sheet-title">重启 Gateway</div>
+                    <div class="sheet-desc">这会中断所有正在执行的任务和 Agent 会话。<br>通常需要 10-30 秒恢复。</div>
+                </div>
+                <button class="sheet-btn danger" onclick="doRestart()">确认重启</button>
+            </div>
+            <button class="sheet-cancel" onclick="closeSheet()">取消</button>
+        </div>
+    </div>
+
+    <!-- ===== Toast ===== -->
+    <div class="toast-wrap" id="toastWrap">
+        <div class="toast-body" id="toastBody"></div>
+    </div>
+
+    <!-- ===== Ribbon ===== -->
+    <div class="ribbon" id="ribbon">交互原型 v2 · 点击卡片体验</div>
+
+    <script>
+        /* ===== Toggle panel ===== */
+        let openId = null;
+        function toggle(id) {
+            const panel = document.getElementById(id + '-panel');
+            const arrow = document.getElementById(id + '-arrow');
+            // close previous
+            if (openId && openId !== id) {
+                document.getElementById(openId + '-panel').classList.remove('open');
+                const prev = document.getElementById(openId + '-arrow');
+                if (prev) prev.style.transform = '';
+            }
+            const opening = !panel.classList.contains('open');
+            panel.classList.toggle('open');
+            if (arrow) arrow.style.transform = opening ? 'rotate(90deg)' : '';
+            openId = opening ? id : null;
+        }
+
+        /* ===== Theme ===== */
+        function toggleTheme() {
+            const h = document.documentElement;
+            const c = h.getAttribute('data-theme');
+            const i = document.getElementById('themeIcon');
+            if (!c) { h.setAttribute('data-theme','dark'); i.textContent='☾'; toast('深色模式'); }
+            else if (c==='dark') { h.setAttribute('data-theme','light'); i.textContent='☀'; toast('浅色模式'); }
+            else { h.removeAttribute('data-theme'); i.textContent='◑'; toast('跟随系统'); }
+        }
+
+        /* ===== Sheet ===== */
+        function showSheet(e) { e && e.stopPropagation(); document.getElementById('overlay').classList.add('open'); }
+        function closeSheet() { document.getElementById('overlay').classList.remove('open'); }
+        function doRestart() {
+            closeSheet();
+            toast('Gateway 正在重启...');
+            setTimeout(() => toast('Gateway 重启成功'), 2200);
+        }
+
+        /* ===== Copy ===== */
+        function copy(t, e) {
+            e && e.stopPropagation();
+            navigator.clipboard.writeText(t).then(() => toast('已复制到剪贴板')).catch(() => toast('复制失败'));
+        }
+
+        /* ===== Toast ===== */
+        let tt;
+        function toast(m) {
+            const w = document.getElementById('toastWrap');
+            document.getElementById('toastBody').textContent = m;
+            w.classList.add('show');
+            clearTimeout(tt);
+            tt = setTimeout(() => w.classList.remove('show'), 2400);
+        }
+
+        /* ===== Ribbon dismiss ===== */
+        setTimeout(() => {
+            const r = document.getElementById('ribbon');
+            r.style.opacity = '0';
+            setTimeout(() => r.style.display = 'none', 500);
+        }, 4000);
+    </script>
+</body>
+</html>
