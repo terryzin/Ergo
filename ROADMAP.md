@@ -1,10 +1,17 @@
 # Ergo 项目路线图
 
-> 最后更新: 2026-02-15
+> 最后更新: 2026-02-16
 
 ## 项目概述
 
 Ergo（二狗）是基于 OpenClaw 平台的个人 AI 管家控制台。
+
+## 技术栈
+
+- 前端: 纯静态 HTML/CSS/JS
+- 通信: WebSocket (Gateway: ws://localhost:18789)
+- 穿透: cpolar (wss://ergo-gateway.cpolar.top)
+- 测试: Node.js 测试脚本
 
 ---
 
@@ -64,25 +71,26 @@ Ergo（二狗）是基于 OpenClaw 平台的个人 AI 管家控制台。
 
 ---
 
-## v1.2 Gateway API 集成
+## v1.2 Gateway API 集成 (WebSocket)
 
-### API 封装
-- [ ] fetchGatewayStatus() 真实 API 集成
-- [ ] fetchAgents() 真实 API 集成
-- [ ] fetchCronJobs() 真实 API 集成
-- [ ] fetchDevServices() 真实 API 集成
-- [ ] restartGateway() 重启功能
+> **注意**: v1.2 已更改为使用 WebSocket 连接
 
-### 错误处理
-- [ ] Gateway 离线状态检测
-- [ ] 网络错误提示
-- [ ] 重连机制
+### 已完成
+- [x] WebSocket 连接实现
+- [x] 自动重连机制 (5s 间隔)
+- [x] 认证支持 (Token: f2009973e92e96b0e31c30b30500e997)
+- [x] cpolar 穿透支持
+- [x] Mock 数据回退
+- [x] fetchGatewayStatus() Gateway 状态
+- [x] fetchAgents() Agent 列表
+- [x] fetchCronJobs() Cron 任务
+- [x] getNetworkState() 网络状态
 
-### Mock 模式切换
-- [ ] 配置文件开关
-- [ ] 生产环境自动禁用
+### 版本历史
+- v1.2.1 - OpenClaw 链接修复
+- v1.2.0 - 初始 WebSocket 实现
 
-**v1.2 完成度**: 0%
+**v1.2 完成度**: 100%
 
 ---
 

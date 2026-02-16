@@ -1,6 +1,6 @@
 /**
  * Ergo API Module Tests
- * v1.2.1 - WebSocket版本
+ * v1.2.1 - WebSocket 版本
  */
 
 // 模拟 WebSocket
@@ -12,21 +12,21 @@ class MockWebSocket {
         this.onmessage = null;
         this.onerror = null;
         this.onclose = null;
-        
+
         // 模拟异步打开
         setTimeout(() => {
             if (this.onopen) this.onopen({ type: 'open' });
         }, 10);
     }
-    
+
     send(data) {
         const msg = JSON.parse(data);
-        
+
         // 模拟响应
         setTimeout(() => {
             if (this.onmessage) {
                 let response;
-                
+
                 if (msg.action === 'gateway:status') {
                     response = {
                         id: msg.id,
@@ -58,14 +58,14 @@ class MockWebSocket {
                         }
                     };
                 }
-                
+
                 if (response && this.onmessage) {
                     this.onmessage({ data: JSON.stringify(response) });
                 }
             }
         }, 20);
     }
-    
+
     close() {
         this.readyState = 3; // CLOSED
     }
@@ -139,62 +139,62 @@ function getNetworkState() {
 async function runTests() {
     let passed = 0;
     let failed = 0;
-    
+
     // Test 1: CONFIG
     console.log('Test 1: CONFIG...');
     if (CONFIG.WS_URL === 'ws://localhost:18789') {
-        console.log('  ✓ CONFIG.WS_URL正确');
+        console.log('  ✓ CONFIG.WS_URL 正确');
         passed++;
     } else {
-        console.log('  ✗ CONFIG.WS_URL错误');
+        console.log('  ✗ CONFIG.WS_URL 错误');
         failed++;
     }
-    
+
     // Test 2: fetchGatewayStatus
     console.log('Test 2: fetchGatewayStatus...');
     const gateway = await fetchGatewayStatus();
     if (gateway.status === 'online' && gateway.version === '2026.2.9') {
-        console.log('  ✓ fetchGatewayStatus正确');
+        console.log('  ✓ fetchGatewayStatus 正确');
         passed++;
     } else {
-        console.log('  ✗ fetchGatewayStatus错误', gateway);
+        console.log('  ✗ fetchGatewayStatus 错误', gateway);
         failed++;
     }
-    
+
     // Test 3: fetchAgents
     console.log('Test 3: fetchAgents...');
     const agents = await fetchAgents();
     if (Array.isArray(agents) && agents.length === 1 && agents[0].name === 'main') {
-        console.log('  ✓ fetchAgents正确');
+        console.log('  ✓ fetchAgents 正确');
         passed++;
     } else {
-        console.log('  ✗ fetchAgents错误', agents);
+        console.log('  ✗ fetchAgents 错误', agents);
         failed++;
     }
-    
+
     // Test 4: fetchCronJobs
     console.log('Test 4: fetchCronJobs...');
     const cron = await fetchCronJobs();
     if (Array.isArray(cron) && cron.length === 3) {
-        console.log('  ✓ fetchCronJobs正确');
+        console.log('  ✓ fetchCronJobs 正确');
         passed++;
     } else {
-        console.log('  ✗ fetchCronJobs错误', cron);
+        console.log('  ✗ fetchCronJobs 错误', cron);
         failed++;
     }
-    
+
     // Test 5: getNetworkState
     console.log('Test 5: getNetworkState...');
     const state = getNetworkState();
     if (state.isOnline === true && state.wsState === 1) {
-        console.log('  ✓ getNetworkState正确');
+        console.log('  ✓ getNetworkState 正确');
         passed++;
     } else {
-        console.log('  ✗ getNetworkState错误', state);
+        console.log('  ✗ getNetworkState 错误', state);
         failed++;
     }
-    
-    console.log(`\n========== 结果: ${passed}/${passed+failed} 通过 ==========`);
+
+    console.log(`\n========== 结果: ${passed}/${passed + failed} 通过 ==========`);
     return failed === 0;
 }
 
