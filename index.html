@@ -1062,11 +1062,8 @@
         // ACTIONS
         // ============================
         function openDashboard() {
-            if (MOCK_MODE) {
-                showToast('Mock 模式：将在新窗口打开 Dashboard');
-                return;
-            }
-            window.open(`${API_BASE}/openclaw`, '_blank');
+            // 直接跳转到OpenClaw Gateway Dashboard
+            window.open('https://ergo-gateway.cpolar.top', '_blank');
         }
 
         function openUrl(url) {
