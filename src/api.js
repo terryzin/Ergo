@@ -11,7 +11,10 @@
 
 // 配置
 const CONFIG = {
-    API_BASE: 'http://localhost:18789',
+    // 生产环境使用 cpolar URL，本地开发使用 localhost
+    API_BASE: (window && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') 
+        ? 'https://ergo-gateway.cpolar.top' 
+        : 'http://localhost:18789',
     TIMEOUT: 5000,           // 请求超时 (ms)
     RETRY_COUNT: 3,         // 重试次数
     RETRY_DELAY: 1000,       // 重试间隔 (ms)
