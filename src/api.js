@@ -398,6 +398,59 @@ async function healthCheck() {
     return results;
 }
 
+// ============================
+// 实时刷新 (v1.2)
+// ============================
+
+// 刷新定时器引用
+let refreshTimer = null;
+
+/**
+ * 开始自动刷新数据
+ * @param {Function} callback - 数据更新回调
+ * @param {number} interval - 刷新间隔 (默认 30秒)
+ */
+function startAutoRefresh(callback, interval = 30000) {
+    stopAutoRefresh();
+
+    const refresh = async () => {
+        try {
+            const data = await fetchAllData();
+            if (callback && typeof callback === 'function') {
+                callback(data);
+            }
+        } catch (error) {
+            console.error('[API] Auto refresh failed:', error);
+        }
+    };
+
+    // 立即执行一次
+    refresh();
+
+    // 设置定时器
+    refreshTimer = setInterval(refresh, interval);
+    console.log(`[API] Auto refresh started (${interval}ms)`);
+}
+
+/**
+ * 停止自动刷新
+ */
+function stopAutoRefresh() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+        console.log('[API] Auto refresh stopped');
+    }
+}
+
+/**
+ * 检查是否正在自动刷新
+ * @returns {boolean}
+ */
+function isAutoRefreshRunning() {
+    return refreshTimer !== null;
+}
+
 // Export for testing
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -420,6 +473,10 @@ if (typeof module !== 'undefined' && module.exports) {
         validateCronResponse,
         validateServicesResponse,
         // Health check
-        healthCheck
+        healthCheck,
+        // Auto refresh
+        startAutoRefresh,
+        stopAutoRefresh,
+        isAutoRefreshRunning
     };
 }

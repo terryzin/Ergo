@@ -795,11 +795,17 @@
         let currentPanel = null;
 
         // ============================
-        // INIT
+        // INIT (v1.2: 自动刷新)
         // ============================
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             loadData();
+            // 页面可见时刷新
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    loadData();
+                }
+            });
         });
 
         // ============================
