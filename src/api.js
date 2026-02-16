@@ -84,19 +84,20 @@
             ws.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
-                    console.log('[Ergo] Received:', data);
+                    console.log('[Ergo] Received:', JSON.stringify(data));
                     
                     const { id, payload, error, action } = data;
                     
-                    // 处理认证响应
-                    if (action === 'auth') {
-                        if (error) {
-                            console.error('[Ergo] Auth error:', error);
-                            authenticated = false;
-                        } else {
-                            console.log('[Ergo] Auth response:', payload);
+                    // 处理认证响应 - Gateway可能返回不同的格式
+                    if (action === 'auth' || data.type === 'auth' || !action) {
+                        // 检查是否是认证成功
+                        if (data.auth === true || payload === true || data.error === undefined) {
+                            console.log('[Ergo] Auth success');
                             authenticated = true;
                             apiState.isOnline = true;
+                        } else if (data.error) {
+                            console.error('[Ergo] Auth error:', data.error);
+                            authenticated = false;
                         }
                         return;
                     }
