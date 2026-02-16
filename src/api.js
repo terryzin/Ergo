@@ -2,9 +2,9 @@
  * Ergo API Module
  * Gateway API 封装 - 使用 WebSocket 连接
  *
- * v1.2.1 更新:
- * - 改为 WebSocket 连接（Gateway 使用 ws 协议）
- * - 支持 cpolar 穿透访问
+ * v1.2.2 更新:
+ * - 修复WebSocket认证流程
+ * - 支持cron任务触发
  */
 
 (function() {
@@ -12,7 +12,6 @@
 
     // 配置
     const CONFIG = {
-        // 根据环境选择 WebSocket URL
         get WS_URL() {
             const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
             const isRemote = hostname !== 'localhost' && hostname !== '127.0.0.1';
@@ -21,13 +20,14 @@
                 : 'ws://127.0.0.1:18789';
         },
         TOKEN: 'f2009973e92e96b0e31c30b30500e997',
-        RECONNECT_INTERVAL: 5000,  // 重连间隔 (ms)
-        MOCK_FALLBACK: true         // 失败时回退到 Mock
+        RECONNECT_INTERVAL: 5000,
+        MOCK_FALLBACK: false  // 关闭Mock回退，要求真实API
     };
 
     // WebSocket 实例
     let ws = null;
     let wsReady = false;
+    let authenticated = false;
     let pendingRequests = new Map();
     let requestId = 0;
     let reconnectTimer = null;
@@ -42,17 +42,10 @@
         port: 18789
     };
 
-    // Mock 数据
+    // Mock 数据 (仅用于展示结构)
     const MOCK_DATA = {
-        gateway: {
-            status: 'online',
-            uptime: 3600,
-            version: '2026.2.9',
-            port: 18789
-        },
-        agents: [
-            { name: 'main', status: 'active', model: 'MiniMax-M2.5' }
-        ],
+        gateway: { status: 'online', uptime: 3600, version: '2026.2.9', port: 18789 },
+        agents: [{ name: 'main', status: 'active', model: 'MiniMax-M2.5' }],
         cron: [
             { id: '9d6d36ae-c8c8-49ed-a6a5-f798b7884a63', name: '最佳实践收集', lastStatus: 'success', nextRun: '18:00' },
             { id: 'f691da5c-5cf6-4b05-9e8d-3a77a6d60a06', name: 'Gateway健康检查', lastStatus: 'success', nextRun: '每15分钟' },
@@ -60,7 +53,6 @@
         ]
     };
 
-    // 生成请求 ID
     function generateId() {
         return `req_${++requestId}_${Date.now()}`;
     }
@@ -72,36 +64,42 @@
         }
 
         isConnecting = true;
+        console.log('[Ergo] Connecting to Gateway...');
         
         try {
             ws = new WebSocket(CONFIG.WS_URL);
 
             ws.onopen = function() {
-                console.log('[Ergo] WebSocket connected');
-                wsReady = true;
-                isConnecting = false;
-                apiState.isOnline = true;
-                
+                console.log('[Ergo] WebSocket connected, authenticating...');
                 // 发送认证
-                send({ action: 'auth', token: CONFIG.TOKEN });
-                
-                // 重新发送 pending 请求
-                pendingRequests.forEach((resolve, id) => {
-                    resolve({ error: 'Request resend after reconnect' });
+                send({ action: 'auth', token: CONFIG.TOKEN }).then(() => {
+                    console.log('[Ergo] Authenticated successfully');
+                    authenticated = true;
+                    apiState.isOnline = true;
+                }).catch(err => {
+                    console.error('[Ergo] Auth failed:', err);
                 });
-                pendingRequests.clear();
-                
-                // 清除重连定时器
-                if (reconnectTimer) {
-                    clearTimeout(reconnectTimer);
-                    reconnectTimer = null;
-                }
             };
 
             ws.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
-                    const { id, payload, error } = data;
+                    console.log('[Ergo] Received:', data);
+                    
+                    const { id, payload, error, action } = data;
+                    
+                    // 处理认证响应
+                    if (action === 'auth') {
+                        if (error) {
+                            console.error('[Ergo] Auth error:', error);
+                            authenticated = false;
+                        } else {
+                            console.log('[Ergo] Auth response:', payload);
+                            authenticated = true;
+                            apiState.isOnline = true;
+                        }
+                        return;
+                    }
                     
                     if (id && pendingRequests.has(id)) {
                         const { resolve, reject } = pendingRequests.get(id);
@@ -126,10 +124,10 @@
             ws.onclose = function() {
                 console.log('[Ergo] WebSocket closed');
                 wsReady = false;
+                authenticated = false;
                 apiState.isOnline = false;
                 isConnecting = false;
                 
-                // 自动重连
                 if (!reconnectTimer) {
                     reconnectTimer = setTimeout(() => {
                         reconnectTimer = null;
@@ -154,6 +152,7 @@
             const id = generateId();
             const message = { ...data, id };
             
+            console.log('[Ergo] Sending:', message);
             pendingRequests.set(id, { resolve, reject });
             
             ws.send(JSON.stringify(message));
@@ -164,55 +163,56 @@
                     pendingRequests.delete(id);
                     reject(new Error('Request timeout'));
                 }
-            }, 10000);
+            }, 15000);
         });
     }
 
     // 通用请求封装
     async function request(action, payload = {}) {
-        // 如果未连接，尝试连接
         if (!ws || ws.readyState !== WebSocket.OPEN) {
             connect();
-            
-            // 等待连接
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // 等待连接和认证
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        // 等待认证完成
+        let attempts = 0;
+        while (!authenticated && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            attempts++;
+        }
+
+        if (!authenticated) {
+            throw new Error('Not authenticated');
         }
 
         try {
-            const result = await send({ action, payload, token: CONFIG.TOKEN });
+            const result = await send({ action, payload });
             return result;
         } catch (error) {
             console.error('[Ergo] Request error:', error);
-            
-            // 失败时回退到 Mock
             if (CONFIG.MOCK_FALLBACK) {
-                console.log('[Ergo] Falling back to mock data');
+                console.log('[Ergo] Using mock data');
                 return getMockData(action);
             }
             throw error;
         }
     }
 
-    // 获取 Mock 数据
     function getMockData(action) {
         switch (action) {
-            case 'gateway:status':
-                return MOCK_DATA.gateway;
-            case 'agents:list':
-                return { agents: MOCK_DATA.agents };
-            case 'cron:list':
-                return { jobs: MOCK_DATA.cron };
-            default:
-                return {};
+            case 'status': return MOCK_DATA.gateway;
+            case 'agents:list': return { agents: MOCK_DATA.agents };
+            case 'cron.list': return { jobs: MOCK_DATA.cron };
+            default: return {};
         }
     }
 
     // ============ 公开 API ============
 
-    // 检测网络状态
     function checkNetworkStatus() {
         return new Promise((resolve) => {
-            if (ws && ws.readyState === WebSocket.OPEN) {
+            if (ws && ws.readyState === WebSocket.OPEN && authenticated) {
                 apiState.isOnline = true;
                 resolve(true);
             } else {
@@ -222,58 +222,47 @@
         });
     }
 
-    // 获取 Gateway 状态
     async function fetchGatewayStatus() {
         try {
-            const data = await request('gateway:status');
+            const data = await send({ action: 'status' });
             apiState.isOnline = true;
-            apiState.uptime = data.uptime || 0;
-            apiState.version = data.version || '';
             return {
                 status: 'online',
-                uptime: apiState.uptime,
-                version: apiState.version,
-                port: CONFIG.WS_URL.includes('18789') ? 18789 : 80
+                uptime: data.uptime || 0,
+                version: data.version || '',
+                port: 18789
             };
         } catch (e) {
             apiState.isOnline = false;
-            if (CONFIG.MOCK_FALLBACK) {
-                return MOCK_DATA.gateway;
-            }
+            if (CONFIG.MOCK_FALLBACK) return MOCK_DATA.gateway;
             throw e;
         }
     }
 
-    // 获取 Agents 列表
     async function fetchAgents() {
         try {
-            const data = await request('agents:list');
+            const data = await send({ action: 'agents:list' });
             return data.agents || [];
         } catch (e) {
-            if (CONFIG.MOCK_FALLBACK) {
-                return MOCK_DATA.agents;
-            }
+            if (CONFIG.MOCK_FALLBACK) return MOCK_DATA.agents;
             throw e;
         }
     }
 
-    // 获取 Cron 任务
     async function fetchCronJobs() {
         try {
-            const data = await request('cron:list');
+            const data = await send({ action: 'cron.list' });
             return data.jobs || [];
         } catch (e) {
-            if (CONFIG.MOCK_FALLBACK) {
-                return MOCK_DATA.cron;
-            }
+            if (CONFIG.MOCK_FALLBACK) return MOCK_DATA.cron;
             throw e;
         }
     }
 
-    // 手动触发 Cron 任务
     async function triggerCronJob(jobId) {
         try {
-            const data = await request('cron:run', { jobId });
+            console.log('[Ergo] Triggering cron job:', jobId);
+            const data = await send({ action: 'cron.run', payload: { jobId } });
             return { success: true, result: data };
         } catch (e) {
             console.error('[Ergo] Trigger cron error:', e);
@@ -281,15 +270,14 @@
         }
     }
 
-    // 获取网络状态
     function getNetworkState() {
         return {
-            isOnline: apiState.isOnline,
-            wsState: ws ? ws.readyState : WebSocket.CLOSED
+            isOnline: apiState.isOnline && authenticated,
+            wsState: ws ? ws.readyState : WebSocket.CLOSED,
+            authenticated: authenticated
         };
     }
 
-    // 初始化连接
     function init() {
         connect();
     }
