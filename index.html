@@ -768,6 +768,10 @@
     <footer class="footer">
         <img class="footer-logo" src="assets/logo.png" alt="">
         <div>Ergo · AI 管家</div>
+        <div style="margin-top: 4px; font-size: 11px; opacity: 0.6;">
+            <a href="CHANGELOG.md" target="_blank" style="color: var(--text-3); text-decoration: none;">v1.2.1</a> · 
+            <span id="lastUpdate">--</span>
+        </div>
     </footer>
 
     <!-- Action Sheet -->
@@ -800,7 +804,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             loadData();
+            initVersion();
         });
+
+        function initVersion() {
+            // 显示最后更新时间
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                `更新于 ${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
 
         // ============================
         // THEME
