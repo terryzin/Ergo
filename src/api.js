@@ -277,11 +277,7 @@
             return { success: true, result: data };
         } catch (e) {
             console.error('[Ergo] Trigger cron error:', e);
-            // Mock 模式模拟成功
-            if (CONFIG.MOCK_FALLBACK) {
-                return { success: true, mock: true };
-            }
-            throw e;
+            return { success: false, error: e.message };
         }
     }
 
