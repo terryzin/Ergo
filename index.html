@@ -871,26 +871,32 @@
             window.ErgoAPI.init();
         }
         
-        // 获取所有数据
+        // 获取所有数据 - 从JSON文件读取
         async function fetchAllData() {
-            // 直接返回Mock数据，避免任何API调用问题
-            return {
-                gateway: { status: 'online', uptime: 3600, version: '2026.2.9', port: 18789, _source: 'mock' },
-                agents: [{ name: 'main', status: 'online', model: 'MiniMax-M2.5' }],
-                cronJobs: [
-                    { id: '9d6d36ae-c8c8-49ed-a6a5-f798b7884a63', name: '最佳实践收集', lastStatus: 'success', nextRun: '18:00' },
-                    { id: 'f691da5c-5cf6-4b05-9e8d-3a77a6d60a06', name: 'Gateway健康检查', lastStatus: 'success', nextRun: '每15分钟' },
-                    { id: '3148008b-1941-4357-ad0f-0f92fa7f9746', name: '稳定性复盘', lastStatus: 'success', nextRun: '每周一 9:00' }
-                ],
-                services: []
-            };
+            try {
+                const response = await fetch('data/gateway-status.json');
+                const status = await response.json();
+                
+                return {
+                    gateway: status.gateway || { status: 'unknown', uptime: 0, version: '2026.2.9' },
+                    agents: status.agents || [],
+                    cronJobs: status.cron || [],
+                    services: []
+                };
+            } catch (error) {
+                console.error('Load error:', error);
+                return {
+                    gateway: { status: 'offline', uptime: 0, version: '2026.2.9' },
+                    agents: [],
+                    cronJobs: [],
+                    services: []
+                };
+            }
         }
         
         function getNetworkState() {
-            if (window.ErgoAPI) {
-                return window.ErgoAPI.getNetworkState();
-            }
-            return { isOnline: false };
+            // 返回在线状态，因为JSON文件会定时更新
+            return { isOnline: true };
         }
         
         async function loadData() {

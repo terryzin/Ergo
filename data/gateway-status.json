@@ -1,0 +1,18 @@
+{
+  "gateway": {
+    "status": "online",
+    "uptime": 0,
+    "version": "2026.2.9",
+    "port": 18789,
+    "lastUpdate": "2026-02-17T12:00:00Z"
+  },
+  "agents": [
+    { "name": "main", "status": "online", "model": "MiniMax-M2.5" }
+  ],
+  "cron": [
+    { "id": "9d6d36ae-c8c8-49ed-a6a5-f798b7884a63", "name": "最佳实践收集", "lastStatus": "success", "nextRun": "18:00" },
+    { "id": "f691da5c-5cf6-4b05-9e8d-3a77a6d60a06", "name": "Gateway健康检查", "lastStatus": "success", "nextRun": "每15分钟" },
+    { "id": "3148008b-1941-4357-ad0f-0f92fa7f9746", "name": "稳定性复盘", "lastStatus": "success", "nextRun": "每周一 9:00" }
+  ],
+  "updatedAt": "2026-02-17T12:00:00Z"
+}

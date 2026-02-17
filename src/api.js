@@ -1,77 +1,87 @@
 /**
- * Ergo API Module - 简化版
- * 直接返回状态数据
+ * Ergo API Module
+ * 从本地JSON文件读取状态
  */
 
 (function() {
     'use strict';
 
     const CONFIG = {
-        // 暂时使用Mock数据，因为Gateway API协议不兼容
-        USE_MOCK: true
+        STATUS_FILE: 'data/gateway-status.json',
+        // 根据环境选择地址
+        get API_BASE() {
+            const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+            const isRemote = hostname !== 'localhost' && hostname !== '127.0.0.1';
+            return isRemote ? 'https://terryzin.cpolar.top' : 'http://localhost:8081';
+        }
     };
 
-    // Mock数据 - 从cron jobs.json读取
-    const MOCK_DATA = {
-        gateway: { 
-            status: 'online', 
-            uptime: 0, 
-            version: '2026.2.9', 
-            port: 18789 
-        },
-        agents: [
-            { name: 'main', status: 'online', model: 'MiniMax-M2.5' }
-        ],
-        cron: [
-            { 
-                id: '9d6d36ae-c8c8-49ed-a6a5-f798b7884a63', 
-                name: '最佳实践收集', 
-                lastStatus: 'success', 
-                nextRun: '18:00' 
-            },
-            { 
-                id: 'f691da5c-5cf6-4b05-9e8d-3a77a6d60a06', 
-                name: 'Gateway健康检查', 
-                lastStatus: 'success', 
-                nextRun: '每15分钟' 
-            },
-            { 
-                id: '3148008b-1941-4357-ad0f-0f92fa7f9746', 
-                name: '稳定性复盘', 
-                lastStatus: 'success', 
-                nextRun: '每周一 9:00' 
-            }
-        ]
-    };
+    // 加载状态文件
+    async function loadStatus() {
+        try {
+            const response = await fetch(CONFIG.STATUS_FILE);
+            if (!response.ok) throw new Error('Failed to load status');
+            return await response.json();
+        } catch (e) {
+            console.log('[ErgoAPI] Using default status, error:', e.message);
+            return getDefaultStatus();
+        }
+    }
+
+    function getDefaultStatus() {
+        return {
+            gateway: { status: 'unknown', uptime: 0, version: '2026.2.9', port: 18789, lastUpdate: null },
+            agents: [],
+            cron: [],
+            updatedAt: null
+        };
+    }
 
     // 公开API
     window.ErgoAPI = {
-        init: function() {},
-        
-        checkNetworkStatus: function() {
-            return Promise.resolve(true);
+        init: async function() {
+            // 加载状态
+            const status = await loadStatus();
+            return status;
         },
         
-        fetchGatewayStatus: function() {
-            return Promise.resolve(MOCK_DATA.gateway);
+        checkNetworkStatus: async function() {
+            try {
+                const response = await fetch(CONFIG.STATUS_FILE, { cache: 'no-cache' });
+                return response.ok;
+            } catch {
+                return false;
+            }
         },
         
-        fetchAgents: function() {
-            return Promise.resolve(MOCK_DATA.agents);
+        fetchGatewayStatus: async function() {
+            const status = await loadStatus();
+            return status.gateway;
         },
         
-        fetchCronJobs: function() {
-            return Promise.resolve(MOCK_DATA.cron);
+        fetchAgents: async function() {
+            const status = await loadStatus();
+            return status.agents || [];
+        },
+        
+        fetchCronJobs: async function() {
+            const status = await loadStatus();
+            return status.cron || [];
         },
         
         triggerCronJob: function(jobId) {
-            // 触发任务 - 通过打开本地页面
-            window.open('http://localhost:18789', '_blank');
+            // 打开本地Gateway页面触发
+            window.open(CONFIG.API_BASE.replace('8081', '18789'), '_blank');
             return Promise.resolve({ success: true });
         },
         
-        getNetworkState: function() {
-            return { isOnline: true };
+        getNetworkState: async function() {
+            try {
+                await fetch(CONFIG.STATUS_FILE, { cache: 'no-cache' });
+                return { isOnline: true };
+            } catch {
+                return { isOnline: false };
+            }
         }
     };
 })();
