@@ -921,10 +921,11 @@
         }
 
         function renderAllData(data) {
-            // Gateway
+            // Gateway - Mock数据也显示为在线
             const { gateway } = data;
             const uptime = formatUptime(gateway.uptime || 0);
-            const isOnline = gateway.status === 'online' || gateway._source === 'mock';
+            // 只要有gateway数据就显示在线
+            const isOnline = gateway && (gateway.status === 'online' || gateway._source === 'mock' || gateway.status === 'mock');
 
             document.getElementById('gatewayUptime').textContent = uptime;
             document.getElementById('gatewayStatus').innerHTML = isOnline
