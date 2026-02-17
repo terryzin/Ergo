@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.3.0] - 2026-02-17
+
+### Added
+- 开发项目功能：替代原来的"开发服务"
+- 项目列表：显示所有开发中的项目
+- 项目详情页：project.html?id=xxx
+- projects.json：项目数据配置文件
+- 关联服务展示：如Cron任务等
+
+---
+
 ## [v1.2.2] - 2026-02-17
 
 ### Added
