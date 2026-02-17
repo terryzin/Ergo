@@ -67,7 +67,7 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             
             status = get_gateway_status()
-            status['updatedAt'] = json.dumps({'$date': {'$numberLong': str(int(__import__('time').time() * 1000)}})
+            status['updatedAt'] = str(int(__import__('time').time() * 1000))
             
             self.wfile.write(json.dumps(status).encode())
             
