@@ -874,33 +874,40 @@
         // 获取所有数据
         async function fetchAllData() {
             try {
+                // 确保ErgoAPI已加载
+                if (!window.ErgoAPI) {
+                    console.log('ErgoAPI not loaded, using fallback');
+                    return getFallbackData();
+                }
+                
                 // 并行获取数据
-                const [gateway, agents, cronJobs] = await Promise.all([
-                    window.ErgoAPI ? window.ErgoAPI.fetchGatewayStatus() : Promise.resolve({ status: 'offline' }),
-                    window.ErgoAPI ? window.ErgoAPI.fetchAgents() : Promise.resolve([]),
-                    window.ErgoAPI ? window.ErgoAPI.fetchCronJobs() : Promise.resolve([])
-                ]);
+                const gateway = await window.ErgoAPI.fetchGatewayStatus() || { status: 'mock' };
+                const agents = await window.ErgoAPI.fetchAgents() || [];
+                const cronJobs = await window.ErgoAPI.fetchCronJobs() || [];
                 
                 return {
-                    gateway,
+                    gateway: { ...gateway, _source: 'mock' },
                     agents,
                     cronJobs,
                     services: []
                 };
             } catch (error) {
                 console.error('Fetch error:', error);
-                // 返回 Mock 数据作为回退
-                return {
-                    gateway: { status: 'online', uptime: 3600, version: '2026.2.9', port: 18789 },
-                    agents: [{ name: 'main', status: 'active' }],
-                    cronJobs: [
-                        { name: '最佳实践收集', lastStatus: 'success' },
-                        { name: '健康检查', lastStatus: 'success' },
-                        { name: '稳定性复盘', lastStatus: 'success' }
-                    ],
-                    services: []
-                };
+                return getFallbackData();
             }
+        }
+        
+        function getFallbackData() {
+            return {
+                gateway: { status: 'online', uptime: 3600, version: '2026.2.9', port: 18789, _source: 'mock' },
+                agents: [{ name: 'main', status: 'online' }],
+                cronJobs: [
+                    { id: '1', name: '最佳实践收集', lastStatus: 'success' },
+                    { id: '2', name: '健康检查', lastStatus: 'success' },
+                    { id: '3', name: '稳定性复盘', lastStatus: 'success' }
+                ],
+                services: []
+            };
         }
         
         function getNetworkState() {
