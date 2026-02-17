@@ -871,16 +871,19 @@
             window.ErgoAPI.init();
         }
         
-        // 获取所有数据 - 从JSON文件读取
+        // 获取所有数据 - 从中转服务API读取
         async function fetchAllData() {
             try {
-                const response = await fetch('data/gateway-status.json');
-                const status = await response.json();
+                const [gateway, agents, cronJobs] = await Promise.all([
+                    window.ErgoAPI ? window.ErgoAPI.fetchGatewayStatus() : Promise.resolve({ status: 'unknown' }),
+                    window.ErgoAPI ? window.ErgoAPI.fetchAgents() : Promise.resolve([]),
+                    window.ErgoAPI ? window.ErgoAPI.fetchCronJobs() : Promise.resolve([])
+                ]);
                 
                 return {
-                    gateway: status.gateway || { status: 'unknown', uptime: 0, version: '2026.2.9' },
-                    agents: status.agents || [],
-                    cronJobs: status.cron || [],
+                    gateway: gateway || { status: 'unknown', version: '2026.2.9' },
+                    agents: agents || [],
+                    cronJobs: cronJobs || [],
                     services: []
                 };
             } catch (error) {
@@ -894,15 +897,25 @@
             }
         }
         
-        function getNetworkState() {
-            // 返回在线状态，因为JSON文件会定时更新
-            return { isOnline: true };
+        async function getNetworkState() {
+            if (window.ErgoAPI) {
+                return await window.ErgoAPI.getNetworkState();
+            }
+            return { isOnline: false };
         }
         
         async function loadData() {
             try {
                 const data = await fetchAllData();
                 renderAllData(data);
+                
+                // 更新网络状态
+                const networkState = await getNetworkState();
+                document.getElementById('networkStatus').textContent = networkState.isOnline ? '正常' : '异常';
+                document.getElementById('networkPill').innerHTML = networkState.isOnline
+                    ? '<span class="status-dot"></span><span>已连接</span>'
+                    : '<span>断开</span>';
+                document.getElementById('networkPill').className = networkState.isOnline ? 'status-pill ok' : 'status-pill err';
             } catch (error) {
                 console.error('Failed to load data:', error);
                 renderError();
