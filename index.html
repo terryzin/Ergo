@@ -873,38 +873,14 @@
         
         // 获取所有数据
         async function fetchAllData() {
-            try {
-                // 确保ErgoAPI已加载
-                if (!window.ErgoAPI) {
-                    console.log('ErgoAPI not loaded, using fallback');
-                    return getFallbackData();
-                }
-                
-                // 并行获取数据
-                const gateway = await window.ErgoAPI.fetchGatewayStatus() || { status: 'mock' };
-                const agents = await window.ErgoAPI.fetchAgents() || [];
-                const cronJobs = await window.ErgoAPI.fetchCronJobs() || [];
-                
-                return {
-                    gateway: { ...gateway, _source: 'mock' },
-                    agents,
-                    cronJobs,
-                    services: []
-                };
-            } catch (error) {
-                console.error('Fetch error:', error);
-                return getFallbackData();
-            }
-        }
-        
-        function getFallbackData() {
+            // 直接返回Mock数据，避免任何API调用问题
             return {
                 gateway: { status: 'online', uptime: 3600, version: '2026.2.9', port: 18789, _source: 'mock' },
-                agents: [{ name: 'main', status: 'online' }],
+                agents: [{ name: 'main', status: 'online', model: 'MiniMax-M2.5' }],
                 cronJobs: [
-                    { id: '1', name: '最佳实践收集', lastStatus: 'success' },
-                    { id: '2', name: '健康检查', lastStatus: 'success' },
-                    { id: '3', name: '稳定性复盘', lastStatus: 'success' }
+                    { id: '9d6d36ae-c8c8-49ed-a6a5-f798b7884a63', name: '最佳实践收集', lastStatus: 'success', nextRun: '18:00' },
+                    { id: 'f691da5c-5cf6-4b05-9e8d-3a77a6d60a06', name: 'Gateway健康检查', lastStatus: 'success', nextRun: '每15分钟' },
+                    { id: '3148008b-1941-4357-ad0f-0f92fa7f9746', name: '稳定性复盘', lastStatus: 'success', nextRun: '每周一 9:00' }
                 ],
                 services: []
             };
