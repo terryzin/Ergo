@@ -1,7 +1,7 @@
 const http = require('http');
 const net = require('net');
 
-const PORT = 8082;
+const PORT = 8081;  // 和Dashboard同一个端口
 
 function checkPort(host, port) {
     return new Promise((resolve) => {
