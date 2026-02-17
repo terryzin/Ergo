@@ -99,9 +99,9 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     server = HTTPServer(('0.0.0.0', PORT), Handler)
-    print(f"🚀 Ergo Gateway Status Server running on http://localhost:{PORT}")
-    print(f"   API: http://localhost:{PORT}/api/status")
-    print(f"   Health: http://localhost:{PORT}/health")
+    print(f"Ergo Gateway Status Server running on http://localhost:{PORT}")
+    print(f"API: http://localhost:{PORT}/api/status")
+    print(f"Health: http://localhost:{PORT}/health")
     server.serve_forever()
 
 if __name__ == '__main__':

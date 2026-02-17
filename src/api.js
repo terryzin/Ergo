@@ -1,21 +1,14 @@
 /**
  * Ergo API Module
- * 从中转服务获取状态
+ * 从本地中转服务获取状态
  */
 
 (function() {
     'use strict';
 
     const CONFIG = {
-        // 根据环境选择API地址
-        get API_BASE() {
-            const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-            const isRemote = hostname !== 'localhost' && hostname !== '127.0.0.1';
-            // 远程通过cpolar访问status服务
-            return isRemote 
-                ? 'https://ergo-status.cpolar.top' 
-                : 'http://localhost:8082';
-        }
+        // 本地服务地址
+        LOCAL_API: 'http://localhost:8082'
     };
 
     // 公开API
@@ -24,7 +17,7 @@
         
         checkNetworkStatus: async function() {
             try {
-                const response = await fetch(CONFIG.API_BASE + '/health');
+                const response = await fetch(CONFIG.LOCAL_API + '/health');
                 return response.ok;
             } catch {
                 return false;
@@ -33,7 +26,7 @@
         
         fetchGatewayStatus: async function() {
             try {
-                const response = await fetch(CONFIG.API_BASE + '/api/status');
+                const response = await fetch(CONFIG.LOCAL_API + '/api/status');
                 const data = await response.json();
                 return data.gateway || { status: 'unknown' };
             } catch (e) {
@@ -44,7 +37,7 @@
         
         fetchAgents: async function() {
             try {
-                const response = await fetch(CONFIG.API_BASE + '/api/status');
+                const response = await fetch(CONFIG.LOCAL_API + '/api/status');
                 const data = await response.json();
                 return data.agents || [];
             } catch {
@@ -54,7 +47,7 @@
         
         fetchCronJobs: async function() {
             try {
-                const response = await fetch(CONFIG.API_BASE + '/api/status');
+                const response = await fetch(CONFIG.LOCAL_API + '/api/status');
                 const data = await response.json();
                 return data.cron || [];
             } catch {
