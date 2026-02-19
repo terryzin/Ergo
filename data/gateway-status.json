@@ -1,19 +1,19 @@
 {
   "gateway": {
     "status": "online",
-    "uptime": null,
-    "version": null,
+    "uptime": 40000,
+    "version": "2026.2.17",
     "port": 18789,
-    "lastUpdate": "2026-02-17T22:03:00+08:00"
+    "lastUpdate": "2026-02-19T17:24:00.000Z"
   },
   "agents": [
     {"name": "main", "status": "online", "model": "MiniMax-M2.5"}
   ],
   "cron": [
-    {"id": "f691da5c-5cf6-4b05-9e8d-3a77a6d60a06", "name": "Gateway健康检查", "lastStatus": "running"},
-    {"id": "ff7bf9aa-f493-4c68-b8ce-f3a7e153dac4", "name": "Gateway状态同步", "lastStatus": "running"},
-    {"id": "9d6d36ae-c8c8-49ed-a6a5-f798b7884a63", "name": "OpenClaw最佳实践收集", "lastStatus": "running"},
-    {"id": "3148008b-1941-4357-ad0f-0f92fa7f9746", "name": "Gateway稳定性复盘", "lastStatus": "ok"}
+    {"id": "f691da5c-5cf6-4b05-9e8d-3a77a6d60a06", "name": "Gateway健康检查", "lastStatus": "success"},
+    {"id": "ff7bf9aa-f493-4c68-b8ce-f3a7e153dac4", "name": "Gateway状态同步", "lastStatus": "success"},
+    {"id": "9d6d36ae-c8c8-49ed-a6a5-f798b7884a63", "name": "OpenClaw最佳实践收集", "lastStatus": "success"},
+    {"id": "3148008b-1941-4357-ad0f-0f92fa7f9746", "name": "Gateway稳定性复盘", "lastStatus": "success"}
   ],
-  "updatedAt": "2026-02-17T22:03:00+08:00"
+  "updatedAt": "2026-02-19T17:24:00.000Z"
 }
