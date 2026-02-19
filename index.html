@@ -871,7 +871,7 @@
         const GATEWAY_CONFIG = {
             // 使用本地 API Bridge 服务器
             url: 'http://localhost:8082',
-            timeout: 5000  // 5秒超时
+            timeout: 20000  // 20秒超时（API Bridge 需要 15 秒执行 openclaw CLI）
         };
 
         // 获取所有数据 - 直连 OpenClaw Gateway
@@ -987,12 +987,7 @@
                 ? `${cronArr.length} 个任务 · 最近 ${successJobs} 个成功`
                 : '无法加载';
 
-            // Network status
-            const networkState = getNetworkState();
-            document.getElementById('networkStatus').textContent = networkState.isOnline ? '正常' : '异常';
-            document.getElementById('networkPill').innerHTML = networkState.isOnline
-                ? '<span class="status-dot"></span><span>已连接</span>'
-                : '<span>断开</span>';
+            // Network status (已在 loadData() 中设置，这里不需要重复)
 
             // Render lists
             renderAgentsList(agentsArr);
