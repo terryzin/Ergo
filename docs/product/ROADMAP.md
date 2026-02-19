@@ -84,21 +84,47 @@
 - ⏳ 智能重连策略（指数退避算法）
 
 **版本历史：**
-- v1.2.2 (2026-02-20) - 实现基础 HTTP API 集成（直连 Gateway + 轮询机制）
+- v1.2.2 (2026-02-20) - 实现 API Bridge Server（OpenClaw CLI → HTTP API）
 - v1.2.1 (2026-02-16) - OpenClaw 链接修复 + Token 自动登录
 - v1.2.0 (2026-02-15) - 架构调整（双子域名 + 删除代理）
 
 **v1.2.2 更新详情：**
-- ✅ 直连 OpenClaw Gateway API（https://terrysopenclaw.cpolar.top）
+
+*API Bridge Server (8082):*
+- ✅ 创建 Node.js + Express 服务器
+- ✅ 执行 `openclaw status --json` 并解析输出
+- ✅ 数据格式转换（OpenClaw → Ergo）
+- ✅ CORS 支持 + 超时处理（15秒）
+- ✅ API 端点：`/api/status`, `/health`, `/api/cron`, `/api/gateway/restart`
+
+*前端集成 (8081):*
 - ✅ HTTP 轮询机制（每 10 秒自动刷新）
-- ✅ Token 认证集成（Bearer Token）
-- ✅ 请求超时处理（5秒超时）
-- ✅ Mock 数据自动回退（API 不可达时）
-- ✅ 数据来源标识（区分真实数据 vs Mock）
+- ✅ 请求超时处理（20秒）
+- ✅ Mock 数据自动回退
+- ✅ 数据来源标识（真实 vs Mock）
+- ✅ 启动脚本：`start-ergo.bat`
+
+*Bug 修复:*
+- 🐛 修复 fetch 超时问题（5秒 → 20秒）
+- 🐛 修复 `getNetworkState is not defined` 错误
+
+**架构说明：**
+```
+Ergo 前端 → API Bridge → OpenClaw CLI → Gateway
+  8081         8082         命令行          18789
+```
+
+OpenClaw Gateway 使用 WebSocket RPC（非 REST），
+API Bridge 通过 CLI 转换为简单的 HTTP API。
+
+**测试验证：**
+- ✅ `test-api-flow.bat` - API 流程测试
+- ✅ 真实数据显示：Gateway online, Agent: main (MiniMax-M2.5)
 
 **下一步方向：**
-- WebSocket 实时推送（v1.4）
-- 异常推送通知（v1.3 P1）
+- v1.3 移动端体验优化（响应式布局、FAB、PWA）
+- v1.4 WebSocket 实时推送（降低延迟）
+- v1.4 异常推送通知
 
 ---
 
