@@ -118,19 +118,33 @@ async function fetchOpenClawStatus() {
         const openclawData = parseOpenClawOutput(stdout);
         const ergoData = transformToErgoFormat(openclawData);
 
-        // 合并 Cron 数据（从文件读取）
+        // 获取 Cron 数据（从 CLI 获取）
         try {
-            const fs = require('fs');
-            const path = require('path');
-            const statusPath = path.join(__dirname, '../data/gateway-status.json');
-            const fileData = fs.readFileSync(statusPath, 'utf-8');
-            const fileJson = JSON.parse(fileData);
+            const { stdout: cronStdout } = await execAsync('openclaw cron list --json 2>&1', {
+                timeout: 10000,
+                maxBuffer: 1024 * 1024,
+                shell: true
+            });
 
-            if (fileJson.cron && Array.isArray(fileJson.cron)) {
-                ergoData.cron = fileJson.cron;
+            // 解析 cron list 输出（格式：{ "jobs": [...] }）
+            const cronJsonStart = cronStdout.indexOf('\n{');
+            if (cronJsonStart !== -1) {
+                const cronJsonStr = cronStdout.substring(cronJsonStart + 1);
+                const cronData = JSON.parse(cronJsonStr);
+
+                if (cronData.jobs && Array.isArray(cronData.jobs)) {
+                    ergoData.cron = cronData.jobs.map(job => ({
+                        id: job.id,
+                        name: job.name,
+                        schedule: job.schedule?.expr || '',
+                        lastStatus: job.state?.lastStatus === 'ok' ? 'success' : 'failed',
+                        nextRun: job.state?.nextRunAtMs,
+                        lastRun: job.state?.lastRunAtMs
+                    }));
+                }
             }
-        } catch (fileError) {
-            console.warn('[WARN] Failed to read cron data from file:', fileError.message);
+        } catch (cronError) {
+            console.warn('[WARN] Failed to fetch cron data:', cronError.message);
             // 继续返回，cron 为空数组
         }
 
