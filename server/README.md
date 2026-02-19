@@ -16,7 +16,12 @@ OpenClaw Gateway (18789)
 
 ### 1. GET `/api/status`
 
-获取 Gateway 整体状态（Agents + Cron + 系统信息）
+获取 Gateway 整体状态（返回缓存，快速响应）
+
+**特点：**
+- ⚡ 快速响应（< 100ms）
+- 📦 返回缓存数据
+- 🕐 缓存每 5 分钟自动更新
 
 **请求：**
 ```bash
@@ -30,8 +35,7 @@ curl http://localhost:8082/api/status
     "status": "online",
     "version": "2026.2",
     "uptime": 0,
-    "port": 18789,
-    "lastUpdate": "2026-02-19T16:31:33.755Z"
+    "port": 18789
   },
   "agents": [
     {
@@ -41,13 +45,54 @@ curl http://localhost:8082/api/status
     }
   ],
   "cron": [],
-  "updatedAt": "2026-02-19T16:31:33.755Z"
+  "updatedAt": "2026-02-19T16:41:25.004Z",
+  "_meta": {
+    "cached": true,
+    "cacheAge": 13,
+    "lastUpdate": "2026-02-19T16:41:25.004Z"
+  }
 }
 ```
 
 **状态码：**
 - `200` - 成功
 - `503` - Gateway 离线
+
+---
+
+### 1.5. GET `/api/status/refresh`
+
+**强制刷新状态（不使用缓存，实时获取）** ⭐ 新增
+
+**特点：**
+- 🔄 实时获取最新数据
+- 🐌 较慢（10-15 秒）
+- 📝 自动更新缓存
+
+**请求：**
+```bash
+curl http://localhost:8082/api/status/refresh
+```
+
+**响应：**
+```json
+{
+  "gateway": { ... },
+  "agents": [ ... ],
+  "cron": [],
+  "updatedAt": "2026-02-19T16:41:55.318Z",
+  "_meta": {
+    "cached": false,
+    "refreshed": true,
+    "lastUpdate": "2026-02-19T16:41:55.318Z"
+  }
+}
+```
+
+**状态码：**
+- `200` - 刷新成功
+- `200` (with old cache) - 刷新失败但返回旧缓存
+- `503` - 刷新失败且无缓存
 
 ---
 
@@ -227,7 +272,34 @@ taskkill /PID <进程ID> /F
 
 ---
 
+## 缓存机制
+
+### 自动更新
+- 启动时立即初始化缓存
+- 每 5 分钟自动后台更新
+- 更新失败时保留旧缓存
+
+### 缓存元数据 (`_meta`)
+```json
+{
+  "cached": true,           // 是否来自缓存
+  "cacheAge": 13,          // 缓存年龄（秒）
+  "lastUpdate": "...",     // 最后更新时间
+  "refreshed": false,      // 是否刚刷新
+  "refreshFailed": false,  // 刷新是否失败
+  "error": ""              // 错误信息（如有）
+}
+```
+
+---
+
 ## 更新日志
+
+### v1.2.3 (2026-02-20)
+- ✅ 智能缓存机制（5 分钟自动更新）
+- ✅ `/api/status/refresh` 强制刷新端点
+- ✅ 缓存元数据支持
+- ✅ 错误时返回旧缓存
 
 ### v1.2.2 (2026-02-20)
 - ✅ 初始版本

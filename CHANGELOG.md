@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.2.3] - 2026-02-20
+
+### Added
+- **智能缓存机制**：每 5 分钟自动更新状态缓存
+- **手动刷新按钮**：Header 右侧刷新图标，支持强制刷新
+- **智能时间显示**："X 秒前更新" / "X 分钟前更新"
+- **状态指示增强**：区分"实时"、"缓存"、"Mock"数据
+- **双端点策略**：
+  - `/api/status` - 返回缓存（快速，< 100ms）
+  - `/api/status/refresh` - 强制刷新（实时，10-15秒）
+- **Cron 数据集成**：从 `data/gateway-status.json` 读取定时任务信息
+
+### Improved
+- **首次加载速度**：后续访问从 10-15秒 降至 < 100ms
+- **用户体验**：手动刷新时显示旋转动画和 Toast 提示
+- **错误处理**：刷新失败时返回旧缓存而非错误
+
+### Technical
+- 缓存时长：5 分钟
+- 前端轮询：10 秒
+- 缓存元数据：`_meta.cached`, `_meta.cacheAge`, `_meta.lastUpdate`
+
+---
+
 ## [v1.3.0] - 2026-02-17
 
 ### Added

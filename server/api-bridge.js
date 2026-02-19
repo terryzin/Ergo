@@ -118,6 +118,22 @@ async function fetchOpenClawStatus() {
         const openclawData = parseOpenClawOutput(stdout);
         const ergoData = transformToErgoFormat(openclawData);
 
+        // 合并 Cron 数据（从文件读取）
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const statusPath = path.join(__dirname, '../data/gateway-status.json');
+            const fileData = fs.readFileSync(statusPath, 'utf-8');
+            const fileJson = JSON.parse(fileData);
+
+            if (fileJson.cron && Array.isArray(fileJson.cron)) {
+                ergoData.cron = fileJson.cron;
+            }
+        } catch (fileError) {
+            console.warn('[WARN] Failed to read cron data from file:', fileError.message);
+            // 继续返回，cron 为空数组
+        }
+
         return ergoData;
     } catch (error) {
         console.error('[ERROR] OpenClaw status failed:', error.message);
