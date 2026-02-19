@@ -19,6 +19,11 @@ const PORT = process.env.PORT || 8082;
 app.use(cors());
 app.use(express.json());
 
+// 状态缓存
+let statusCache = null;
+let lastUpdateTime = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 分钟
+
 // 日志中间件
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
@@ -100,37 +105,140 @@ function transformToErgoFormat(openclawData) {
 }
 
 /**
- * GET /api/status
- * 获取 Gateway 整体状态
+ * 获取 OpenClaw 状态（核心函数）
  */
-app.get('/api/status', async (req, res) => {
+async function fetchOpenClawStatus() {
     try {
-        // 执行 OpenClaw CLI 命令（增加超时时间）
-        const { stdout, stderr } = await execAsync('openclaw status --json 2>&1', {
-            timeout: 15000,  // 15秒超时
-            maxBuffer: 2 * 1024 * 1024, // 2MB
+        const { stdout } = await execAsync('openclaw status --json 2>&1', {
+            timeout: 15000,
+            maxBuffer: 2 * 1024 * 1024,
             shell: true
         });
 
-        // 解析输出（stdout 和 stderr 混合）
         const openclawData = parseOpenClawOutput(stdout);
-
-        // 转换为 Ergo 格式
         const ergoData = transformToErgoFormat(openclawData);
 
-        res.json(ergoData);
+        return ergoData;
     } catch (error) {
         console.error('[ERROR] OpenClaw status failed:', error.message);
+        throw error;
+    }
+}
 
-        // 返回离线状态
+/**
+ * 更新缓存
+ */
+async function updateCache() {
+    try {
+        console.log('[CACHE] Updating status cache...');
+        statusCache = await fetchOpenClawStatus();
+        lastUpdateTime = new Date();
+        console.log(`[CACHE] Cache updated at ${lastUpdateTime.toISOString()}`);
+    } catch (error) {
+        console.error('[CACHE] Failed to update cache:', error.message);
+        // 保留旧缓存
+    }
+}
+
+/**
+ * GET /api/status
+ * 获取 Gateway 状态（返回缓存）
+ */
+app.get('/api/status', async (req, res) => {
+    // 如果缓存存在且未过期，直接返回
+    if (statusCache && lastUpdateTime) {
+        const age = Date.now() - lastUpdateTime.getTime();
+        const cacheAge = Math.floor(age / 1000); // 秒
+
+        return res.json({
+            ...statusCache,
+            _meta: {
+                cached: true,
+                cacheAge,
+                lastUpdate: lastUpdateTime.toISOString()
+            }
+        });
+    }
+
+    // 缓存不存在，立即获取
+    try {
+        const data = await fetchOpenClawStatus();
+        statusCache = data;
+        lastUpdateTime = new Date();
+
+        res.json({
+            ...data,
+            _meta: {
+                cached: false,
+                cacheAge: 0,
+                lastUpdate: lastUpdateTime.toISOString()
+            }
+        });
+    } catch (error) {
         res.status(503).json({
             gateway: {
                 status: 'offline',
-                error: error.message.substring(0, 200) // 限制错误信息长度
+                error: error.message.substring(0, 200)
             },
             agents: [],
             cron: [],
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            _meta: {
+                cached: false,
+                error: true
+            }
+        });
+    }
+});
+
+/**
+ * GET /api/status/refresh
+ * 强制刷新状态（不使用缓存）
+ */
+app.get('/api/status/refresh', async (req, res) => {
+    try {
+        console.log('[REFRESH] Manual refresh requested');
+        const data = await fetchOpenClawStatus();
+
+        // 更新缓存
+        statusCache = data;
+        lastUpdateTime = new Date();
+
+        res.json({
+            ...data,
+            _meta: {
+                cached: false,
+                refreshed: true,
+                lastUpdate: lastUpdateTime.toISOString()
+            }
+        });
+    } catch (error) {
+        // 即使刷新失败，也返回旧缓存（如果有）
+        if (statusCache) {
+            console.log('[REFRESH] Refresh failed, returning cached data');
+            return res.json({
+                ...statusCache,
+                _meta: {
+                    cached: true,
+                    refreshFailed: true,
+                    error: error.message.substring(0, 200),
+                    lastUpdate: lastUpdateTime.toISOString()
+                }
+            });
+        }
+
+        res.status(503).json({
+            gateway: {
+                status: 'offline',
+                error: error.message.substring(0, 200)
+            },
+            agents: [],
+            cron: [],
+            updatedAt: new Date().toISOString(),
+            _meta: {
+                cached: false,
+                error: true
+            }
         });
     }
 });
@@ -193,16 +301,28 @@ app.post('/api/gateway/restart', async (req, res) => {
 });
 
 // 启动服务器
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log('╔════════════════════════════════════════════╗');
     console.log('║   Ergo API Bridge Server                  ║');
     console.log('╠════════════════════════════════════════════╣');
     console.log(`║   Port: ${PORT}                              ║`);
     console.log(`║   Status: http://localhost:${PORT}/api/status  ║`);
+    console.log(`║   Refresh: http://localhost:${PORT}/api/status/refresh ║`);
     console.log(`║   Health: http://localhost:${PORT}/health      ║`);
+    console.log('╠════════════════════════════════════════════╣');
+    console.log(`║   Cache: Auto-update every ${CACHE_DURATION / 60000} minutes   ║`);
     console.log('╚════════════════════════════════════════════╝');
     console.log('');
     console.log('Press Ctrl+C to stop');
+    console.log('');
+
+    // 启动时立即更新缓存
+    console.log('[INIT] Initial cache update...');
+    await updateCache();
+
+    // 设置定时更新（每 5 分钟）
+    setInterval(updateCache, CACHE_DURATION);
+    console.log(`[INIT] Auto-update scheduled every ${CACHE_DURATION / 60000} minutes`);
 });
 
 // 优雅关闭

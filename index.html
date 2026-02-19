@@ -566,6 +566,41 @@
             }
         }
 
+        /* Refresh button */
+        .refresh-btn {
+            padding: 8px;
+            border-radius: 10px;
+            border: none;
+            background: var(--bg-inset);
+            color: var(--text-2);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
+
+        .refresh-btn:hover {
+            background: var(--bg-card);
+            color: var(--brand);
+        }
+
+        .refresh-btn:active {
+            transform: scale(0.95);
+        }
+
+        .refresh-btn.refreshing {
+            animation: rotate 1s linear infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* Theme toggle */
         .theme-options {
             display: flex;
@@ -604,6 +639,13 @@
                 <span class="logo-name">Ergo</span>
             </div>
             <div class="header-actions">
+                <button class="refresh-btn" onclick="manualRefresh()" id="refreshBtn" title="刷新状态">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                </button>
                 <div class="theme-options" id="themeToggle">
                     <button class="theme-option" data-value="dark">深</button>
                     <button class="theme-option" data-value="light">浅</button>
@@ -835,10 +877,29 @@
         });
 
         function initVersion() {
-            // 显示最后更新时间
+            // 初始化时不显示（等待数据加载后显示真实时间）
+        }
+
+        // 更新显示的最后更新时间
+        function updateLastUpdateTime(timestamp) {
+            if (!timestamp) return;
+
+            const updateTime = new Date(timestamp);
             const now = new Date();
-            document.getElementById('lastUpdate').textContent = 
-                `更新于 ${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const diffMs = now - updateTime;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+
+            let timeText;
+            if (diffSec < 60) {
+                timeText = `${diffSec} 秒前更新`;
+            } else if (diffMin < 60) {
+                timeText = `${diffMin} 分钟前更新`;
+            } else {
+                timeText = `${updateTime.getMonth()+1}/${updateTime.getDate()} ${updateTime.getHours()}:${String(updateTime.getMinutes()).padStart(2,'0')} 更新`;
+            }
+
+            document.getElementById('lastUpdate').textContent = timeText;
         }
 
         // ============================
@@ -875,13 +936,16 @@
         };
 
         // 获取所有数据 - 直连 OpenClaw Gateway
-        async function fetchAllData() {
+        async function fetchAllData(forceRefresh = false) {
             try {
                 // 使用 AbortController 实现超时
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), GATEWAY_CONFIG.timeout);
 
-                const response = await fetch(`${GATEWAY_CONFIG.url}/api/status`, {
+                // 根据参数选择端点
+                const endpoint = forceRefresh ? '/api/status/refresh' : '/api/status';
+
+                const response = await fetch(`${GATEWAY_CONFIG.url}${endpoint}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -897,16 +961,22 @@
 
                 const data = await response.json();
 
+                // 提取缓存元数据
+                const meta = data._meta || {};
+
                 return {
                     gateway: {
-                        status: 'online',
-                        version: data.version || '2026.2.9',
-                        uptime: data.uptime || 0,
-                        _source: 'api'
+                        status: data.gateway?.status || 'online',
+                        version: data.gateway?.version || '2026.2.9',
+                        uptime: data.gateway?.uptime || 0,
+                        _source: 'api',
+                        _cached: meta.cached,
+                        _cacheAge: meta.cacheAge
                     },
                     agents: data.agents || [],
                     cronJobs: data.cron || [],
-                    services: []
+                    services: [],
+                    _meta: meta
                 };
             } catch (error) {
                 console.warn('Gateway API 不可达，使用 Mock 数据:', error.message);
@@ -934,21 +1004,50 @@
             }
         }
 
-        async function loadData() {
+        async function loadData(forceRefresh = false) {
             try {
-                const data = await fetchAllData();
+                const data = await fetchAllData(forceRefresh);
                 const isRealData = data.gateway._source === 'api';
+                const isCached = data.gateway._cached;
                 renderAllData(data);
 
                 // 更新网络状态（基于数据来源）
-                document.getElementById('networkStatus').textContent = isRealData ? '正常' : 'Mock';
+                const statusText = isRealData ? (isCached ? '缓存' : '实时') : 'Mock';
+                document.getElementById('networkStatus').textContent = statusText;
                 document.getElementById('networkPill').innerHTML = isRealData
-                    ? '<span class="status-dot"></span><span>已连接</span>'
+                    ? `<span class="status-dot"></span><span>${statusText}</span>`
                     : '<span>Mock 数据</span>';
                 document.getElementById('networkPill').className = isRealData ? 'status-pill ok' : 'status-pill warn';
+
+                // 更新时间显示
+                if (data._meta && data._meta.lastUpdate) {
+                    updateLastUpdateTime(data._meta.lastUpdate);
+                }
             } catch (error) {
                 console.error('Failed to load data:', error);
                 renderError();
+            }
+        }
+
+        // 手动刷新
+        async function manualRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            if (btn.classList.contains('refreshing')) {
+                return; // 防止重复点击
+            }
+
+            btn.classList.add('refreshing');
+            showToast('正在刷新状态...');
+
+            try {
+                await loadData(true); // 强制刷新
+                showToast('刷新成功');
+            } catch (error) {
+                showToast('刷新失败');
+            } finally {
+                setTimeout(() => {
+                    btn.classList.remove('refreshing');
+                }, 500);
             }
         }
 
