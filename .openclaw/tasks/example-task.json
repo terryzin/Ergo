@@ -1,0 +1,23 @@
+{
+  "task_id": "task-example-20260219-001",
+  "created_at": "2026-02-19T16:00:00Z",
+  "priority": "normal",
+  "type": "feature",
+  "title": "添加用户认证功能",
+  "description": "需要在 Ergo Dashboard 中添加用户登录/登出功能。用户应该能够使用 OpenClaw Gateway Token 进行认证，并看到登录状态指示器。",
+  "requirements": [
+    "使用 OpenClaw Gateway Token 进行认证",
+    "添加登录状态指示器在页面头部",
+    "保持 Apple 风格设计一致性",
+    "登出后清除本地存储的 Token"
+  ],
+  "context": {
+    "files_to_modify": ["index.html"],
+    "related_docs": ["docs/product/PRD.md", "CLAUDE.md"]
+  },
+  "metadata": {
+    "requester": "openclaw-agent",
+    "session_id": "session-xyz-123"
+  },
+  "_note": "这是一个示例任务文件。要让 OpenClaw 委托任务，请将任务文件放到 pending/ 目录。"
+}

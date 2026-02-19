@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "mode": "file-based",
+  "version": "1.0.0",
+  "task_check_interval_seconds": 5,
+  "auto_commit": true,
+  "auto_push": true,
+  "notification": {
+    "on_complete": true,
+    "webhook_url": "http://localhost:18789/api/webhooks/claude-task-complete"
+  },
+  "filters": {
+    "allowed_task_types": ["feature", "bugfix", "refactor", "docs", "test"],
+    "max_concurrent_tasks": 1,
+    "max_execution_time_seconds": 600
+  },
+  "git": {
+    "auto_pull_before_task": true,
+    "commit_message_prefix": "[OpenClaw]",
+    "branch": "main"
+  }
+}
