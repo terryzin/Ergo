@@ -7,13 +7,17 @@ Ergo（二狗）是基于 OpenClaw 平台的个人 AI 管家控制台，作为�
 ## 技术栈
 
 - 前端: 纯静态 HTML/CSS/JS，无框架依赖
+- 静态服务: Python http.server (端口 8081)
 - 后端: OpenClaw Gateway API (localhost:18789)
-- 部署: cpolar 内网穿透
+- 内网穿透: cpolar 双隧道架构（无自定义代理）
 
 ## 关键配置
 
 - OpenClaw Gateway 端口: 18789
-- cpolar 域名: terryzin.cpolar.top (Dashboard), ergo-gateway.cpolar.top (Gateway)
+- OpenClaw Gateway Token: f2009973e92e96b0e31c30b30500e997
+- Cpolar 域名（双子域名架构）:
+  - Ergo Dashboard: https://terryzin.cpolar.top (端口 8081)
+  - OpenClaw Gateway: https://terrysopenclaw.cpolar.top (端口 18789)
 - OpenClaw 工作空间: D:\.openclaw\workspace
 
 ## 文件结构
@@ -101,6 +105,12 @@ Ergo/
    - ⚠️ 避免长期憋大 commit，容易产生冲突
    - ⚠️ `.claude/settings.local.json` 为本地配置，不应提交（已在 .gitignore）
 
+5. **自动提交规则（AI Agent 执行）**
+   - ✅ **代码/配置文件修改后，自动执行 git add + commit + push**
+   - ✅ 每个功能点完成即提交，无需等待用户手动执行
+   - ✅ 提交信息遵循规范格式，清晰描述变更内容
+   - ⚠️ 仅限项目文件修改，系统配置文件（如 cpolar.yml）不自动提交
+
 ## 功能模块
 
 页面包含 6 个卡片入口:
@@ -117,3 +127,41 @@ Ergo/
 - 主色: #2997ff (蓝), 背景: #000000 / #1d1d1f
 - 圆角卡片 (20px), 毛玻璃头部
 - 中文界面 (zh-CN)
+
+## 部署架构
+
+### 当前架构（v1.2 - 双子域名）
+
+```
+外部访问
+  │
+  ├─ https://terryzin.cpolar.top
+  │    └─ cpolar tunnel → localhost:8081 (Python http.server)
+  │         └─ Ergo Dashboard (静态 HTML/CSS/JS)
+  │
+  └─ https://terrysopenclaw.cpolar.top
+       └─ cpolar tunnel → localhost:18789
+            └─ OpenClaw Gateway WebUI + API
+```
+
+**架构特点：**
+- ✅ 零自定义代理代码（删除了 proxy-server.js）
+- ✅ WebSocket 原生支持（OpenClaw Gateway 实时连接）
+- ✅ 两个独立服务互不干扰
+- ✅ Cpolar Pro 版多隧道配置
+
+**本地服务启动：**
+```bash
+# Ergo 静态服务
+cd D:\.openclaw\workspace\my-dashboard
+python -m http.server 8081
+
+# OpenClaw Gateway（通常已自动运行）
+# 端口: 18789
+# 无需手动启动
+```
+
+**架构设计原则（遵循 DHH 思维）：**
+- Convention over Configuration（cpolar 原生配置）
+- Choose Boring Technology（Python http.server + cpolar）
+- No Over-engineering（拒绝自建反向代理）
