@@ -24,6 +24,9 @@ let statusCache = null;
 let lastUpdateTime = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 分钟
 
+// Gateway 启动时间追踪（用于计算 uptime）
+const apiStartTime = Date.now();
+
 // 日志中间件
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
@@ -55,11 +58,14 @@ function parseOpenClawOutput(stdout) {
  * 转换 OpenClaw 数据格式为 Ergo 期望的格式
  */
 function transformToErgoFormat(openclawData) {
+    // 计算 uptime（API Bridge 启动至今的时间，单位：秒）
+    const uptimeSeconds = Math.floor((Date.now() - apiStartTime) / 1000);
+
     // 提取 Gateway 信息
     const gateway = {
         status: 'online',
         version: openclawData.versions?.openclaw || '2026.2',
-        uptime: openclawData.gateway?.uptimeMs || 0,
+        uptime: uptimeSeconds,
         port: 18789,
         lastUpdate: new Date().toISOString()
     };
