@@ -140,7 +140,45 @@ curl http://localhost:8082/api/cron
 
 ---
 
-### 4. POST `/api/gateway/restart`
+### 4. GET `/api/changelog`
+
+获取更新日志（解析 CHANGELOG.md）
+
+**请求：**
+```bash
+curl http://localhost:8082/api/changelog
+```
+
+**响应：**
+```json
+{
+  "versions": [
+    {
+      "version": "v1.2.3",
+      "date": "2026-02-20",
+      "features": [
+        {
+          "category": "Added",
+          "items": [
+            "智能缓存机制：每 5 分钟自动更新状态缓存",
+            "手动刷新按钮：Header 右侧刷新图标"
+          ]
+        }
+      ]
+    }
+  ],
+  "updatedAt": "2026-02-19T17:00:00.000Z"
+}
+```
+
+**特点：**
+- 📄 自动解析 CHANGELOG.md
+- 🔝 返回最新 5 个版本
+- 🏷️ 按类别分组（Added, Fixed, Changed 等）
+
+---
+
+### 5. POST `/api/gateway/restart`
 
 重启 Gateway
 

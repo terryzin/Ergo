@@ -312,6 +312,58 @@ app.get('/api/cron', async (req, res) => {
 });
 
 /**
+ * GET /api/changelog
+ * 获取更新日志（解析 CHANGELOG.md）
+ */
+app.get('/api/changelog', async (req, res) => {
+    try {
+        const fs = require('fs').promises;
+        const path = require('path');
+
+        // 读取 CHANGELOG.md
+        const changelogPath = path.join(__dirname, '../CHANGELOG.md');
+        const content = await fs.readFile(changelogPath, 'utf-8');
+
+        // 解析版本信息（简单提取 ## [vX.X.X] 格式）
+        const versionRegex = /## \[(v[\d.]+)\] - ([\d-]+)([\s\S]*?)(?=## \[|## 开发中|## 版本号规则|$)/g;
+        const versions = [];
+        let match;
+
+        while ((match = versionRegex.exec(content)) !== null) {
+            const [, version, date, description] = match;
+
+            // 提取特性列表
+            const features = [];
+            const featureRegex = /### (Added|Fixed|Changed|Improved|Technical)([\s\S]*?)(?=###|##|$)/g;
+            let featureMatch;
+
+            while ((featureMatch = featureRegex.exec(description)) !== null) {
+                const [, category, items] = featureMatch;
+                const itemList = items
+                    .split('\n')
+                    .filter(line => line.trim().startsWith('-'))
+                    .map(line => line.replace(/^-\s*/, '').trim())
+                    .filter(item => item.length > 0);
+
+                if (itemList.length > 0) {
+                    features.push({ category, items: itemList });
+                }
+            }
+
+            versions.push({ version, date, features });
+        }
+
+        res.json({
+            versions: versions.slice(0, 5), // 只返回最新 5 个版本
+            updatedAt: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error reading changelog:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
  * POST /api/gateway/restart
  * 重启 Gateway
  */

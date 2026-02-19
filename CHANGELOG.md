@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.2.4] - 2026-02-20
+
+### Added
+- **前端更新日志自动加载**：从 `/api/changelog` 动态获取最新版本
+- **CHANGELOG.md 解析**：后端自动解析 Markdown 格式的更新日志
+- **智能版本展示**：首页显示最新 3 个版本，支持跳转查看完整日志
+
+### Technical
+- 新增 API 端点：`GET /api/changelog`
+- Markdown 解析：支持 `## [vX.X.X]` 格式
+- 前端渲染：`renderChangelog()` 函数
+
+---
+
 ## [v1.2.3] - 2026-02-20
 
 ### Added
