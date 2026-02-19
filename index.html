@@ -1112,8 +1112,9 @@
         // ACTIONS
         // ============================
         function openDashboard() {
-            // 跳转到 OpenClaw Gateway Dashboard (独立子域名)
-            window.open('https://openclaw.terryzin.cpolar.top', '_blank');
+            // 跳转到 OpenClaw Gateway Dashboard (带 token 自动登录)
+            const token = 'f2009973e92e96b0e31c30b30500e997';
+            window.open(`https://terrysopenclaw.cpolar.top?token=${token}`, '_blank');
         }
 
         function openUrl(url) {
