@@ -41,50 +41,67 @@ npm run test:ui
 ### 启动开发服务器
 
 ```bash
-# 使用 serve 启动本地服务器
-npm run start
+# 方法 1: Python 静态服务器（推荐）
+python -m http.server 8081
 
-# 或使用 dev 模式（自动打开浏览器）
-npm run dev
+# 方法 2: 使用 npm scripts
+npm run start        # 使用 serve (端口 3000)
+npm run dev          # 自动打开浏览器
 ```
 
 ### 访问页面
 
-打开浏览器访问 http://localhost:3000
+- 本地开发：http://localhost:8081
+- 公网访问：https://terryzin.cpolar.top
 
 ## 项目结构
+
+详细结构请查看 **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)**
 
 ```
 Ergo/
 ├── index.html              # 主页面
 ├── package.json            # 项目配置
-├── README.md               # 本文档
-├── CLAUDE.md               # 项目上下文
+├── CLAUDE.md               # 项目上下文 - Claude Code 必读
+├── PROJECT_STRUCTURE.md    # 详细目录结构说明
 │
 ├── src/                    # 源代码
-│   ├── api.js              # Gateway API 封装
-│   └── app.js              # 主应用逻辑
-│
 ├── tests/                  # 测试文件
-│   ├── api.test.js         # API 模块测试
-│   └── app.test.js         # 应用逻辑测试
+├── scripts/                # 工具脚本
+├── docs/                   # 文档
+│   ├── architecture/       # 架构设计
+│   ├── product/            # 产品文档
+│   └── archive/            # 历史归档
 │
-├── assets/                 # 静态资源
-│   └── logo.png            # Logo
+├── .openclaw/              # OpenClaw 协作
+│   ├── tasks/              # 任务队列
+│   ├── config/             # 协作配置
+│   └── logs/               # 任务日志
 │
-└── docs/                   # 文档
-    ├── PRD.md              # 产品需求文档
-    ├── prototype.html      # 产品原型
-    └── project/
-        └── kanban.html     # 项目看板
+└── .claude/                # Claude Code 配置
+    └── agents/             # AI Agent 角色
 ```
 
-## 项目看板
+## OpenClaw 协作机制 🤖
 
-- **[ROADMAP.md](ROADMAP.md)** - Markdown 格式任务路线图
-- **[docs/project/kanban.html](docs/project/kanban.html)** - 交互式看板页面
+Ergo 支持 **OpenClaw Gateway 委托任务** 给 Claude Code 执行。
 
-访问看板可实时查看任务进度，支持点击完成任务标记（数据保存在本地存储）。
+### 快速开始
+
+```bash
+# 1. 启动任务监听器
+node scripts/task-watcher.js
+
+# 2. OpenClaw 创建任务（写入 pending/）
+cp .openclaw/tasks/example-task.json .openclaw/tasks/pending/task-test.json
+
+# 3. 查看结果（completed/）
+ls .openclaw/tasks/completed/
+```
+
+**详细文档：**
+- [OpenClaw 协作说明](.openclaw/README.md)
+- [架构设计文档](docs/architecture/openclaw-claude-integration.md)
 
 ## 配置说明
 
@@ -97,12 +114,17 @@ const MOCK_MODE = true;  // 开发模式使用模拟数据
 const API_BASE = 'http://localhost:18789';  // Gateway API 地址
 ```
 
-### cpolar 域名
+### Cpolar 公网访问
 
-| 服务 | 域名 |
-|------|------|
-| Dashboard | terryzin.cpolar.top |
-| Gateway | ergo-gateway.cpolar.top |
+| 服务 | 域名 | 本地端口 |
+|------|------|---------|
+| Ergo Dashboard | https://terryzin.cpolar.top | 8081 |
+| OpenClaw Gateway | https://terrysopenclaw.cpolar.top | 18789 |
+
+**架构特点：**
+- 双子域名独立隧道（无自定义代理）
+- WebSocket 原生支持
+- 零维护成本（DHH 原则）
 
 ## 测试覆盖
 
