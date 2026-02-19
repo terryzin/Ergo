@@ -91,7 +91,8 @@
 > **目标**: 让陈磊在手机上更快、更爽地管理 AI 管家
 > **预计完成**: 2026-03-05 (15 个工作日)
 > **完成度**: 0%
-> **详细规划**: [v1.3-feature-plan.md](docs/product/v1.3-feature-plan.md)
+> **版本文档**: [docs/versions/v1.3/](docs/versions/v1.3/)
+> **详细规划**: [feature-plan.md](docs/versions/v1.3/feature-plan.md)
 > **用户画像**: [persona.md](docs/product/persona.md)
 
 #### P0 - 必须有（移动端核心体验）
@@ -351,7 +352,9 @@ node scripts/task-watcher.js
 | [CLAUDE.md](CLAUDE.md) | Claude Code 项目上下文 |
 | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) | 目录结构说明 |
 | [docs/product/persona.md](docs/product/persona.md) | 用户画像（陈磊） |
-| [docs/product/v1.3-feature-plan.md](docs/product/v1.3-feature-plan.md) | v1.3 详细功能规划 |
+| [docs/versions/](docs/versions/) | 各版本详细文档 |
+| [docs/versions/v1.3/](docs/versions/v1.3/) | v1.3 详细功能规划 |
+| [docs/product/](docs/product/) | 产品文档（全局） |
 | [docs/architecture/openclaw-claude-integration.md](docs/architecture/openclaw-claude-integration.md) | OpenClaw 协作机制 |
 
 ---
