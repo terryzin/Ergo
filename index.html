@@ -869,8 +869,8 @@
 
         // Gateway 配置
         const GATEWAY_CONFIG = {
-            url: 'https://terrysopenclaw.cpolar.top',
-            token: 'f2009973e92e96b0e31c30b30500e997',
+            // 使用本地 API Bridge 服务器
+            url: 'http://localhost:8082',
             timeout: 5000  // 5秒超时
         };
 
@@ -884,7 +884,6 @@
                 const response = await fetch(`${GATEWAY_CONFIG.url}/api/status`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${GATEWAY_CONFIG.token}`,
                         'Content-Type': 'application/json'
                     },
                     signal: controller.signal

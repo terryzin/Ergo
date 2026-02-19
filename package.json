@@ -6,7 +6,16 @@
   "scripts": {
     "start": "python -m http.server 8081",
     "dev": "python -m http.server 8081",
+    "api": "node server/api-bridge.js",
+    "start:all": "concurrently \"npm run start\" \"npm run api\"",
     "test": "node tests/api.test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   },
   "repository": {
     "type": "git",
