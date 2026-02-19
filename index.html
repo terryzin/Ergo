@@ -815,8 +815,6 @@
     <!-- Toast -->
     <div class="toast" id="toast">操作成功</div>
 
-    <!-- Module Scripts (v1.2) -->
-    <script src="src/api.js"></script>
     <script>
         // ============================
         // STATE
@@ -831,6 +829,9 @@
             loadData();
             initVersion();
             renderDevProjects();
+
+            // 启动轮询（每 10 秒刷新一次）
+            setInterval(loadData, 10000);
         });
 
         function initVersion() {
@@ -863,58 +864,89 @@
         }
 
         // ============================
-        // DATA LOADING (v1.2: 使用 API 模块)
+        // DATA LOADING (v1.2: 直连 Gateway)
         // ============================
-        
-        // 初始化 API
-        if (window.ErgoAPI) {
-            window.ErgoAPI.init();
-        }
-        
-        // 获取所有数据 - 从同源API读取
+
+        // Gateway 配置
+        const GATEWAY_CONFIG = {
+            url: 'https://terrysopenclaw.cpolar.top',
+            token: 'f2009973e92e96b0e31c30b30500e997',
+            timeout: 5000  // 5秒超时
+        };
+
+        // 获取所有数据 - 直连 OpenClaw Gateway
         async function fetchAllData() {
             try {
-                const response = await fetch('/api/status');
+                // 使用 AbortController 实现超时
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), GATEWAY_CONFIG.timeout);
+
+                const response = await fetch(`${GATEWAY_CONFIG.url}/api/status`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${GATEWAY_CONFIG.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
                 const data = await response.json();
+
                 return {
-                    gateway: data.gateway || { status: 'unknown' },
+                    gateway: {
+                        status: 'online',
+                        version: data.version || '2026.2.9',
+                        uptime: data.uptime || 0,
+                        _source: 'api'
+                    },
                     agents: data.agents || [],
                     cronJobs: data.cron || [],
                     services: []
                 };
             } catch (error) {
+                console.warn('Gateway API 不可达，使用 Mock 数据:', error.message);
+
+                // 回退到 Mock 数据
                 return {
-                    gateway: { status: 'online', version: '2026.2.9' },
-                    agents: [{ name: 'main', status: 'online', model: 'MiniMax-M2.5' }],
+                    gateway: {
+                        status: 'mock',
+                        version: '2026.2.9',
+                        uptime: 1296000,  // 15天
+                        _source: 'mock'
+                    },
+                    agents: [
+                        { name: 'main', status: 'online', model: 'MiniMax-M2.5' },
+                        { name: 'researcher', status: 'online', model: 'GPT-4' },
+                        { name: 'coder', status: 'online', model: 'Claude-3' }
+                    ],
                     cronJobs: [
-                        { name: '最佳实践收集', lastStatus: 'success' },
-                        { name: 'Gateway健康检查', lastStatus: 'success' },
-                        { name: '稳定性复盘', lastStatus: 'success' }
+                        { id: 'bp-collect', name: '最佳实践收集', lastStatus: 'success', schedule: '0 */4 * * *' },
+                        { id: 'health-check', name: 'Gateway健康检查', lastStatus: 'success', schedule: '*/30 * * * *' },
+                        { id: 'stability-review', name: '稳定性复盘', lastStatus: 'success', schedule: '0 0 * * 0' }
                     ],
                     services: []
                 };
             }
         }
-        
-        async function getNetworkState() {
-            if (window.ErgoAPI) {
-                return await window.ErgoAPI.getNetworkState();
-            }
-            return { isOnline: false };
-        }
-        
+
         async function loadData() {
             try {
                 const data = await fetchAllData();
+                const isRealData = data.gateway._source === 'api';
                 renderAllData(data);
-                
-                // 更新网络状态
-                const networkState = await getNetworkState();
-                document.getElementById('networkStatus').textContent = networkState.isOnline ? '正常' : '异常';
-                document.getElementById('networkPill').innerHTML = networkState.isOnline
+
+                // 更新网络状态（基于数据来源）
+                document.getElementById('networkStatus').textContent = isRealData ? '正常' : 'Mock';
+                document.getElementById('networkPill').innerHTML = isRealData
                     ? '<span class="status-dot"></span><span>已连接</span>'
-                    : '<span>断开</span>';
-                document.getElementById('networkPill').className = networkState.isOnline ? 'status-pill ok' : 'status-pill err';
+                    : '<span>Mock 数据</span>';
+                document.getElementById('networkPill').className = isRealData ? 'status-pill ok' : 'status-pill warn';
             } catch (error) {
                 console.error('Failed to load data:', error);
                 renderError();

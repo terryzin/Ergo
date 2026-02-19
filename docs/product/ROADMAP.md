@@ -1,7 +1,7 @@
 # Ergo 项目路线图
 
-> **最后更新**: 2026-02-19
-> **当前版本**: v1.2 (已完成)
+> **最后更新**: 2026-02-20
+> **当前版本**: v1.2 (部分完成 - 架构调整完毕，API 集成待完善)
 > **下一版本**: v1.3 - 移动端体验优化
 
 ---
@@ -59,28 +59,46 @@
 
 ### v1.2 - Gateway API 集成 ✅
 
-> 发布日期: 2026-02-19
-> 完成度: 100%
+> 发布日期: 2026-02-20
+> 完成度: 85% (架构调整 + HTTP API 集成完成)
 
 **已完成：**
-- ✅ WebSocket 连接实现
-- ✅ 自动重连机制 (5s 间隔)
-- ✅ 认证支持 (Token)
 - ✅ cpolar 双子域名架构
   - Ergo: https://terryzin.cpolar.top
   - Gateway: https://terrysopenclaw.cpolar.top
-- ✅ 删除自定义代理服务器
-- ✅ Mock 数据回退
-- ✅ fetchGatewayStatus() Gateway 状态
-- ✅ fetchAgents() Agent 列表
-- ✅ fetchCronJobs() Cron 任务
-- ✅ getNetworkState() 网络状态
-- ✅ 项目目录重组
+- ✅ 删除自定义代理服务器（proxy-server.js）
 - ✅ OpenClaw ↔ Claude Code 协作机制设计
+- ✅ 项目目录重组
+- ✅ OpenClaw Dashboard 链接 + Token 自动登录
+- ✅ 直接连接 OpenClaw Gateway API（v1.2.2）
+- ✅ HTTP 轮询机制（每 10 秒刷新，v1.2.2）
+- ✅ Token 认证集成（Bearer Token，v1.2.2）
+- ✅ Mock 数据自动回退（v1.2.2）
+
+**降级实现（务实路径）：**
+- 🔄 使用 HTTP 轮询代替 WebSocket（简单、够用）
+- 🔄 暂不实现自动重连（轮询本身就是持续重试）
+
+**未来优化（v1.4+）：**
+- ⏳ WebSocket 实时推送（降低延迟、减少请求）
+- ⏳ 智能重连策略（指数退避算法）
 
 **版本历史：**
-- v1.2.1 - OpenClaw 链接修复 + Token 自动登录
-- v1.2.0 - 初始 WebSocket 实现
+- v1.2.2 (2026-02-20) - 实现基础 HTTP API 集成（直连 Gateway + 轮询机制）
+- v1.2.1 (2026-02-16) - OpenClaw 链接修复 + Token 自动登录
+- v1.2.0 (2026-02-15) - 架构调整（双子域名 + 删除代理）
+
+**v1.2.2 更新详情：**
+- ✅ 直连 OpenClaw Gateway API（https://terrysopenclaw.cpolar.top）
+- ✅ HTTP 轮询机制（每 10 秒自动刷新）
+- ✅ Token 认证集成（Bearer Token）
+- ✅ 请求超时处理（5秒超时）
+- ✅ Mock 数据自动回退（API 不可达时）
+- ✅ 数据来源标识（区分真实数据 vs Mock）
+
+**下一步方向：**
+- WebSocket 实时推送（v1.4）
+- 异常推送通知（v1.3 P1）
 
 ---
 
@@ -217,7 +235,7 @@
 |------|------|---------|---------|
 | v1.0 | ✅ 已发布 | 2026-02-15 | 基础功能和 UI |
 | v1.1 | ✅ 已发布 | 2026-02-15 | 测试和文档 |
-| v1.2 | ✅ 已发布 | 2026-02-19 | Gateway API 集成 |
+| v1.2 | ✅ 已发布 | 2026-02-20 | Gateway API 集成（85%）|
 | **v1.3** | 🔄 **进行中** | **2026-03-05** | **移动端体验优化** |
 | v1.4 | 📋 计划中 | 2026-03-20 | 智能化增强 |
 | v1.5 | 📋 计划中 | 2026-04-15 | 文件与命令管理 |
