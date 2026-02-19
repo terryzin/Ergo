@@ -19,7 +19,7 @@
 
 **相关文档**:
 - [详细功能规划](feature-plan.md) - P0/P1/P2 功能清单
-- [ROADMAP v1.3](../../ROADMAP.md#v13---移动端体验优化-) - 任务清单
+- [ROADMAP v1.3](../../product/ROADMAP.md#v13---移动端体验优化-) - 任务清单
 - [用户画像](../product/persona.md) - 基于陈磊
 - [产品需求](../product/PRD.md) - 全局 PRD
 
@@ -139,7 +139,7 @@ index.html (1200 行)     →     index.html (300 行)
 ## 🔗 相关链接
 
 **项目文档**:
-- [ROADMAP](../../ROADMAP.md) - 全局路线图
+- [ROADMAP](../../product/ROADMAP.md) - 全局路线图
 - [CLAUDE.md](../../CLAUDE.md) - 项目上下文
 - [PROJECT_STRUCTURE.md](../../PROJECT_STRUCTURE.md) - 目录结构
 

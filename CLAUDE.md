@@ -27,21 +27,48 @@ Ergo/
 ├── index.html              # 主页面（当前阶段：单文件包含 HTML/CSS/JS）
 ├── package.json            # 项目元信息
 ├── CLAUDE.md               # 本文件 - 项目上下文
+├── README.md               # 项目说明
+├── PROJECT_STRUCTURE.md    # 详细目录结构说明
 │
-├── docs/                   # 产品与设计文档
-│   ├── PRD.md              # 产品需求文档
-│   ├── prototype.html      # 产品原型（静态交互演示）
+├── docs/                   # 文档
+│   ├── versions/           # 版本文档（按版本组织）
+│   │   ├── README.md       # 版本索引
+│   │   └── v1.3/           # v1.3 版本文档
+│   │       ├── README.md   # 版本概览
+│   │       └── feature-plan.md  # 详细功能规划
+│   │
+│   ├── product/            # 产品文档（全局）
+│   │   ├── README.md       # 产品文档说明
+│   │   ├── ROADMAP.md      # 产品路线图
+│   │   ├── persona.md      # 用户画像
+│   │   └── PRD.md          # 产品需求文档
+│   │
+│   ├── architecture/       # 架构设计文档
+│   │   ├── architecture.md
+│   │   ├── design-system.md
+│   │   └── openclaw-claude-integration.md
+│   │
 │   ├── design/             # 设计资源
-│   │   └── logo-design.png # Logo 原始文件
-│   └── product/            # 产品设计 Agent 产出（用研、可用性报告等）
+│   │   └── logo-design.png
+│   │
+│   └── archive/            # 历史归档
+│       └── ...
 │
-├── src/                    # 源代码（v1.1 拆分后启用）
+├── src/                    # 源代码（v1.3 拆分后启用）
 │   ├── styles.css          # 样式
 │   ├── app.js              # 主逻辑
 │   └── api.js              # Gateway API 封装
 │
 ├── assets/                 # 静态资源
 │   └── logo.png            # Logo（供 index.html 引用）
+│
+├── scripts/                # 工具脚本
+│   └── task-watcher.js     # OpenClaw 任务监听器
+│
+├── .openclaw/              # OpenClaw 协作
+│   ├── tasks/              # 任务队列
+│   ├── config/             # 协作配置
+│   └── logs/               # 任务日志
 │
 └── .claude/
     ├── settings.local.json # Claude Code 本地配置

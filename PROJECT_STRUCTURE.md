@@ -14,7 +14,6 @@ Ergo/
 ├── 📦 package.json                 # 项目配置
 ├── 📖 README.md                    # 项目说明
 ├── 📋 CHANGELOG.md                 # 版本日志
-├── 🗺️  ROADMAP.md                  # 产品路线图
 ├── 📘 CLAUDE.md                    # Claude Code 项目上下文
 ├── 📊 PROJECT_STRUCTURE.md         # 本文件 - 项目结构说明
 ├── 🚫 .gitignore                   # Git 忽略配置
@@ -39,6 +38,7 @@ Ergo/
 │   │
 │   ├── product/                    # 📋 产品文档（全局）
 │   │   ├── README.md               # 产品文档说明
+│   │   ├── ROADMAP.md              # 产品路线图（所有版本）
 │   │   ├── persona.md              # 用户画像
 │   │   └── PRD.md                  # 产品需求文档
 │   │
@@ -106,7 +106,6 @@ Ergo/
 | `index.html` | 主页面，当前为单文件架构 | ✅ 使用中 |
 | `CLAUDE.md` | 项目上下文，Claude Code 必读 | ✅ 最新 |
 | `README.md` | 项目介绍和快速开始 | ✅ 最新 |
-| `ROADMAP.md` | 产品路线图 | ✅ 同步 |
 
 ### 📚 文档目录 (`docs/`)
 

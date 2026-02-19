@@ -71,7 +71,7 @@ Ergo 的全局产品需求和功能规格。
 - [v1.3 规划](../versions/v1.3/) - 当前版本
 
 **其他文档**:
-- [ROADMAP](../../ROADMAP.md) - 项目路线图
+- [ROADMAP](ROADMAP.md) - 项目路线图
 - [架构文档](../architecture/) - 技术架构
 - [设计资源](../design/) - Logo、品牌资产
 
@@ -101,7 +101,7 @@ touch docs/versions/vX.X/README.md
 touch docs/versions/vX.X/feature-plan.md
 ```
 
-简单版本可以只在 ROADMAP.md 中描述。
+简单版本可以只在 ROADMAP 中描述。
 
 ---
 

@@ -89,7 +89,7 @@ cp docs/versions/v1.3/README.md docs/versions/v1.X/README.md
 ## 🔗 相关文档
 
 **全局文档**:
-- [ROADMAP.md](../../ROADMAP.md) - 项目路线图（所有版本任务清单）
+- [ROADMAP.md](../product/ROADMAP.md) - 项目路线图（所有版本任务清单）
 - [产品文档](../product/) - 用户画像、PRD
 - [架构文档](../architecture/) - 系统架构、设计系统
 
