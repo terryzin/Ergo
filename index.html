@@ -1030,27 +1030,24 @@
                     _meta: meta
                 };
             } catch (error) {
-                console.warn('Gateway API 不可达，使用 Mock 数据:', error.message);
+                console.error('Gateway API 不可达:', error.message);
 
-                // 回退到 Mock 数据
+                // 返回错误状态，不使用 mock 数据
                 return {
                     gateway: {
-                        status: 'mock',
-                        version: '2026.2.9',
-                        uptime: 1296000,  // 15天
-                        _source: 'mock'
+                        status: 'offline',
+                        version: '--',
+                        uptime: 0,
+                        _source: 'error',
+                        _error: error.message
                     },
-                    agents: [
-                        { name: 'main', status: 'online', model: 'MiniMax-M2.5' },
-                        { name: 'researcher', status: 'online', model: 'GPT-4' },
-                        { name: 'coder', status: 'online', model: 'Claude-3' }
-                    ],
-                    cronJobs: [
-                        { id: 'bp-collect', name: '最佳实践收集', lastStatus: 'success', schedule: '0 */4 * * *' },
-                        { id: 'health-check', name: 'Gateway健康检查', lastStatus: 'success', schedule: '*/30 * * * *' },
-                        { id: 'stability-review', name: '稳定性复盘', lastStatus: 'success', schedule: '0 0 * * 0' }
-                    ],
-                    services: []
+                    agents: [],
+                    cronJobs: [],
+                    services: [],
+                    _meta: {
+                        error: true,
+                        message: error.message
+                    }
                 };
             }
         }
@@ -1060,15 +1057,21 @@
                 const data = await fetchAllData(forceRefresh);
                 const isRealData = data.gateway._source === 'api';
                 const isCached = data.gateway._cached;
+                const hasError = data._meta?.error || data.gateway._source === 'error';
+
                 renderAllData(data);
 
-                // 更新网络状态（基于数据来源）
-                const statusText = isRealData ? (isCached ? '缓存' : '实时') : 'Mock';
-                document.getElementById('networkStatus').textContent = statusText;
-                document.getElementById('networkPill').innerHTML = isRealData
-                    ? `<span class="status-dot"></span><span>${statusText}</span>`
-                    : '<span>Mock 数据</span>';
-                document.getElementById('networkPill').className = isRealData ? 'status-pill ok' : 'status-pill warn';
+                // 更新网络状态
+                if (hasError) {
+                    document.getElementById('networkStatus').textContent = '离线';
+                    document.getElementById('networkPill').innerHTML = '<span>连接失败</span>';
+                    document.getElementById('networkPill').className = 'status-pill err';
+                } else {
+                    const statusText = isCached ? '缓存' : '实时';
+                    document.getElementById('networkStatus').textContent = statusText;
+                    document.getElementById('networkPill').innerHTML = `<span class="status-dot"></span><span>${statusText}</span>`;
+                    document.getElementById('networkPill').className = 'status-pill ok';
+                }
 
                 // 更新时间显示
                 if (data._meta && data._meta.lastUpdate) {
@@ -1103,11 +1106,11 @@
         }
 
         function renderAllData(data) {
-            // Gateway - Mock数据也显示为在线
+            // Gateway 状态
             const { gateway } = data;
             const uptime = formatUptime(gateway.uptime || 0);
-            // 只要有gateway数据就显示在线
-            const isOnline = gateway && (gateway.status === 'online' || gateway._source === 'mock' || gateway.status === 'mock');
+            // 仅当状态为 online 且来源为 api 时才显示在线
+            const isOnline = gateway && gateway.status === 'online' && gateway._source === 'api';
 
             document.getElementById('gatewayUptime').textContent = uptime;
             document.getElementById('gatewayStatus').innerHTML = isOnline
@@ -1370,19 +1373,35 @@
             window.open(url, '_blank');
         }
 
-        function restartGateway() {
+        async function restartGateway() {
             closeSheet();
-            showToast('Mock 模式：Gateway 重启指令已发送');
+            showToast('正在重启 Gateway...');
 
-            // Simulate restart
             document.getElementById('gatewayStatus').innerHTML = '<span>重启中...</span>';
             document.getElementById('gatewayStatus').className = 'status-pill warn';
 
-            setTimeout(() => {
-                document.getElementById('gatewayStatus').innerHTML = '<span class="status-dot"></span><span>运行中</span>';
-                document.getElementById('gatewayStatus').className = 'status-pill ok';
-                showToast('Gateway 重启成功');
-            }, 2000);
+            try {
+                // 调用 API Bridge 的重启接口
+                const response = await fetch(`${GATEWAY_CONFIG.url}/api/gateway/restart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Ergo-Key': getApiKey()
+                    }
+                });
+
+                if (response.ok) {
+                    showToast('Gateway 重启成功');
+                    // 等待 5 秒后刷新数据
+                    setTimeout(() => loadData(true), 5000);
+                } else {
+                    throw new Error('重启请求失败');
+                }
+            } catch (error) {
+                showToast('Gateway 重启失败: ' + error.message);
+                // 恢复状态显示
+                loadData();
+            }
         }
 
         async function triggerCron(jobId) {
