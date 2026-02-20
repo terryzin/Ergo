@@ -104,9 +104,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ⚠️ 浏览器通知需要 HTTPS 或 localhost
 - ⚠️ 新增依赖：ws, chokidar
 
+### Additional Features (P2)
+- ✅ **多项目仪表盘**（dashboard.html）：
+  - 所有项目聚合视图
+  - 健康度统计卡片（总项目、健康、降级、异常）
+  - 项目卡片布局（2 列自适应）
+  - 实时更新（WebSocket 驱动）
+  - 点击卡片跳转到详情页
+  - 健康状态颜色编码（绿/黄/红）
+- ✅ **首页仪表盘入口**：在"开发项目"区域添加"📊 仪表盘"按钮
+
+### Testing
+- ✅ v1.5 新增测试：6 个测试用例
+  - Cron 触发 API 端点测试
+  - WebSocket 升级路径测试
+  - realtime.js 脚本可访问性
+  - notifications.js 脚本可访问性
+  - dashboard.html 页面可访问性
+  - 首页 WebSocket 集成测试
+- ✅ 所有测试通过：30/30（本地），60/60（全部）
+
 ### Known Issues
-- ⏳ 多项目仪表盘页面（dashboard.html）待实现（P2 优先级）
-- ⏳ 操作历史记录待实现（P2 优先级）
+- ⏸️ 操作历史记录待实现（P2 优先级，未来版本）
 
 ---
 
