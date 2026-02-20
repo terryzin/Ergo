@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - Ergo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #000000;
+            --bg-2: #1d1d1f;
+            --bg-3: #2c2c2e;
+            --text-1: #f5f5f7;
+            --text-2: #a1a1a6;
+            --text-3: #6e6e73;
+            --brand: #2997ff;
+            --ok: #30d158;
+            --err: #ff453a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text-1);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding-top: 40px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--brand);
+            text-decoration: none;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-2);
+            margin-bottom: 40px;
+        }
+
+        .settings-section {
+            background: var(--bg-2);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid var(--bg-3);
+        }
+
+        .setting-item {
+            margin-bottom: 25px;
+        }
+
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-1);
+        }
+
+        .hint {
+            font-size: 13px;
+            color: var(--text-3);
+            margin-top: 6px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-3);
+            border: 1px solid var(--bg-3);
+            border-radius: 10px;
+            color: var(--text-1);
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--brand);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0071e3;
+        }
+
+        .btn-secondary {
+            background: var(--bg-3);
+            color: var(--text-1);
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3c;
+        }
+
+        .status {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: rgba(48, 209, 88, 0.15);
+            color: var(--ok);
+        }
+
+        .status.error {
+            background: rgba(255, 69, 58, 0.15);
+            color: var(--err);
+        }
+
+        .info-box {
+            background: rgba(41, 151, 255, 0.15);
+            border: 1px solid rgba(41, 151, 255, 0.3);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--brand);
+        }
+
+        .info-box p {
+            font-size: 13px;
+            color: var(--text-2);
+            line-height: 1.5;
+        }
+
+        .current-key {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回首页</a>
+
+        <h1>⚙️ 设置</h1>
+        <p class="subtitle">配置 Ergo API 密钥和其他选项</p>
+
+        <div class="settings-section">
+            <div class="setting-item">
+                <label for="apiKey">API 密钥</label>
+                <input type="password" id="apiKey" placeholder="输入新的 API 密钥">
+                <div class="hint">用于访问 API Bridge 服务器（localhost:8082）</div>
+
+                <div class="current-key">
+                    当前密钥: <span id="currentKey">***</span>
+                    <button onclick="toggleKeyVisibility()" style="margin-left: 10px; padding: 4px 8px; font-size: 11px; background: var(--bg); border-radius: 4px;">显示</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-secondary" onclick="useDefaultKey()">使用默认密钥</button>
+                <button class="btn-primary" onclick="saveSettings()">保存设置</button>
+            </div>
+
+            <div id="status"></div>
+        </div>
+
+        <div class="info-box">
+            <h3>💡 关于 API 密钥</h3>
+            <p>
+                • 默认密钥：<code>ergo-default-secret-key-2026</code><br>
+                • 密钥保存在浏览器 localStorage 中<br>
+                • 后端密钥通过环境变量 <code>ERGO_SECRET</code> 设置<br>
+                • 如果密钥不匹配，API 请求会返回 401 错误
+            </p>
+        </div>
+
+        <div class="info-box" style="margin-top: 15px;">
+            <h3>🔧 如何修改后端密钥</h3>
+            <p>
+                <strong>Windows:</strong><br>
+                <code>set ERGO_SECRET=your-custom-key && node server/api-bridge.js</code><br><br>
+                <strong>Linux/Mac:</strong><br>
+                <code>ERGO_SECRET=your-custom-key node server/api-bridge.js</code>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_STORAGE_KEY = 'ergoApiKey';
+        const DEFAULT_API_KEY = 'ergo-default-secret-key-2026';
+        let keyVisible = false;
+
+        // 加载当前密钥
+        function loadCurrentKey() {
+            const key = localStorage.getItem(AUTH_STORAGE_KEY) || DEFAULT_API_KEY;
+            document.getElementById('currentKey').textContent = keyVisible ? key : '***';
+        }
+
+        function toggleKeyVisibility() {
+            keyVisible = !keyVisible;
+            loadCurrentKey();
+            event.target.textContent = keyVisible ? '隐藏' : '显示';
+        }
+
+        function useDefaultKey() {
+            document.getElementById('apiKey').value = DEFAULT_API_KEY;
+        }
+
+        function saveSettings() {
+            const newKey = document.getElementById('apiKey').value.trim();
+
+            if (!newKey) {
+                showStatus('error', '请输入密钥');
+                return;
+            }
+
+            localStorage.setItem(AUTH_STORAGE_KEY, newKey);
+            showStatus('success', '设置已保存！刷新页面后生效。');
+
+            // 更新显示
+            document.getElementById('apiKey').value = '';
+            loadCurrentKey();
+        }
+
+        function showStatus(type, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+
+            setTimeout(() => {
+                statusEl.className = 'status';
+                statusEl.textContent = '';
+            }, 5000);
+        }
+
+        // 初始化
+        loadCurrentKey();
+    </script>
+</body>
+</html>

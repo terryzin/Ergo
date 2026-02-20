@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.3.0] - 2026-02-20
+
+### Added
+- **🔐 自动配对系统**：预配置密钥方案 ⭐ 核心功能
+  - API Bridge 认证中间件（X-Ergo-Key Header）
+  - 前端自动密钥管理（localStorage 持久化）
+  - 首次访问自动使用默认密钥
+  - 401 错误自动触发重新配对
+  - 环境变量支持（ERGO_SECRET）
+  - 可选禁用认证（AUTH_ENABLED=false）
+- **设置页面**（settings.html）：独立的密钥配置界面
+  - 可视化密钥管理
+  - 显示/隐藏当前密钥
+  - 一键使用默认密钥
+  - 使用说明和安全提示
+- **首页设置入口**：系统设置卡片
+
+### Improved
+- **多端使用体验**：一次配置，多端同步（浏览器云同步）
+- **安全性**：防止未授权访问 API Bridge
+- **用户引导**：401 错误时友好提示重新配对
+- **控制台日志**：启动时显示认证状态和密钥
+
+### Technical
+- 认证中间件：`authMiddleware()` 拦截所有 API 请求
+- 健康检查端点豁免认证
+- 默认密钥：`ergo-default-secret-key-2026`
+- 前端密钥函数：`getApiKey()`, `setApiKey()`, `showAuthPrompt()`
+- 存储键名：`ergoApiKey`
+
+### Testing
+- ✅ 10 个自动化测试全部通过
+- 测试覆盖：认证成功/失败、密钥验证、缓存元数据、前端存储
+- 测试脚本：`tests/run-auth-tests.js`
+- 测试命令：`node tests/run-auth-tests.js`
+
+### Documentation
+- ✅ 设计文档：[AUTO_PAIRING_DESIGN.md](docs/product/AUTO_PAIRING_DESIGN.md)
+- ✅ ROADMAP 更新：v1.3 规划完成
+- ✅ CLAUDE.md 更新：功能开发流程规范
+
+### Breaking Changes
+- ⚠️ 首次访问需要配置密钥（自动使用默认密钥，无感知）
+- ⚠️ 旧版本前端无法访问新版 API Bridge（需要提供 X-Ergo-Key）
+- ⚠️ 如需关闭认证，设置环境变量 `AUTH_ENABLED=false`
+
+---
+
 ## [v1.2.4] - 2026-02-20
 
 ### Added

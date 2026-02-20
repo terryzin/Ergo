@@ -15,6 +15,10 @@ const execAsync = promisify(exec);
 const app = express();
 const PORT = process.env.PORT || 8082;
 
+// 认证配置
+const ERGO_SECRET = process.env.ERGO_SECRET || 'ergo-default-secret-key-2026';
+const AUTH_ENABLED = process.env.AUTH_ENABLED !== 'false'; // 默认启用认证
+
 // 启用 CORS（允许 Ergo 前端跨域访问）
 app.use(cors());
 app.use(express.json());
@@ -32,6 +36,41 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
     next();
 });
+
+// 认证中间件
+function authMiddleware(req, res, next) {
+    // 如果认证被禁用，直接放行
+    if (!AUTH_ENABLED) {
+        return next();
+    }
+
+    // 健康检查端点不需要认证
+    if (req.path === '/health') {
+        return next();
+    }
+
+    const apiKey = req.headers['x-ergo-key'];
+
+    if (!apiKey) {
+        return res.status(401).json({
+            error: 'Missing API key',
+            message: '请在请求头中提供 X-Ergo-Key',
+            hint: '首次访问请配置密钥'
+        });
+    }
+
+    if (apiKey !== ERGO_SECRET) {
+        return res.status(401).json({
+            error: 'Invalid API key',
+            message: '密钥无效，请检查配置'
+        });
+    }
+
+    next();
+}
+
+// 应用认证中间件到所有路由
+app.use(authMiddleware);
 
 /**
  * 解析 OpenClaw CLI 输出
@@ -399,8 +438,18 @@ app.listen(PORT, async () => {
     console.log(`║   Health: http://localhost:${PORT}/health      ║`);
     console.log('╠════════════════════════════════════════════╣');
     console.log(`║   Cache: Auto-update every ${CACHE_DURATION / 60000} minutes   ║`);
+    console.log(`║   Auth: ${AUTH_ENABLED ? 'Enabled ✓' : 'Disabled'}            ║`);
+    if (AUTH_ENABLED) {
+        console.log(`║   Secret: ${ERGO_SECRET.substring(0, 8)}...              ║`);
+    }
     console.log('╚════════════════════════════════════════════╝');
     console.log('');
+    if (AUTH_ENABLED) {
+        console.log('🔐 认证已启用 - 前端需要提供 X-Ergo-Key');
+        console.log(`   密钥: ${ERGO_SECRET}`);
+        console.log('   提示: 设置环境变量 ERGO_SECRET 自定义密钥');
+        console.log('');
+    }
     console.log('Press Ctrl+C to stop');
     console.log('');
 
