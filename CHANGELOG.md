@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.6.1] - 2026-02-21
+
+### Fixed
+- **🌐 外网环境 API 连接**：修复文件浏览器和终端在外网无法使用的问题 ⭐ 关键修复
+  - 问题：`file-browser.html` 和 `terminal.html` 硬编码 `localhost:8082`
+  - 影响：外网访问时无法连接 API（跨域错误）
+  - 解决：创建 `src/config.js` 统一配置管理，自动检测环境
+
+### Added
+- **⚙️ 环境自动切换机制**：
+  - `src/config.js` - 全局配置管理器
+  - 基于 hostname 自动检测运行环境
+  - 本地环境 (`localhost`/`127.0.0.1`) → 直连 `http://localhost:8082`
+  - 外网环境 (cpolar 等) → 相对路径（前端代理转发）
+  - 单例模式，支持 API Key 管理
+
+- **🔍 配置检查工具**：
+  - `config-check.html` - 环境配置验证页面
+  - 实时显示当前环境信息
+  - API 连接测试功能
+  - 响应时间和数据展示
+
+- **📚 配置文档**：
+  - `docs/CONFIG.md` - 完整的配置说明
+  - 环境检测规则说明
+  - 部署检查清单
+  - 常见问题解答
+
+### Changed
+- **更新页面配置**：
+  - `file-browser.html` - 使用 `ergoConfig` 替代硬编码
+  - `terminal.html` - 使用 `ergoConfig` 替代硬编码
+  - 移除所有硬编码的 `localhost:8082`
+
+### Technical
+- **自动环境检测逻辑**：
+  ```javascript
+  detectApiBase() {
+      const hostname = window.location.hostname;
+      return (hostname === 'localhost' || hostname === '127.0.0.1')
+          ? 'http://localhost:8082'  // 本地直连
+          : '';                       // 外网代理
+  }
+  ```
+- **配置使用示例**：
+  ```javascript
+  // 获取 API URL
+  const apiUrl = ergoConfig.getApiUrl('/api/status');
+
+  // 发起请求
+  fetch(apiUrl, {
+      headers: { 'X-Ergo-Key': ergoConfig.getApiKey() }
+  });
+  ```
+
+### Testing
+- ✅ 配置文件存在性验证
+- ✅ 页面集成完整性检查
+- ✅ 硬编码问题扫描
+- ✅ 本地环境连接测试
+- ✅ 外网环境连接测试（待部署后验证）
+
+---
+
 ## [v1.6.0] - 2026-02-21
 
 ### Added

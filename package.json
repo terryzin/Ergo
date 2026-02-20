@@ -1,6 +1,6 @@
 {
   "name": "ergo-dashboard",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Ergo - 基于OpenClaw的个人AI管家控制台（操作工作台）",
   "main": "index.html",
   "scripts": {
