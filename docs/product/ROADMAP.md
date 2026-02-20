@@ -139,7 +139,17 @@ API Bridge 通过 CLI 转换为简单的 HTTP API。
 > **详细规划**: [feature-plan.md](docs/versions/v1.3/feature-plan.md)
 > **用户画像**: [persona.md](docs/product/persona.md)
 
-#### P0 - 必须有（移动端核心体验）
+#### P0 - 必须有（核心功能）
+
+**🔐 自动配对系统** ⭐ 新增优先级
+- [ ] API Bridge 密钥验证中间件
+- [ ] 前端自动发送 `X-Ergo-Key` Header
+- [ ] 首次访问引导页面
+- [ ] 密钥配置界面（settings.html）
+- [ ] 错误处理（401 提示重新配对）
+- [ ] 环境变量支持（`ERGO_SECRET`）
+- [ ] 启动脚本自动注入密钥
+- 📄 **设计文档**: [AUTO_PAIRING_DESIGN.md](../AUTO_PAIRING_DESIGN.md)
 
 **响应式布局优化**
 - [ ] 移动端单列布局 (< 768px)
