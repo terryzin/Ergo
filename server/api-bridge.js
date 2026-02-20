@@ -52,6 +52,11 @@ function authMiddleware(req, res, next) {
         return next();
     }
 
+    // WebSocket 升级请求不需要认证（升级请求会被 server.on('upgrade') 处理）
+    if (req.headers.upgrade === 'websocket') {
+        return next();
+    }
+
     // 健康检查端点不需要认证
     if (req.path === '/health' || req.path === '/api/health') {
         return next();

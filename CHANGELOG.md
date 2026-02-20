@@ -108,6 +108,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 中间件在 Express static 之前拦截 `.html` 请求和根路径 `/`
   - 修复根路径返回 `public, max-age=0` 而非 `no-cache` 的问题
 
+- **WebSocket 连接失败** (2026-02-21)：
+  - 修复 API Bridge 认证中间件拦截 WebSocket 升级请求
+  - 添加 `req.headers.upgrade === 'websocket'` 检查，豁免 WebSocket 认证
+  - 修复前端代理 WebSocket 路径重写问题（使用原生 http-proxy）
+  - 解决公网 cpolar 访问时 WebSocket 连接错误 1006
+  - ✅ 本地测试通过（ws://localhost:8081 → ws://localhost:8082）
+  - ⚠️ 公网 cpolar 需要确认 WebSocket 支持（WSS 协议）
+
 ### Documentation
 - ✅ 功能规划：[docs/versions/v1.5/feature-plan.md](docs/versions/v1.5/feature-plan.md)
 - ✅ ROADMAP 更新：v1.5 完成标记

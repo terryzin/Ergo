@@ -10,6 +10,7 @@
 
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyServer } = require('http-proxy');
 const path = require('path');
 
 const app = express();
@@ -80,13 +81,25 @@ const server = app.listen(PORT, () => {
     console.log('');
 });
 
+// WebSocket 专用代理（使用原生 http-proxy）
+const wsProxy = createProxyServer({
+    target: API_BRIDGE_URL,
+    ws: true
+});
+
+wsProxy.on('error', (err, req, socket) => {
+    console.error('[WebSocket PROXY ERROR]', err.message);
+    socket.end();
+});
+
+wsProxy.on('proxyReqWs', (proxyReq, req, socket, options, head) => {
+    console.log(`[WebSocket PROXY] ${req.url} → ${API_BRIDGE_URL}${req.url}`);
+});
+
 // 绑定 WebSocket 升级事件
 server.on('upgrade', (req, socket, head) => {
     console.log('[WebSocket] Upgrade request:', req.url);
-    if (req.url.startsWith('/api')) {
-        apiProxy.upgrade(req, socket, head);
-    } else {
-        // 对于根路径的 WebSocket 连接，也代理到 API Bridge
-        apiProxy.upgrade(req, socket, head);
-    }
+
+    // 使用原生 http-proxy 处理 WebSocket 升级
+    wsProxy.ws(req, socket, head);
 });
