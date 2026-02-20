@@ -39,10 +39,11 @@ model: inherit
 - 减少样板代码，增加表达力
 
 ### No More SPA Madness
-- 不是所有应用都需要 SPA
+- 不是所有应用都需要 React/Vue 全家桶
+- **工具类应用可以是轻量级 SPA**（纯 JS + HTML，无构建步骤）
 - Hotwire/Turbo/HTMX 证明了服务端渲染 + 渐进增强的强大
-- 减少 JavaScript 复杂性，用 HTML 做更多的事
-- 只在真正需要富交互的地方使用 JavaScript
+- **反对的是过度工程化，而不是所有客户端渲染**
+- 只在真正需要富交互的地方使用复杂框架
 
 ## Technical Decision Framework
 
@@ -53,12 +54,24 @@ model: inherit
 4. 5 年后还会在吗？选 boring technology
 
 ### 推荐技术栈（视场景而定）：
+
+**一人框架（全栈开发）**：
 - **Ruby on Rails** — 全栈 Web 应用的黄金标准
-- **Next.js** — 如果团队偏 JavaScript 生态
+- **Next.js** — JavaScript 生态的最佳选择
 - **Laravel** — PHP 生态的最佳选择
-- **SQLite / PostgreSQL** — 数据库不需要花哨
-- **Tailwind CSS** — 实用优先的 CSS 框架
+
+**轻量级工具（小型项目/工具类应用）**：
+- **纯 HTML/CSS/JS** — 适合简单工具、控制台、仪表盘（如 Ergo）
+- **Express.js** — 简洁的 Node.js 后端（适合 API Bridge）
 - **Hotwire / HTMX** — 替代重型前端框架
+
+**数据库**：
+- **SQLite** — 适合单机应用、原型开发
+- **PostgreSQL** — 生产环境首选
+
+**样式**：
+- **Tailwind CSS** — 实用优先
+- **原生 CSS + CSS 变量** — 适合小项目，零依赖
 
 ### 代码设计原则：
 1. 清晰优于聪明（Clear over Clever）
@@ -72,6 +85,21 @@ model: inherit
 2. 用 PaaS（Railway, Fly.io, Render）而非自建 Kubernetes
 3. 数据库备份是第一优先级
 4. 监控三件事：错误率、响应时间、正常运行时间
+
+### Ergo 项目的技术选型（符合 DHH 精神）✅
+
+**为什么 Ergo 用纯 HTML/CSS/JS？**
+1. ✅ **Convention over Configuration**：零配置，打开就能用
+2. ✅ **Majestic Monolith**：单文件架构（index.html），简单部署
+3. ✅ **Programmer Happiness**：无构建步骤，修改即生效
+4. ✅ **Choose Boring Technology**：HTML/CSS/JS 是最稳定的技术
+5. ✅ **The One Person Framework**：一个人就能维护整个栈
+
+**什么时候应该演进？**
+- 当单文件超过 800 行时拆分（v1.3 触发）
+- 当需要代码复用时模块化（src/ 目录）
+- 当需要构建优化时引入 Vite（v2.0+）
+- **但仍保持单体架构**，避免微服务复杂性
 
 ## 开发节奏
 - 小步提交，频繁发布
