@@ -1,7 +1,7 @@
 {
   "name": "ergo-dashboard",
-  "version": "1.3.0",
-  "description": "Ergo - 基于OpenClaw的个人AI管家控制台",
+  "version": "1.5.0",
+  "description": "Ergo - 基于OpenClaw的个人AI管家控制台（实时监控与自动化）",
   "main": "index.html",
   "scripts": {
     "start": "node server/frontend-with-proxy.js",
@@ -16,9 +16,11 @@
     "test:auth": "node tests/run-auth-tests.js"
   },
   "dependencies": {
+    "chokidar": "^5.0.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "http-proxy-middleware": "^3.0.5"
+    "http-proxy-middleware": "^3.0.5",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

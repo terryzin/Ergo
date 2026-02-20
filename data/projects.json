@@ -9,47 +9,10 @@
       "version": "1.3.0",
       "github": "terryzin/Ergo",
       "lastUpdate": "2026-02-20",
-      "tags": ["OpenClaw", "Dashboard", "AI"]
-    },
-    {
-      "id": "cargo",
-      "name": "Cargo",
-      "description": "AI项目管理助手 - 自动追踪任务、生成周报",
-      "path": "./cargo",
-      "status": "developing",
-      "version": "0.2.0",
-      "github": "terryzin/Cargo",
-      "lastUpdate": "2026-02-15",
-      "tags": ["AI", "项目管理", "自动化"]
-    },
-    {
-      "id": "pingcode-integration",
-      "name": "PingCode集成",
-      "description": "OpenClaw与PingCode项目管理软件集成",
-      "path": "./pingcode-integration",
-      "status": "developing",
-      "version": "0.1.0",
-      "github": "",
-      "lastUpdate": "2026-02-14",
-      "tags": ["OpenClaw", "PingCode", "集成"]
-    },
-    {
-      "id": "openclaw-best-practices",
-      "name": "OpenClaw最佳实践库",
-      "description": "自动收集OpenClaw最新应用案例",
-      "path": "./openclaw-best-practices",
-      "status": "active",
-      "version": "1.0.0",
-      "github": "",
-      "lastUpdate": "2026-02-17",
-      "tags": ["OpenClaw", "知识库", "自动化"],
-      "services": [
-        {
-          "name": "最佳实践收集",
-          "type": "cron",
-          "status": "running",
-          "detail": "每4小时自动收集Twitter/Reddit/Web最新案例"
-        }
+      "tags": [
+        "OpenClaw",
+        "Dashboard",
+        "AI"
       ]
     }
   ]

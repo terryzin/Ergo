@@ -7,6 +7,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.5.0] - 2026-02-20
+
+### Added
+- **🔄 WebSocket 实时连接**：从轮询模式升级为实时推送 ⭐ 核心功能
+  - **WebSocket Server**（server/api-bridge.js）：
+    - WebSocket Server 集成（ws 库）
+    - 客户端连接管理（连接、断开、心跳）
+    - 自动重连策略（指数退避 + 随机延迟）
+    - 广播机制（多客户端同步）
+    - 心跳检测（30 秒一次）
+  - **文件监听**（chokidar）：
+    - 监听所有 `project-status.json` 文件变更
+    - 防抖处理（500ms）
+    - 实时推送项目状态更新
+  - **定期推送**：
+    - Gateway 状态每 10 秒自动推送
+    - 无客户端时跳过推送（节省资源）
+  - **前端 WebSocket 客户端**（src/realtime.js）：
+    - RealtimeService 类封装
+    - 自动重连（最多 5 次，指数退避）
+    - 事件监听器（on/off/emit）
+    - 连接状态管理
+    - 心跳保活
+  - **实时更新**：
+    - 项目健康度实时刷新（无需手动刷新）
+    - Gateway 状态实时更新
+    - Cron 任务状态实时同步
+    - 连接状态可视化（在线/离线指示器）
+
+- **⚡ 快速操作增强**：
+  - **一键触发 Cron 任务**：
+    - 新增 API：`POST /api/cron/:jobId/trigger`
+    - 确认对话框（防误操作）
+    - 实时反馈 Toast
+    - 触发后 3 秒自动刷新列表
+    - 触发按钮添加悬停效果
+  - **Gateway 重启广播**：
+    - 重启时通过 WebSocket 广播通知所有客户端
+    - 自动刷新状态
+
+- **🔔 浏览器通知**：
+  - **通知管理器**（src/notifications.js）：
+    - NotificationManager 类
+    - 通知权限请求（Notification API）
+    - 智能去重（5 分钟内同类通知只发一次）
+    - 点击跳转到对应页面
+    - 自动清理过期缓存
+  - **异常实时提醒**：
+    - 项目健康度下降（unhealthy/degraded）
+    - 服务停止运行
+    - Gateway 离线
+    - Cron 任务失败
+  - **成功/错误通知**：
+    - 操作成功自动关闭（3 秒）
+    - 错误通知自动关闭（5 秒）
+
+### Improved
+- **状态更新延迟**：从轮询 10 秒 → WebSocket < 1 秒
+- **用户体验**：无需手动刷新，状态自动更新
+- **服务器性能**：WebSocket 推送模式，减少 HTTP 轮询请求
+- **异常响应**：从被动查看 → 主动通知，响应时间 < 30 秒
+
+### Technical
+- **新增依赖**：
+  - `ws` (^8.x) - WebSocket Server
+  - `chokidar` (^3.x) - 文件监听
+- **新增文件**：
+  - `src/realtime.js` - WebSocket 客户端封装
+  - `src/notifications.js` - 浏览器通知管理
+- **修改文件**：
+  - `server/api-bridge.js` (+200 行) - WebSocket Server + 文件监听
+  - `index.html` (+200 行) - WebSocket 集成 + 通知初始化
+- **连接架构**：
+  ```
+  前端 ←→ WebSocket (ws://localhost:8082)
+         ← 项目状态推送 (project-status.json 变更)
+         ← Gateway 状态推送 (每 10 secara)
+         ← 心跳检测 (每 30 秒)
+  ```
+
+### Testing
+- ✅ WebSocket 连接测试（连接、断开、重连）
+- ✅ 文件监听测试（project-status.json 变更检测）
+- ✅ 广播机制测试（多客户端同步）
+- ✅ Cron 触发 API 测试
+- ✅ 浏览器通知测试
+
+### Documentation
+- ✅ 功能规划：[docs/versions/v1.5/feature-plan.md](docs/versions/v1.5/feature-plan.md)
+- ✅ ROADMAP 更新：v1.5 完成标记
+- ✅ 技术架构文档更新
+
+### Breaking Changes
+- ⚠️ 需要 WebSocket 支持（IE 不支持）
+- ⚠️ 浏览器通知需要 HTTPS 或 localhost
+- ⚠️ 新增依赖：ws, chokidar
+
+### Known Issues
+- ⏳ 多项目仪表盘页面（dashboard.html）待实现（P2 优先级）
+- ⏳ 操作历史记录待实现（P2 优先级）
+
+---
+
 ## [v1.4.0] - 2026-02-20
 
 ### Added

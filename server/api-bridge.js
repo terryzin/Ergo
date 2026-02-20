@@ -12,6 +12,8 @@ const { promisify } = require('util');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const WebSocket = require('ws');
+const chokidar = require('chokidar');
 
 const execAsync = promisify(exec);
 const app = express();
@@ -422,7 +424,7 @@ app.get('/api/changelog', async (req, res) => {
  */
 app.post('/api/gateway/restart', async (req, res) => {
     try {
-        console.log('Restarting Gateway...');
+        console.log('[API] Restarting Gateway...');
 
         // 执行重启命令
         await execAsync('openclaw gateway restart', { timeout: 10000 });
@@ -432,8 +434,49 @@ app.post('/api/gateway/restart', async (req, res) => {
             message: 'Gateway restarting...',
             timestamp: new Date().toISOString()
         });
+
+        // 广播重启事件
+        broadcast('gateway-restarted', {
+            message: 'Gateway is restarting',
+            timestamp: Date.now()
+        });
     } catch (error) {
-        console.error('Error restarting Gateway:', error);
+        console.error('[API] Error restarting Gateway:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/cron/:jobId/trigger
+ * 触发 Cron 任务（v1.5）
+ */
+app.post('/api/cron/:jobId/trigger', async (req, res) => {
+    try {
+        const { jobId } = req.params;
+        console.log(`[API] Triggering cron job: ${jobId}`);
+
+        // 执行 OpenClaw 命令
+        const { stdout } = await execAsync(`openclaw cron trigger ${jobId}`, {
+            timeout: 30000
+        });
+
+        res.json({
+            success: true,
+            message: `Cron job "${jobId}" triggered successfully`,
+            output: stdout,
+            timestamp: new Date().toISOString()
+        });
+
+        // 广播任务触发事件
+        broadcast('cron-triggered', {
+            jobId,
+            timestamp: Date.now()
+        });
+    } catch (error) {
+        console.error('[API] Error triggering cron job:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -782,12 +825,176 @@ app.get('/api/projects/:id/status', async (req, res) => {
     }
 });
 
+// =====================================================
+// WebSocket 实时连接（v1.5）
+// =====================================================
+
+// 创建 WebSocket Server（与 HTTP Server 共享端口）
+const wss = new WebSocket.Server({ noServer: true });
+
+// 客户端连接管理
+const wsClients = new Set();
+
+// WebSocket 连接处理
+wss.on('connection', (ws, req) => {
+    console.log('[WebSocket] New client connected');
+    wsClients.add(ws);
+
+    // 发送欢迎消息
+    ws.send(JSON.stringify({
+        type: 'connected',
+        payload: {
+            message: 'Welcome to Ergo Realtime Service',
+            version: '1.5.0',
+            timestamp: Date.now()
+        }
+    }));
+
+    // 定期发送心跳（30 秒）
+    const heartbeat = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+                type: 'heartbeat',
+                payload: { time: Date.now() }
+            }));
+        }
+    }, 30000);
+
+    // 接收客户端消息
+    ws.on('message', (message) => {
+        try {
+            const data = JSON.parse(message);
+            handleClientMessage(ws, data);
+        } catch (error) {
+            console.error('[WebSocket] Invalid message:', error.message);
+        }
+    });
+
+    // 客户端断开连接
+    ws.on('close', () => {
+        console.log('[WebSocket] Client disconnected');
+        wsClients.delete(ws);
+        clearInterval(heartbeat);
+    });
+
+    ws.on('error', (error) => {
+        console.error('[WebSocket] Connection error:', error.message);
+    });
+});
+
+// 处理客户端消息
+function handleClientMessage(ws, data) {
+    console.log('[WebSocket] Received message:', data.type);
+
+    switch (data.type) {
+        case 'ping':
+            ws.send(JSON.stringify({ type: 'pong', payload: { time: Date.now() } }));
+            break;
+
+        case 'subscribe':
+            // 客户端订阅（预留接口）
+            ws.send(JSON.stringify({
+                type: 'subscribed',
+                payload: { channels: data.payload?.channels || [] }
+            }));
+            break;
+
+        default:
+            console.warn('[WebSocket] Unknown message type:', data.type);
+    }
+}
+
+// 广播消息给所有客户端
+function broadcast(type, payload) {
+    const message = JSON.stringify({ type, payload, timestamp: Date.now() });
+    let sent = 0;
+
+    wsClients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+            sent++;
+        }
+    });
+
+    if (sent > 0) {
+        console.log(`[WebSocket] Broadcast "${type}" to ${sent} client(s)`);
+    }
+}
+
+// 文件监听：监控所有项目的 project-status.json
+const watcher = chokidar.watch(`${WORKSPACE_ROOT}/*/project-status.json`, {
+    persistent: true,
+    ignoreInitial: true,
+    awaitWriteFinish: {
+        stabilityThreshold: 500,  // 防抖 500ms
+        pollInterval: 100
+    }
+});
+
+watcher.on('change', async (filePath) => {
+    console.log('[Watcher] Project status changed:', filePath);
+
+    try {
+        // 读取更新后的状态
+        const statusData = await fs.readFile(filePath, 'utf-8');
+        const status = JSON.parse(statusData);
+
+        // 提取项目 ID（从路径中）
+        const pathParts = filePath.split(path.sep);
+        const projectDir = pathParts[pathParts.length - 2];
+
+        // 读取项目列表，匹配项目 ID
+        const projectsData = await readProjects();
+        const project = projectsData.projects.find(p =>
+            p.path.replace('./', '').replace(/\\/g, '/') === projectDir
+        );
+
+        const projectId = project?.id || projectDir;
+
+        // 计算健康度
+        const health = calculateHealth(status);
+
+        // 广播更新
+        broadcast('project-status-update', {
+            projectId,
+            projectName: status.basic?.name || projectId,
+            status,
+            health,
+            path: filePath
+        });
+    } catch (error) {
+        console.error('[Watcher] Error processing status change:', error.message);
+    }
+});
+
+watcher.on('error', (error) => {
+    console.error('[Watcher] File watcher error:', error.message);
+});
+
+// 定期推送 Gateway 状态（每 10 秒）
+setInterval(async () => {
+    if (wsClients.size === 0) return; // 无客户端时跳过
+
+    try {
+        const gatewayStatus = statusCache || await fetchOpenClawStatus();
+        broadcast('gateway-status-update', gatewayStatus);
+    } catch (error) {
+        console.error('[Broadcast] Failed to fetch gateway status:', error.message);
+        broadcast('gateway-status-update', {
+            gateway: { status: 'offline', error: error.message },
+            agents: [],
+            cron: []
+        });
+    }
+}, 10000);
+
 // 启动服务器
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
     console.log('╔════════════════════════════════════════════╗');
-    console.log('║   Ergo API Bridge Server                  ║');
+    console.log('║   Ergo API Bridge Server v1.5             ║');
     console.log('╠════════════════════════════════════════════╣');
-    console.log(`║   Port: ${PORT}                              ║`);
+    console.log(`║   HTTP Port: ${PORT}                          ║`);
+    console.log(`║   WebSocket: ws://localhost:${PORT}           ║`);
     console.log(`║   Status: http://localhost:${PORT}/api/status  ║`);
     console.log(`║   Refresh: http://localhost:${PORT}/api/status/refresh ║`);
     console.log(`║   Health: http://localhost:${PORT}/health      ║`);
@@ -805,6 +1012,11 @@ app.listen(PORT, async () => {
         console.log('   提示: 设置环境变量 ERGO_SECRET 自定义密钥');
         console.log('');
     }
+    console.log('🔄 WebSocket Server:');
+    console.log(`   - 实时状态推送: 每 10 秒`);
+    console.log(`   - 文件监听: ${WORKSPACE_ROOT}/*/project-status.json`);
+    console.log(`   - 心跳间隔: 30 秒`);
+    console.log('');
     console.log('Press Ctrl+C to stop');
     console.log('');
 
@@ -815,6 +1027,16 @@ app.listen(PORT, async () => {
     // 设置定时更新（每 5 分钟）
     setInterval(updateCache, CACHE_DURATION);
     console.log(`[INIT] Auto-update scheduled every ${CACHE_DURATION / 60000} minutes`);
+    console.log('[INIT] File watcher started');
+});
+
+// 升级 HTTP 连接为 WebSocket
+server.on('upgrade', (request, socket, head) => {
+    console.log('[WebSocket] Upgrade request received');
+
+    wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+    });
 });
 
 // 优雅关闭
