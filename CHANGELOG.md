@@ -116,6 +116,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - ✅ 本地测试通过（ws://localhost:8081 → ws://localhost:8082）
   - ⚠️ 公网 cpolar 需要确认 WebSocket 支持（WSS 协议）
 
+- **projects-manage.html API 访问失败** (2026-02-21)：
+  - 修复外网访问时 ERR_CONNECTION_REFUSED 错误
+  - 修改 API_BASE 从 `http://localhost:8082` 改为空字符串
+  - 使用代理模式访问，与 dashboard.html 保持一致
+  - ✅ 本地和公网访问均正常
+
 ### Documentation
 - ✅ 功能规划：[docs/versions/v1.5/feature-plan.md](docs/versions/v1.5/feature-plan.md)
 - ✅ ROADMAP 更新：v1.5 完成标记
