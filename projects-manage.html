@@ -425,7 +425,9 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const API_BASE = 'http://localhost:8082';
+        // 使用相对路径，通过前端代理访问 API Bridge
+        // 外网访问时不能直接访问 localhost:8082，必须使用代理
+        const API_BASE = ''; // 空字符串表示使用当前域名 + /api 前缀
         let editingProjectId = null;
 
         // 获取 API Key
