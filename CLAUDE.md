@@ -150,8 +150,24 @@ Ergo/
 - 记录：新增功能、修复问题、技术细节
 - 遵循 [Keep a Changelog](https://keepachangelog.com/) 格式
 
+**阶段 5.5：Smoke Test 验证 ⚠️ 强制要求**
+- **所有提交前必须通过 smoke test**
+- 运行命令：`npm test` 或 `npm run test:local`
+- 确保所有基础功能无 regression
+- 每个新功能至少新增 1 个 smoke test 用例
+- 测试失败时禁止提交
+
+```bash
+# 提交前运行测试
+npm test
+
+# 如果测试失败，必须先修复再提交
+# ✅ 34/34 tests passed → 可以提交
+# ❌ 有失败 → 禁止提交，先修复
+```
+
 **阶段 6：提交推送**
-- 执行 Git 三连：`git add` → `git commit` → `git push`
+- 确认 smoke test 通过后，执行 Git 三连：`git add` → `git commit` → `git push`
 - Commit 信息需包含完整上下文
 
 **违反流程的后果：**
