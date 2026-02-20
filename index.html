@@ -1056,7 +1056,7 @@
             try {
                 const data = await fetchAllData(forceRefresh);
                 const isRealData = data.gateway._source === 'api';
-                const isCached = data.gateway._cached;
+                const isCached = data._meta?.cached || false;  // 从 _meta 读取缓存标志
                 const hasError = data._meta?.error || data.gateway._source === 'error';
 
                 renderAllData(data);
