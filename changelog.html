@@ -218,9 +218,14 @@
 
     <script>
         const GATEWAY_CONFIG = {
-            url: 'http://localhost:8082',
+            url: '',  // 使用相对路径，通过前端代理
             timeout: 10000
         };
+
+        // 获取 API 密钥
+        function getApiKey() {
+            return localStorage.getItem('ergo-api-key') || 'ergo-default-secret-key-2026';
+        }
 
         async function loadChangelog() {
             const contentEl = document.getElementById('content');
@@ -231,7 +236,10 @@
 
                 const response = await fetch(`${GATEWAY_CONFIG.url}/api/changelog`, {
                     method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Ergo-Key': getApiKey()  // 添加认证头
+                    },
                     signal: controller.signal
                 });
 
