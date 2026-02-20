@@ -493,8 +493,9 @@
         // ============================
         // CONFIG
         // ============================
+        // 使用相对路径，通过前端服务器代理访问 API
         const GATEWAY_CONFIG = {
-            url: 'http://localhost:8082'
+            url: '' // 空字符串表示使用当前域名，前端服务器会代理 /api/* 到 8082
         };
 
         const DEFAULT_API_KEY = 'ergo-default-secret-key-2026';
@@ -528,7 +529,12 @@
         // REALTIME CONNECTION
         // ============================
         function initRealtimeConnection() {
-            const wsUrl = GATEWAY_CONFIG.url.replace('http://', 'ws://').replace('https://', 'wss://');
+            // 构建 WebSocket URL（使用当前域名）
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            const wsUrl = `${protocol}//${host}`;
+
+            console.log('[Dashboard] Connecting to WebSocket:', wsUrl);
             realtime = new RealtimeService(wsUrl);
 
             realtime.on('connected', () => {

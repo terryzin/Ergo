@@ -984,9 +984,12 @@
         // WebSocket 实时连接（v1.5）
         // ============================
         function initRealtimeConnection() {
-            const wsUrl = GATEWAY_CONFIG.url.replace('http://', 'ws://').replace('https://', 'wss://');
-            console.log('[v1.5] Initializing WebSocket:', wsUrl);
+            // 构建 WebSocket URL（使用当前域名，通过前端代理）
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            const wsUrl = `${protocol}//${host}`;
 
+            console.log('[v1.5] Initializing WebSocket:', wsUrl);
             realtime = new RealtimeService(wsUrl);
 
             // 连接成功
