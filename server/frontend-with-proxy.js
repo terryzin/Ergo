@@ -17,12 +17,18 @@ const PORT = process.env.PORT || 8081;
 const API_BRIDGE_URL = process.env.API_BRIDGE_URL || 'http://localhost:8082';
 
 // API 代理中间件
+// 注意：app.use('/api', ...) 会自动strip /api 前缀，所以需要用 pathRewrite 加回来
 app.use('/api', createProxyMiddleware({
     target: API_BRIDGE_URL,
     changeOrigin: true,
-    logLevel: 'info',
+    pathRewrite: (path, req) => {
+        // 将 /status 重写为 /api/status
+        return '/api' + path;
+    },
+    logLevel: 'debug',
     onProxyReq: (proxyReq, req, res) => {
-        console.log(`[PROXY] ${req.method} ${req.path} → ${API_BRIDGE_URL}${req.path}`);
+        const targetUrl = `${API_BRIDGE_URL}/api${req.url}`;
+        console.log(`[PROXY] ${req.method} ${req.originalUrl} → ${targetUrl}`);
     },
     onError: (err, req, res) => {
         console.error('[PROXY ERROR]', err.message);
