@@ -94,10 +94,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ Cron 触发 API 测试
 - ✅ 浏览器通知测试
 
+### Fixed
+- **浏览器缓存问题** (2026-02-21)：
+  - 前端服务器添加 `Cache-Control: no-cache` 响应头
+  - 防止 HTML 文件被浏览器缓存导致加载旧版本代码
+  - 修复 projects-manage.html 显示 404 错误（logo.png, realtime.js）
+  - 中间件在 Express static 之前拦截 `.html` 请求
+
 ### Documentation
 - ✅ 功能规划：[docs/versions/v1.5/feature-plan.md](docs/versions/v1.5/feature-plan.md)
 - ✅ ROADMAP 更新：v1.5 完成标记
 - ✅ 技术架构文档更新
+- ✅ 故障排查指南：[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) ⭐ 新增
 
 ### Breaking Changes
 - ⚠️ 需要 WebSocket 支持（IE 不支持）

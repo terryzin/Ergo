@@ -44,6 +44,16 @@ const apiProxy = createProxyMiddleware({
 
 app.use('/api', apiProxy);
 
+// 缓存控制中间件（对 HTML 文件禁用缓存）
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+    }
+    next();
+});
+
 // 静态文件服务
 app.use(express.static(path.join(__dirname, '..')));
 
