@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>更新日志 - Ergo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #000000;
+            --bg-2: #1d1d1f;
+            --bg-3: #2c2c2e;
+            --text-1: #f5f5f7;
+            --text-2: #a1a1a6;
+            --text-3: #6e6e73;
+            --brand: #2997ff;
+            --ok: #30d158;
+            --err: #ff453a;
+            --warn: #ffd60a;
+            --purple: #bf5af2;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text-1);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--bg-3);
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-2);
+            font-size: 16px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: var(--brand);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .version {
+            margin-bottom: 50px;
+            background: var(--bg-2);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--bg-3);
+        }
+
+        .version-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--bg-3);
+        }
+
+        .version-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--brand);
+        }
+
+        .version-date {
+            color: var(--text-3);
+            font-size: 14px;
+        }
+
+        .category {
+            margin-bottom: 25px;
+        }
+
+        .category:last-child {
+            margin-bottom: 0;
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-1);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-added {
+            background: rgba(48, 209, 88, 0.15);
+            color: var(--ok);
+        }
+
+        .badge-fixed {
+            background: rgba(255, 69, 58, 0.15);
+            color: var(--err);
+        }
+
+        .badge-changed {
+            background: rgba(41, 151, 255, 0.15);
+            color: var(--brand);
+        }
+
+        .badge-improved {
+            background: rgba(191, 90, 242, 0.15);
+            color: var(--purple);
+        }
+
+        .badge-technical {
+            background: rgba(161, 161, 166, 0.15);
+            color: var(--text-2);
+        }
+
+        .category-items {
+            list-style: none;
+        }
+
+        .category-items li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            color: var(--text-2);
+            font-size: 15px;
+        }
+
+        .category-items li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--text-3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--text-2);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-3);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--err);
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 0;
+            color: var(--text-3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← 返回首页</a>
+
+        <div class="header">
+            <h1>更新日志</h1>
+            <p>Ergo 项目的完整版本历史和变更记录</p>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GATEWAY_CONFIG = {
+            url: 'http://localhost:8082',
+            timeout: 10000
+        };
+
+        async function loadChangelog() {
+            const contentEl = document.getElementById('content');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), GATEWAY_CONFIG.timeout);
+
+                const response = await fetch(`${GATEWAY_CONFIG.url}/api/changelog`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (!data.versions || data.versions.length === 0) {
+                    contentEl.innerHTML = '<div class="empty">暂无更新记录</div>';
+                    return;
+                }
+
+                contentEl.innerHTML = data.versions.map(version => {
+                    const featuresHtml = version.features.map(feature => {
+                        const badgeClass = `badge-${feature.category.toLowerCase()}`;
+
+                        const itemsHtml = feature.items
+                            .filter(item => item.trim() !== '--' && item.trim() !== '')
+                            .map(item => `<li>${escapeHtml(item)}</li>`)
+                            .join('');
+
+                        if (!itemsHtml) return '';
+
+                        return `
+                            <div class="category">
+                                <div class="category-title">
+                                    <span class="category-badge ${badgeClass}">${feature.category}</span>
+                                </div>
+                                <ul class="category-items">
+                                    ${itemsHtml}
+                                </ul>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="version">
+                            <div class="version-header">
+                                <div class="version-title">${escapeHtml(version.version)}</div>
+                                <div class="version-date">${escapeHtml(version.date)}</div>
+                            </div>
+                            ${featuresHtml}
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Failed to load changelog:', error);
+                contentEl.innerHTML = `
+                    <div class="error">
+                        <p>⚠️ 加载失败</p>
+                        <p style="font-size:14px;margin-top:10px;color:var(--text-3);">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', loadChangelog);
+    </script>
+</body>
+</html>
