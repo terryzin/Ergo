@@ -510,6 +510,20 @@ async function readProjects() {
 }
 
 /**
+ * 获取单个项目数据
+ */
+async function getProjectData(projectId) {
+    const projectsData = await readProjects();
+    const project = projectsData.projects.find(p => p.id === projectId);
+
+    if (!project) {
+        throw new Error(`Project "${projectId}" not found`);
+    }
+
+    return project;
+}
+
+/**
  * 写入项目列表
  */
 async function writeProjects(projectsData) {
@@ -693,7 +707,7 @@ function execCommand(command, cwd, timeout = 30000) {
 async function readProjectStatus(projectPath) {
     try {
         const sanitized = sanitizePath(projectPath);
-        const statusPath = path.join(WORKSPACE_ROOT, sanitized, 'project-status.json');
+        const statusPath = path.join(sanitized, 'project-status.json');
 
         const stat = await fs.stat(statusPath);
         const data = await fs.readFile(statusPath, 'utf-8');
@@ -1172,6 +1186,213 @@ app.get('/api/files/read', async (req, res) => {
 
         res.status(500).json({
             error: 'Failed to read file',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/logs/tail
+ * 读取日志文件尾部（v1.6）
+ */
+app.get('/api/logs/tail', async (req, res) => {
+    try {
+        const { project, logType = 'app', lines = 100 } = req.query;
+
+        // 验证必填参数
+        if (!project) {
+            return res.status(400).json({
+                error: 'Missing parameter',
+                message: 'Project ID is required'
+            });
+        }
+
+        // 获取项目数据
+        let projectData;
+        try {
+            projectData = await getProjectData(project);
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Project not found',
+                message: error.message
+            });
+        }
+
+        // 读取项目状态文件获取日志路径
+        const statusFile = await readProjectStatus(projectData.path);
+
+        if (!statusFile.exists || !statusFile.data.logs) {
+            return res.status(404).json({
+                error: 'Log configuration not found',
+                message: 'Project does not have log configuration in project-status.json'
+            });
+        }
+
+        const logRelativePath = statusFile.data.logs?.[logType];
+
+        if (!logRelativePath) {
+            return res.status(404).json({
+                error: 'Log type not found',
+                message: `Log type "${logType}" is not configured for this project`,
+                availableTypes: Object.keys(statusFile.data.logs || {})
+            });
+        }
+
+        // 解析日志文件路径（相对于项目目录）
+        const projectDir = sanitizePath(projectData.path);
+        const logPath = path.join(projectDir, logRelativePath);
+
+        // 验证日志文件路径安全性
+        if (!logPath.startsWith(WORKSPACE_ROOT)) {
+            return res.status(403).json({
+                error: 'Access denied',
+                message: 'Log file path is outside workspace'
+            });
+        }
+
+        // 检查日志文件是否存在
+        let stats;
+        try {
+            stats = await fs.stat(logPath);
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Log file not found',
+                message: `Log file does not exist: ${logRelativePath}`
+            });
+        }
+
+        // 行数限制（最大1000行）
+        const safeLines = Math.min(parseInt(lines) || 100, 1000);
+
+        // 读取文件尾部
+        let logLines = [];
+        try {
+            const content = await fs.readFile(logPath, 'utf-8');
+            const allLines = content.split('\n');
+            logLines = allLines.slice(-safeLines).filter(line => line.trim());
+        } catch (error) {
+            return res.status(500).json({
+                error: 'Failed to read log file',
+                message: error.message
+            });
+        }
+
+        // 计算总行数
+        const content = await fs.readFile(logPath, 'utf-8');
+        const totalLines = content.split('\n').length;
+
+        res.json({
+            project,
+            logType,
+            logPath: logRelativePath,
+            lines: logLines,
+            totalLines,
+            requestedLines: safeLines,
+            fileSize: stats.size,
+            lastModified: stats.mtime.toISOString(),
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('[LOGS] Error reading log:', error);
+        res.status(500).json({
+            error: 'Failed to read log',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/logs/download
+ * 下载完整日志文件（v1.6）
+ */
+app.get('/api/logs/download', async (req, res) => {
+    try {
+        const { project, logType = 'app' } = req.query;
+
+        // 验证必填参数
+        if (!project) {
+            return res.status(400).json({
+                error: 'Missing parameter',
+                message: 'Project ID is required'
+            });
+        }
+
+        // 获取项目数据
+        let projectData;
+        try {
+            projectData = await getProjectData(project);
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Project not found',
+                message: error.message
+            });
+        }
+
+        // 读取项目状态文件获取日志路径
+        const statusFile = await readProjectStatus(projectData.path);
+
+        if (!statusFile.exists || !statusFile.data.logs) {
+            return res.status(404).json({
+                error: 'Log configuration not found',
+                message: 'Project does not have log configuration'
+            });
+        }
+
+        const logRelativePath = statusFile.data.logs?.[logType];
+
+        if (!logRelativePath) {
+            return res.status(404).json({
+                error: 'Log type not found',
+                message: `Log type "${logType}" is not configured`
+            });
+        }
+
+        // 解析日志文件路径
+        const projectDir = sanitizePath(projectData.path);
+        const logPath = path.join(projectDir, logRelativePath);
+
+        // 安全检查
+        if (!logPath.startsWith(WORKSPACE_ROOT)) {
+            return res.status(403).json({
+                error: 'Access denied',
+                message: 'Log file path is outside workspace'
+            });
+        }
+
+        // 检查文件是否存在
+        try {
+            await fs.stat(logPath);
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Log file not found',
+                message: `Log file does not exist: ${logRelativePath}`
+            });
+        }
+
+        // 设置下载响应头
+        const filename = path.basename(logPath);
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+
+        // 流式传输文件
+        const stream = require('fs').createReadStream(logPath);
+        stream.pipe(res);
+
+        stream.on('error', (error) => {
+            console.error('[LOGS] Download error:', error);
+            if (!res.headersSent) {
+                res.status(500).json({
+                    error: 'Download failed',
+                    message: error.message
+                });
+            }
+        });
+
+    } catch (error) {
+        console.error('[LOGS] Download error:', error);
+        res.status(500).json({
+            error: 'Failed to download log',
             message: error.message
         });
     }

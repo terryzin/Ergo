@@ -835,6 +835,100 @@ async function testCommandExecution(baseUrl) {
 }
 
 /**
+ * v1.6 日志查看 API 测试
+ */
+async function testLogViewing(baseUrl) {
+    const isPublic = baseUrl.includes('cpolar');
+    const label = isPublic ? '公网' : '本地';
+
+    // 使用正确的 API 端口
+    const apiBaseUrl = isPublic ? baseUrl : CONFIG.localApiBaseUrl;
+
+    console.log(`\n${colors.blue}▸ ${label}日志查看测试 (v1.6)${colors.reset}`);
+
+    // 测试日志尾部读取
+    await test(`${label} GET /api/logs/tail 读取默认日志`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/tail?project=ergo`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 200);
+        assert(res.data.project === 'ergo', 'Should return project ID');
+        assert(res.data.lines, 'Should have lines array');
+        assert(Array.isArray(res.data.lines), 'Lines should be an array');
+        assert(res.data.totalLines >= 0, 'Should have total lines count');
+        assert(res.data.fileSize > 0, 'Should have file size');
+    });
+
+    await test(`${label} GET /api/logs/tail 指定日志类型`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/tail?project=ergo&logType=app&lines=5`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 200);
+        assert(res.data.logType === 'app', 'Should return correct log type');
+        assert(res.data.lines.length <= 5, 'Should respect lines limit');
+    });
+
+    await test(`${label} GET /api/logs/tail 缺少 project 参数`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/tail`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 400);
+        assert(res.data.error === 'Missing parameter', 'Should require project parameter');
+    });
+
+    await test(`${label} GET /api/logs/tail 项目不存在`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/tail?project=nonexistent`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 404);
+        assert(res.data.error === 'Project not found', 'Should return project not found');
+    });
+
+    await test(`${label} GET /api/logs/tail 日志类型不存在`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/tail?project=ergo&logType=nonexistent`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 404);
+        assert(res.data.error === 'Log type not found', 'Should return log type not found');
+    });
+
+    // 测试日志下载
+    await test(`${label} GET /api/logs/download 下载日志文件`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/download?project=ergo&logType=app`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 200);
+        const contentType = res.headers['content-type'];
+        assert(contentType && contentType.includes('text/plain'), 'Should have text/plain content type');
+        const contentDisposition = res.headers['content-disposition'];
+        assert(contentDisposition && contentDisposition.includes('attachment'), 'Should be downloadable');
+    });
+
+    await test(`${label} GET /api/logs/download 缺少 project 参数`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/download`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 400);
+        assert(res.data.error === 'Missing parameter', 'Should require project parameter');
+    });
+
+    // 测试认证
+    await test(`${label} GET /api/logs/tail 无密钥访问`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/tail?project=ergo`);
+        assertStatus(res, 401);
+        assert(res.data.error === 'Missing API key', 'Should require API key');
+    });
+
+    await test(`${label} GET /api/logs/download 错误的密钥`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/logs/download?project=ergo`, {
+            headers: { 'X-Ergo-Key': 'wrong-key' }
+        });
+        assertStatus(res, 401);
+        assert(res.data.error === 'Invalid API key', 'Should reject invalid key');
+    });
+}
+
+/**
  * v1.5 实时监控与自动化测试
  */
 async function testRealtimeFeatures(baseUrl) {
@@ -938,6 +1032,7 @@ async function main() {
             await testRealtimeFeatures(CONFIG.localBaseUrl);  // v1.5 新增
             await testFileManagement(CONFIG.localBaseUrl);  // v1.6 新增
             await testCommandExecution(CONFIG.localBaseUrl);  // v1.6 新增
+            await testLogViewing(CONFIG.localBaseUrl);  // v1.6 新增
         }
 
         // 公网测试
@@ -954,6 +1049,7 @@ async function main() {
             await testRealtimeFeatures(CONFIG.publicBaseUrl);  // v1.5 新增
             await testFileManagement(CONFIG.publicBaseUrl);  // v1.6 新增
             await testCommandExecution(CONFIG.publicBaseUrl);  // v1.6 新增
+            await testLogViewing(CONFIG.publicBaseUrl);  // v1.6 新增
         }
     } catch (error) {
         console.error(`\n${colors.red}Fatal error: ${error.message}${colors.reset}`);

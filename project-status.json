@@ -59,5 +59,10 @@
   "custom": {
     "cpolarDomain": "https://terryzin.cpolar.top",
     "gatewayDomain": "https://terrysopenclaw.cpolar.top"
+  },
+  "logs": {
+    "app": "./logs/app.log",
+    "error": "./logs/error.log",
+    "test": "./logs/test.log"
   }
 }
