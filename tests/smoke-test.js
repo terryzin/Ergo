@@ -16,6 +16,7 @@ const https = require('https');
 const CONFIG = {
     apiKey: 'ergo-default-secret-key-2026',
     localBaseUrl: 'http://localhost:8081',
+    localApiBaseUrl: 'http://localhost:8082',  // API Bridge 端口
     publicBaseUrl: 'https://terryzin.cpolar.top',
     timeout: 10000
 };
@@ -510,6 +511,129 @@ async function testCacheControl(baseUrl) {
 }
 
 /**
+ * v1.6 文件管理 API 测试
+ */
+async function testFileManagement(baseUrl) {
+    const isPublic = baseUrl.includes('cpolar');
+    const label = isPublic ? '公网' : '本地';
+
+    // 使用正确的 API 端口
+    const apiBaseUrl = isPublic ? baseUrl : CONFIG.localApiBaseUrl;
+
+    console.log(`\n${colors.blue}▸ ${label}文件管理测试 (v1.6)${colors.reset}`);
+
+    // 测试文件浏览 API
+    await test(`${label} GET /api/files/browse 浏览根目录`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/browse?path=.`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 200);
+        assert(res.data.files, 'Should have files array');
+        assert(Array.isArray(res.data.files), 'Files should be an array');
+        assert(res.data.path !== undefined, 'Should have path');
+        assert(res.data.total >= 0, 'Should have total count');
+    });
+
+    await test(`${label} GET /api/files/browse 浏览特定项目`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/browse?path=my-dashboard`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 200);
+        assert(res.data.files.length > 0, 'Project directory should have files');
+        const hasPackageJson = res.data.files.some(f => f.name === 'package.json');
+        assert(hasPackageJson, 'Should find package.json');
+    });
+
+    await test(`${label} GET /api/files/browse 路径遍历防护`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/browse?path=../../../etc`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 400);
+        assert(res.data.error, 'Should return error');
+        assert(res.data.message.includes('traversal'), 'Should detect path traversal');
+    });
+
+    await test(`${label} GET /api/files/browse 不存在的目录`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/browse?path=nonexistent-dir-12345`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 404);
+        assert(res.data.error === 'Directory not found', 'Should return directory not found');
+    });
+
+    // 测试文件读取 API
+    await test(`${label} GET /api/files/read 读取 package.json`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/read?path=my-dashboard/package.json`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 200);
+        assert(res.data.content, 'Should have content');
+        assert(res.data.content.includes('"name"'), 'Content should be JSON');
+        assert(res.data.lines > 0, 'Should have line count');
+        assert(res.data.size > 0, 'Should have file size');
+    });
+
+    await test(`${label} GET /api/files/read 缺少 path 参数`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/read`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 400);
+        assert(res.data.error === 'Missing parameter', 'Should require path parameter');
+    });
+
+    await test(`${label} GET /api/files/read 路径遍历防护`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/read?path=../../etc/passwd`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 400);
+        assert(res.data.message.includes('traversal'), 'Should block path traversal');
+    });
+
+    await test(`${label} GET /api/files/read 保护敏感文件`, async () => {
+        // 创建测试用 .env 文件（如果不存在）
+        const res = await fetch(`${apiBaseUrl}/api/files/read?path=my-dashboard/.env`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        // 预期返回 403 禁止访问，或 404 文件不存在
+        assert(res.status === 403 || res.status === 404, 'Should block access to .env files');
+        if (res.status === 403) {
+            assert(res.data.error === 'File protected', 'Should indicate file is protected');
+        }
+    });
+
+    await test(`${label} GET /api/files/read 文件不存在`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/read?path=my-dashboard/nonexistent-file.txt`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 404);
+        assert(res.data.error === 'File not found', 'Should return file not found');
+    });
+
+    await test(`${label} GET /api/files/read 尝试读取目录`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/read?path=my-dashboard`, {
+            headers: { 'X-Ergo-Key': CONFIG.apiKey }
+        });
+        assertStatus(res, 400);
+        assert(res.data.error === 'Not a file', 'Should reject directories');
+    });
+
+    // 测试认证
+    await test(`${label} GET /api/files/browse 无密钥访问`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/browse?path=.`);
+        assertStatus(res, 401);
+        assert(res.data.error === 'Missing API key', 'Should require API key');
+    });
+
+    await test(`${label} GET /api/files/read 错误的密钥`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/files/read?path=my-dashboard/package.json`, {
+            headers: { 'X-Ergo-Key': 'wrong-key' }
+        });
+        assertStatus(res, 401);
+        assert(res.data.error === 'Invalid API key', 'Should reject invalid key');
+    });
+}
+
+/**
  * v1.5 实时监控与自动化测试
  */
 async function testRealtimeFeatures(baseUrl) {
@@ -611,6 +735,7 @@ async function main() {
             await testPerformance(CONFIG.localBaseUrl);
             await testErrorHandling(CONFIG.localBaseUrl);
             await testRealtimeFeatures(CONFIG.localBaseUrl);  // v1.5 新增
+            await testFileManagement(CONFIG.localBaseUrl);  // v1.6 新增
         }
 
         // 公网测试
@@ -625,6 +750,7 @@ async function main() {
             await testPerformance(CONFIG.publicBaseUrl);
             await testErrorHandling(CONFIG.publicBaseUrl);
             await testRealtimeFeatures(CONFIG.publicBaseUrl);  // v1.5 新增
+            await testFileManagement(CONFIG.publicBaseUrl);  // v1.6 新增
         }
     } catch (error) {
         console.error(`\n${colors.red}Fatal error: ${error.message}${colors.reset}`);

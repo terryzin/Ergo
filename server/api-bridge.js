@@ -533,11 +533,66 @@ async function validateProjectPath(projectPath) {
  * 路径安全检查（防止路径遍历攻击）
  */
 function sanitizePath(inputPath) {
+    // 禁止路径遍历
+    if (inputPath.includes('../') || inputPath.includes('..\\')) {
+        throw new Error('Path traversal detected');
+    }
+
     const normalized = path.normalize(inputPath);
     if (normalized.includes('..')) {
         throw new Error('Path traversal detected');
     }
-    return normalized;
+
+    // 解析为绝对路径
+    const resolvedPath = path.resolve(WORKSPACE_ROOT, normalized);
+
+    // 必须在工作空间内
+    if (!resolvedPath.startsWith(WORKSPACE_ROOT)) {
+        throw new Error('Access denied: outside workspace');
+    }
+
+    return resolvedPath;
+}
+
+/**
+ * 敏感文件黑名单（v1.6 安全增强）
+ */
+const PROTECTED_FILES = [
+    '.env',
+    '.env.local',
+    '.env.production',
+    'credentials.json',
+    'api-keys.txt',
+    'token.txt',
+    'id_rsa',
+    'id_ed25519',
+    'id_dsa',
+    '.ssh',
+    '.pem',
+    '.key',
+    '.pfx',
+    'secrets.yml',
+    'secrets.yaml'
+];
+
+/**
+ * 检查是否为受保护文件
+ */
+function isProtectedFile(filename) {
+    const basename = path.basename(filename).toLowerCase();
+
+    return PROTECTED_FILES.some(pattern => {
+        if (pattern.startsWith('.') && !pattern.includes('*')) {
+            // 精确匹配扩展名（如 .env, .pem）
+            return basename === pattern || basename.endsWith(pattern);
+        }
+        if (pattern.includes('*')) {
+            // 通配符匹配
+            return new RegExp(pattern.replace('*', '.*')).test(basename);
+        }
+        // 精确匹配文件名
+        return basename === pattern.toLowerCase();
+    });
 }
 
 /**
@@ -827,6 +882,206 @@ app.get('/api/projects/:id/status', async (req, res) => {
     } catch (error) {
         console.error('[API] Error reading project status:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// =====================================================
+// 文件管理 API（v1.6）
+// =====================================================
+
+/**
+ * GET /api/files/browse
+ * 浏览文件树（v1.6）
+ */
+app.get('/api/files/browse', async (req, res) => {
+    try {
+        const userPath = req.query.path || './';
+
+        // 安全检查
+        let resolvedPath;
+        try {
+            resolvedPath = sanitizePath(userPath);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid path',
+                message: error.message
+            });
+        }
+
+        // 检查路径是否存在
+        try {
+            const stats = await fs.stat(resolvedPath);
+            if (!stats.isDirectory()) {
+                return res.status(400).json({
+                    error: 'Not a directory',
+                    message: 'The specified path is not a directory'
+                });
+            }
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Directory not found',
+                message: `Directory "${userPath}" does not exist`
+            });
+        }
+
+        // 读取目录内容
+        const entries = await fs.readdir(resolvedPath, { withFileTypes: true });
+
+        const files = await Promise.all(entries.map(async (entry) => {
+            const fullPath = path.join(resolvedPath, entry.name);
+            const relativePath = path.relative(WORKSPACE_ROOT, fullPath).replace(/\\/g, '/');
+
+            try {
+                const stats = await fs.stat(fullPath);
+
+                const fileInfo = {
+                    name: entry.name,
+                    path: relativePath,
+                    type: entry.isDirectory() ? 'directory' : 'file',
+                    size: entry.isFile() ? stats.size : 0,
+                    modifiedAt: stats.mtime.toISOString(),
+                    protected: entry.isFile() ? isProtectedFile(entry.name) : false
+                };
+
+                // 如果是目录，统计子项数量
+                if (entry.isDirectory()) {
+                    try {
+                        const children = await fs.readdir(fullPath);
+                        fileInfo.children = children.length;
+                    } catch {
+                        fileInfo.children = 0;
+                    }
+                }
+
+                return fileInfo;
+            } catch (error) {
+                // 如果读取失败（权限问题等），返回基础信息
+                return {
+                    name: entry.name,
+                    path: relativePath,
+                    type: entry.isDirectory() ? 'directory' : 'file',
+                    error: 'Permission denied'
+                };
+            }
+        }));
+
+        // 排序：目录优先，然后按名称
+        files.sort((a, b) => {
+            if (a.type === 'directory' && b.type === 'file') return -1;
+            if (a.type === 'file' && b.type === 'directory') return 1;
+            return a.name.localeCompare(b.name);
+        });
+
+        res.json({
+            path: path.relative(WORKSPACE_ROOT, resolvedPath).replace(/\\/g, '/') || '.',
+            absolutePath: resolvedPath,
+            files,
+            total: files.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('[API] Error browsing files:', error);
+        res.status(500).json({
+            error: 'Failed to browse files',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * GET /api/files/read
+ * 读取文件内容（v1.6）
+ */
+app.get('/api/files/read', async (req, res) => {
+    try {
+        const userPath = req.query.path;
+
+        if (!userPath) {
+            return res.status(400).json({
+                error: 'Missing parameter',
+                message: 'Query parameter "path" is required'
+            });
+        }
+
+        // 安全检查
+        let resolvedPath;
+        try {
+            resolvedPath = sanitizePath(userPath);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid path',
+                message: error.message
+            });
+        }
+
+        // 检查文件是否存在
+        let stats;
+        try {
+            stats = await fs.stat(resolvedPath);
+        } catch (error) {
+            return res.status(404).json({
+                error: 'File not found',
+                message: `File "${userPath}" does not exist`
+            });
+        }
+
+        // 必须是文件
+        if (!stats.isFile()) {
+            return res.status(400).json({
+                error: 'Not a file',
+                message: 'The specified path is not a file'
+            });
+        }
+
+        // 检查是否为受保护文件
+        if (isProtectedFile(resolvedPath)) {
+            return res.status(403).json({
+                error: 'File protected',
+                message: 'This file contains sensitive information and cannot be accessed',
+                hint: 'Protected files: .env, credentials.json, SSH keys, etc.'
+            });
+        }
+
+        // 文件大小限制（5MB）
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        if (stats.size > MAX_FILE_SIZE) {
+            return res.status(400).json({
+                error: 'File too large',
+                message: `File size (${(stats.size / 1024 / 1024).toFixed(2)} MB) exceeds limit (5 MB)`,
+                hint: 'Please use download instead'
+            });
+        }
+
+        // 读取文件内容
+        const content = await fs.readFile(resolvedPath, 'utf-8');
+        const lines = content.split('\n').length;
+
+        res.json({
+            path: path.relative(WORKSPACE_ROOT, resolvedPath).replace(/\\/g, '/'),
+            absolutePath: resolvedPath,
+            content,
+            size: stats.size,
+            lines,
+            encoding: 'utf-8',
+            modifiedAt: stats.mtime.toISOString(),
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('[API] Error reading file:', error);
+
+        // 处理编码错误
+        if (error.code === 'ERR_INVALID_ARG_TYPE' || error.message.includes('Invalid')) {
+            return res.status(400).json({
+                error: 'Cannot read file',
+                message: 'File is not a text file or uses unsupported encoding',
+                hint: 'Only UTF-8 encoded text files are supported'
+            });
+        }
+
+        res.status(500).json({
+            error: 'Failed to read file',
+            message: error.message
+        });
     }
 });
 
