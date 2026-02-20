@@ -1,7 +1,7 @@
 {
   "name": "ergo-dashboard",
-  "version": "1.5.0",
-  "description": "Ergo - 基于OpenClaw的个人AI管家控制台（实时监控与自动化）",
+  "version": "1.6.0",
+  "description": "Ergo - 基于OpenClaw的个人AI管家控制台（操作工作台）",
   "main": "index.html",
   "scripts": {
     "start": "node server/frontend-with-proxy.js",

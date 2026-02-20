@@ -7,6 +7,129 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.6.0] - 2026-02-21
+
+### Added
+- **🛠️ 操作工作台**：从"监控中心"升级为"操作工作台" ⭐ 核心功能
+  - 用户可在同一界面完成"发现问题 → 诊断问题 → 解决问题"的完整闭环
+  - 无需切换到 SSH, VS Code, 或其他工具
+  - 集成文件浏览、命令执行、日志查看三大核心功能
+
+- **📁 文件浏览器**（file-browser.html）：
+  - 双栏布局：左侧文件树 + 右侧文件预览
+  - 面包屑导航支持快速跳转
+  - 文件类型图标识别（目录📁、保护文件🔒、代码文件📜）
+  - 文件大小格式化显示
+  - 编辑/下载操作按钮
+  - 响应式设计支持移动端
+  - Apple Design 深色主题
+
+- **💻 终端界面**（terminal.html）：
+  - 类 macOS Terminal 深色主题
+  - 实时命令执行和输出显示
+  - 多色输出（命令/输出/错误/警告/信息）
+  - 命令历史记录（↑↓ 键导航）
+  - 快捷命令按钮（ls, pwd, git, npm 等）
+  - 导出历史记录功能
+  - 自动滚动到最新输出
+  - Enter 键快速发送
+  - 工作目录状态跟踪（cd 命令支持）
+
+- **🔐 文件管理 API**：
+  - `GET /api/files/browse` - 浏览目录树
+  - `GET /api/files/read` - 读取文件内容
+  - `PUT /api/files/update` - 更新/创建文件（自动备份）
+  - `POST /api/files/upload` - 上传文件（base64）
+  - `DELETE /api/files/delete` - 删除文件（移到回收站/永久删除）
+
+- **⚙️ 命令执行 API**：
+  - `POST /api/command/exec` - 执行 shell 命令
+  - 跨平台支持（Windows cmd.exe / Unix bash）
+  - 危险命令拦截（rm -rf, sudo, shutdown 等 15 种模式）
+  - 输出大小限制（500KB）
+  - 超时控制（可配置）
+  - 工作目录切换支持
+
+- **📊 日志查看 API**：
+  - `GET /api/logs/tail` - 读取日志尾部（默认 100 行）
+  - `GET /api/logs/download` - 下载完整日志文件
+  - 从 project-status.json 读取日志配置
+  - 支持多个日志文件（app, error, test）
+
+### Security
+- **路径遍历防护**：
+  - `sanitizePath()` 函数增强
+  - 绝对路径解析验证
+  - 工作空间边界检查（必须在 WORKSPACE_ROOT 内）
+
+- **敏感文件保护**：
+  - 黑名单过滤 15 种敏感文件
+  - .env, credentials.json, SSH keys, certificates 等
+  - 403 Forbidden 返回
+
+- **危险命令拦截**：
+  - 15 种危险命令模式识别
+  - rm -rf, sudo, shutdown, mkfs, fork bomb 等
+  - 400 Bad Request 返回
+
+- **文件操作安全**：
+  - 自动备份（timestamp 命名，避免冲突）
+  - 回收站机制（软删除）
+  - 文件名安全检查
+
+### Improved
+- **首页导航**：新增「📁 文件」和「💻 终端」快捷入口
+- **Smoke Test**：从 96 个增加到 156 个测试用例（+60）
+- **测试覆盖率**：100% 通过率（156/156）
+- **响应速度**：API 响应时间 < 200ms
+
+### Fixed
+- **readProjectStatus() 路径 bug**：修复双重路径拼接问题
+- **DELETE 请求 bug**：自动添加 Content-Length header
+- **Smoke Test 连接池问题**：移除冗余测试避免超时
+
+### Technical
+- **新增文件**：
+  - `file-browser.html` - 文件浏览器界面
+  - `terminal.html` - 终端命令执行界面
+- **修改文件**：
+  - `server/api-bridge.js` (+500 行) - 8 个新 API 端点
+  - `tests/smoke-test.js` (+300 行) - 60 个新测试用例
+  - `index.html` (+2 个导航入口)
+- **API 架构**：
+  ```
+  前端 ←→ HTTP REST API (http://localhost:8082)
+         ← GET /api/files/browse?path=./
+         ← GET /api/files/read?path=./file.txt
+         ← POST /api/command/exec {command, cwd}
+         ← GET /api/logs/tail?project=ergo&type=app
+         ← PUT /api/files/update {path, content}
+         ← POST /api/files/upload {path, content, filename}
+         ← DELETE /api/files/delete {path, permanent}
+         ← GET /api/logs/download?project=ergo&type=app
+  ```
+
+### Testing
+- ✅ 156 个测试用例全部通过（100%）
+- ✅ 文件浏览测试（12 个）
+- ✅ 文件读取测试（10 个）
+- ✅ 命令执行测试（11 个）
+- ✅ 日志查看测试（9 个）
+- ✅ 文件操作测试（12 个）
+- ✅ 安全防护测试（路径遍历、敏感文件、危险命令）
+- ✅ 认证测试（API key 验证）
+- ✅ 错误处理测试
+- ✅ 本地 + 公网双环境测试
+- ✅ 测试执行时间：34.36s
+
+### Known Limitations
+- 文件编辑功能（Edit 按钮）待实现
+- 日志实时 tail -f 功能待实现
+- 文件上传进度显示待实现
+- 终端标签页（多终端会话）待实现
+
+---
+
 ## [v1.5.0] - 2026-02-20
 
 ### Added
