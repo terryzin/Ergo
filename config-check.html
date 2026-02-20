@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>环境配置检查 - Ergo</title>
+    <script src="src/config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1d1d1f 100%);
+            color: #f5f5f7;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2997ff;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #86868b;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #f5f5f7;
+            font-size: 14px;
+            font-family: "SF Mono", Monaco, monospace;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: rgba(48, 209, 88, 0.2);
+            color: #30d158;
+        }
+
+        .status.warning {
+            background: rgba(255, 214, 10, 0.2);
+            color: #ffd60a;
+        }
+
+        .test-btn {
+            background: #2997ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .test-btn:hover {
+            background: #147ce5;
+            transform: translateY(-2px);
+        }
+
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: "SF Mono", Monaco, monospace;
+            white-space: pre-wrap;
+        }
+
+        .test-result.success {
+            background: rgba(48, 209, 88, 0.1);
+            color: #30d158;
+            border: 1px solid rgba(48, 209, 88, 0.3);
+        }
+
+        .test-result.error {
+            background: rgba(255, 69, 58, 0.1);
+            color: #ff453a;
+            border: 1px solid rgba(255, 69, 58, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 环境配置检查</h1>
+
+        <div class="card">
+            <h2>当前环境信息</h2>
+            <div class="info-row">
+                <span class="info-label">域名 (hostname)</span>
+                <span class="info-value" id="hostname">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">完整 URL</span>
+                <span class="info-value" id="fullUrl">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">环境类型</span>
+                <span class="info-value" id="envType">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">API Base URL</span>
+                <span class="info-value" id="apiBase">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">API Key</span>
+                <span class="info-value" id="apiKey">-</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>API 连接测试</h2>
+            <button class="test-btn" onclick="testApiConnection()">🚀 测试 API 连接</button>
+            <div id="testResult"></div>
+        </div>
+
+        <div class="card">
+            <h2>配置说明</h2>
+            <div style="color: #86868b; font-size: 14px; line-height: 1.8;">
+                <p style="margin-bottom: 15px;">
+                    <strong style="color: #f5f5f7;">自动环境检测规则：</strong>
+                </p>
+                <ul style="margin-left: 20px;">
+                    <li style="margin-bottom: 10px;">
+                        <span class="status success">本地开发</span>
+                        <code style="color: #2997ff;">localhost</code> 或 <code style="color: #2997ff;">127.0.0.1</code>
+                        → API Base: <code style="color: #30d158;">http://localhost:8082</code>
+                    </li>
+                    <li style="margin-bottom: 10px;">
+                        <span class="status warning">外网访问</span>
+                        <code style="color: #2997ff;">*.cpolar.top</code> 或其他域名
+                        → API Base: <code style="color: #ffd60a;">''</code> (相对路径，由前端代理转发)
+                    </li>
+                </ul>
+                <p style="margin-top: 20px; padding: 15px; background: rgba(41, 151, 255, 0.1); border-radius: 8px; border: 1px solid rgba(41, 151, 255, 0.3);">
+                    💡 <strong>提示：</strong>无需手动切换配置，系统会根据访问域名自动选择正确的 API 地址。
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 加载环境信息
+        function loadEnvironmentInfo() {
+            const info = ergoConfig.getEnvironmentInfo();
+
+            document.getElementById('hostname').textContent = info.hostname;
+            document.getElementById('fullUrl').textContent = window.location.href;
+            document.getElementById('envType').innerHTML = info.isLocal
+                ? '<span class="status success">本地开发</span>'
+                : '<span class="status warning">外网访问</span>';
+            document.getElementById('apiBase').textContent = info.apiBase || '(相对路径)';
+            document.getElementById('apiKey').textContent = info.apiKey;
+        }
+
+        // 测试 API 连接
+        async function testApiConnection() {
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = '<div class="test-result">⏳ 测试中...</div>';
+
+            try {
+                const apiUrl = ergoConfig.getApiUrl('/api/health');
+                const startTime = Date.now();
+
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'X-Ergo-Key': ergoConfig.getApiKey()
+                    }
+                });
+
+                const duration = Date.now() - startTime;
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="test-result success">
+✅ API 连接成功！
+
+请求地址: ${apiUrl}
+响应时间: ${duration}ms
+响应状态: ${response.status} ${response.statusText}
+
+响应数据:
+${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="test-result error">
+❌ API 连接失败
+
+错误信息: ${error.message}
+
+可能原因：
+1. API Bridge 服务未启动 (node server/api-bridge.js)
+2. 端口被占用或防火墙阻止
+3. API Key 不正确
+
+建议：
+- 本地环境：确保 http://localhost:8082 可访问
+- 外网环境：确保前端代理正确配置
+                    </div>
+                `;
+            }
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', loadEnvironmentInfo);
+    </script>
+</body>
+</html>

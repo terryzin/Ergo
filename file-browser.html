@@ -293,6 +293,7 @@
             }
         }
     </style>
+    <script src="src/config.js"></script>
 </head>
 <body>
     <div class="container">
@@ -335,8 +336,9 @@
     </div>
 
     <script>
-        const API_KEY = 'ergo-default-secret-key-2026';
-        const API_BASE = 'http://localhost:8082';
+        // 使用全局配置（自动适配本地/外网环境）
+        const API_KEY = ergoConfig.getApiKey();
+        const API_BASE = ergoConfig.API_BASE;
 
         class FileBrowser {
             constructor() {
