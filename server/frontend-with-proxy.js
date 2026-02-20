@@ -46,7 +46,8 @@ app.use('/api', apiProxy);
 
 // 缓存控制中间件（对 HTML 文件禁用缓存）
 app.use((req, res, next) => {
-    if (req.path.endsWith('.html')) {
+    // 匹配 .html 文件或根路径 / （返回 index.html）
+    if (req.path.endsWith('.html') || req.path === '/') {
         res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.setHeader('Pragma', 'no-cache');
         res.setHeader('Expires', '0');

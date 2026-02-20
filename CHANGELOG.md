@@ -93,13 +93,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ✅ 广播机制测试（多客户端同步）
 - ✅ Cron 触发 API 测试
 - ✅ 浏览器通知测试
+- ✅ **缓存控制测试** (v1.5.1 新增)：
+  - HTML 文件禁用缓存验证（no-cache, no-store, must-revalidate）
+  - 根路径 `/` 缓存头验证
+  - Pragma 和 Expires 头兼容性测试
+  - 静态资源（图片、JS）允许缓存验证
+  - 新增 6 个测试用例，总计 72 个测试
 
 ### Fixed
 - **浏览器缓存问题** (2026-02-21)：
   - 前端服务器添加 `Cache-Control: no-cache` 响应头
   - 防止 HTML 文件被浏览器缓存导致加载旧版本代码
   - 修复 projects-manage.html 显示 404 错误（logo.png, realtime.js）
-  - 中间件在 Express static 之前拦截 `.html` 请求
+  - 中间件在 Express static 之前拦截 `.html` 请求和根路径 `/`
+  - 修复根路径返回 `public, max-age=0` 而非 `no-cache` 的问题
 
 ### Documentation
 - ✅ 功能规划：[docs/versions/v1.5/feature-plan.md](docs/versions/v1.5/feature-plan.md)

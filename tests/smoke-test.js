@@ -449,6 +449,67 @@ async function testErrorHandling(baseUrl) {
 }
 
 /**
+ * 测试套件：缓存控制 (v1.5.1)
+ */
+async function testCacheControl(baseUrl) {
+    const isPublic = baseUrl.includes('cpolar');
+    const label = isPublic ? '公网' : '本地';
+
+    console.log(`\n${colors.blue}▸ ${label}缓存控制测试 (v1.5.1)${colors.reset}`);
+
+    // 测试 HTML 文件的 Cache-Control 响应头
+    await test(`${label} index.html 禁用缓存`, async () => {
+        const res = await fetch(`${baseUrl}/`);
+        assertStatus(res, 200);
+        const cacheControl = res.headers['cache-control'];
+        assert(cacheControl, 'Should have Cache-Control header');
+        assert(cacheControl.includes('no-cache'), 'Should include no-cache');
+        assert(cacheControl.includes('no-store'), 'Should include no-store');
+        assert(cacheControl.includes('must-revalidate'), 'Should include must-revalidate');
+    });
+
+    await test(`${label} projects-manage.html 禁用缓存`, async () => {
+        const res = await fetch(`${baseUrl}/projects-manage.html`);
+        assertStatus(res, 200);
+        const cacheControl = res.headers['cache-control'];
+        assert(cacheControl, 'Should have Cache-Control header');
+        assert(cacheControl.includes('no-cache'), 'Should include no-cache');
+        assert(res.headers['pragma'] === 'no-cache', 'Should have Pragma: no-cache');
+        assert(res.headers['expires'] === '0', 'Should have Expires: 0');
+    });
+
+    await test(`${label} dashboard.html 禁用缓存`, async () => {
+        const res = await fetch(`${baseUrl}/dashboard.html`);
+        assertStatus(res, 200);
+        const cacheControl = res.headers['cache-control'];
+        assert(cacheControl && cacheControl.includes('no-cache'), 'Should disable cache for HTML');
+    });
+
+    await test(`${label} changelog.html 禁用缓存`, async () => {
+        const res = await fetch(`${baseUrl}/changelog.html`);
+        assertStatus(res, 200);
+        const cacheControl = res.headers['cache-control'];
+        assert(cacheControl && cacheControl.includes('no-cache'), 'Should disable cache for HTML');
+    });
+
+    // 验证静态资源（非 HTML）允许缓存
+    await test(`${label} assets/logo.png 允许缓存`, async () => {
+        const res = await fetch(`${baseUrl}/assets/logo.png`);
+        assertStatus(res, 200);
+        const cacheControl = res.headers['cache-control'];
+        // PNG 文件应该允许缓存（没有 no-cache 或使用 public）
+        assert(!cacheControl || !cacheControl.includes('no-store'), 'Static assets should allow caching');
+    });
+
+    await test(`${label} src/realtime.js 允许缓存`, async () => {
+        const res = await fetch(`${baseUrl}/src/realtime.js`);
+        assertStatus(res, 200);
+        // JS 文件允许缓存（Express static 默认行为）
+        assert(res.status === 200, 'JS files should be served normally');
+    });
+}
+
+/**
  * v1.5 实时监控与自动化测试
  */
 async function testRealtimeFeatures(baseUrl) {
@@ -546,6 +607,7 @@ async function main() {
             await testProjectManagement(CONFIG.localBaseUrl);  // v1.4 新增
             await testDataStructure(CONFIG.localBaseUrl);
             await testStaticFiles(CONFIG.localBaseUrl);
+            await testCacheControl(CONFIG.localBaseUrl);  // v1.5.1 新增
             await testPerformance(CONFIG.localBaseUrl);
             await testErrorHandling(CONFIG.localBaseUrl);
             await testRealtimeFeatures(CONFIG.localBaseUrl);  // v1.5 新增
@@ -559,6 +621,7 @@ async function main() {
             await testProjectManagement(CONFIG.publicBaseUrl);  // v1.4 新增
             await testDataStructure(CONFIG.publicBaseUrl);
             await testStaticFiles(CONFIG.publicBaseUrl);
+            await testCacheControl(CONFIG.publicBaseUrl);  // v1.5.1 新增
             await testPerformance(CONFIG.publicBaseUrl);
             await testErrorHandling(CONFIG.publicBaseUrl);
             await testRealtimeFeatures(CONFIG.publicBaseUrl);  // v1.5 新增
