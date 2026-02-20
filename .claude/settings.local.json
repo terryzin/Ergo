@@ -12,7 +12,8 @@
       "Bash(ls -la .claude/settings.local.json*)",
       "Bash(git restore --staged .claude/settings.local.json)",
       "Bash(git add CLAUDE.md)",
-      "Bash(git push origin main)"
+      "Bash(git push origin main)",
+      "Bash(npm test:*)"
     ],
     "defaultMode": "bypassPermissions"
   }

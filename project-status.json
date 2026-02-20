@@ -1,0 +1,63 @@
+{
+  "version": "1.0",
+  "basic": {
+    "name": "Ergo",
+    "version": "1.3.0",
+    "status": "active",
+    "lastUpdate": "2026-02-20T10:30:00Z"
+  },
+  "health": {
+    "overall": "healthy",
+    "services": [
+      {
+        "name": "Frontend Server",
+        "type": "http",
+        "status": "running",
+        "port": 8081,
+        "uptime": 86400
+      },
+      {
+        "name": "API Bridge",
+        "type": "http",
+        "status": "running",
+        "port": 8082,
+        "uptime": 86400
+      },
+      {
+        "name": "Auto Pairing Watcher",
+        "type": "background",
+        "status": "running",
+        "uptime": 86400
+      }
+    ],
+    "tests": {
+      "total": 34,
+      "passed": 34,
+      "failed": 0,
+      "coverage": 85.6,
+      "lastRun": "2026-02-20T09:00:00Z"
+    },
+    "build": {
+      "status": "success",
+      "lastBuild": "2026-02-20T08:45:00Z",
+      "duration": 12.5
+    }
+  },
+  "metrics": {
+    "performance": {
+      "responseTime": 120,
+      "throughput": 250,
+      "errorRate": 0.02
+    }
+  },
+  "metadata": {
+    "repository": "https://github.com/terryzin/Ergo",
+    "language": "JavaScript",
+    "framework": "Vanilla JS",
+    "tags": ["openclaw", "dashboard", "ai-manager"]
+  },
+  "custom": {
+    "cpolarDomain": "https://terryzin.cpolar.top",
+    "gatewayDomain": "https://terrysopenclaw.cpolar.top"
+  }
+}

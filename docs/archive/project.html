@@ -151,6 +151,49 @@
             padding: 40px 20px;
             color: var(--text-3);
         }
+
+        /* 健康度卡片 */
+        .health-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .health-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .health-icon { font-size: 32px; }
+        .health-status {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .health-time {
+            font-size: 14px;
+            color: var(--text-3);
+        }
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+        .health-item {
+            background: var(--border);
+            padding: 16px;
+            border-radius: 12px;
+        }
+        .health-label {
+            font-size: 12px;
+            color: var(--text-3);
+            margin-bottom: 4px;
+        }
+        .health-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -163,33 +206,128 @@
     </main>
 
     <script>
+        const API_BASE = 'http://localhost:8082';
+
+        // 获取 API Key
+        function getApiKey() {
+            return localStorage.getItem('ergoApiKey') || 'ergo-default-secret-key-2026';
+        }
+
         // 获取URL参数
         const params = new URLSearchParams(window.location.search);
         const projectId = params.get('id');
-        
+
         // 加载项目数据
         async function loadProject() {
             try {
-                const response = await fetch('data/projects.json');
+                // 调用新API获取项目详情（含状态文件）
+                const response = await fetch(`${API_BASE}/api/projects/${projectId}`, {
+                    headers: { 'X-Ergo-Key': getApiKey() }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch project');
+                }
+
                 const data = await response.json();
-                const project = data.projects.find(p => p.id === projectId);
-                
+                const project = data.project;
+
                 if (!project) {
                     document.getElementById('projectDetail').innerHTML = '<div class="empty">项目未找到</div>';
                     return;
                 }
-                
+
                 renderProject(project);
             } catch (e) {
                 console.error(e);
-                document.getElementById('projectDetail').innerHTML = '<div class="empty">加载失败</div>';
+                // 降级：从本地 JSON 加载
+                try {
+                    const response = await fetch('../../data/projects.json');
+                    const data = await response.json();
+                    const project = data.projects.find(p => p.id === projectId);
+
+                    if (project) {
+                        project.statusFile = { exists: false }; // 标记没有状态文件
+                        renderProject(project);
+                    } else {
+                        document.getElementById('projectDetail').innerHTML = '<div class="empty">项目未找到</div>';
+                    }
+                } catch (fallbackError) {
+                    document.getElementById('projectDetail').innerHTML = '<div class="empty">加载失败</div>';
+                }
             }
         }
         
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('zh-CN');
+        }
+
         function renderProject(project) {
             const statusText = project.status === 'active' ? '已上线' : '开发中';
             const statusClass = project.status === 'active' ? 'active' : 'developing';
-            
+
+            // 健康度卡片
+            let healthCardHtml = '';
+            if (project.statusFile && project.statusFile.exists) {
+                const statusData = project.statusFile.data;
+                const health = statusData.health;
+
+                const healthIcons = {
+                    'healthy': '✅',
+                    'degraded': '⚠️',
+                    'unhealthy': '❌'
+                };
+                const healthLabels = {
+                    'healthy': '健康',
+                    'degraded': '降级',
+                    'unhealthy': '异常'
+                };
+
+                const healthIcon = healthIcons[health.overall] || '❓';
+                const healthLabel = healthLabels[health.overall] || health.overall;
+
+                const servicesRunning = health.services?.filter(s => s.status === 'running').length || 0;
+                const servicesTotal = health.services?.length || 0;
+                const testsPassed = health.tests?.passed || 0;
+                const testsTotal = health.tests?.total || 0;
+                const coverage = health.tests?.coverage || 0;
+
+                healthCardHtml = `
+                    <div class="health-card">
+                        <div class="health-header">
+                            <span class="health-icon">${healthIcon}</span>
+                            <div>
+                                <div class="health-status">${healthLabel}</div>
+                                <div class="health-time">最后更新：${formatTime(project.statusFile.lastModified)}</div>
+                            </div>
+                        </div>
+                        <div class="health-grid">
+                            <div class="health-item">
+                                <div class="health-label">服务</div>
+                                <div class="health-value">${servicesRunning}/${servicesTotal} 运行中</div>
+                            </div>
+                            ${health.tests ? `
+                                <div class="health-item">
+                                    <div class="health-label">测试</div>
+                                    <div class="health-value">${testsPassed}/${testsTotal} 通过</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">覆盖率</div>
+                                    <div class="health-value">${coverage}%</div>
+                                </div>
+                            ` : ''}
+                            ${health.build ? `
+                                <div class="health-item">
+                                    <div class="health-label">构建</div>
+                                    <div class="health-value">${health.build.status === 'success' ? '✅ 成功' : '❌ 失败'}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
             let servicesHtml = '';
             if (project.services && project.services.length > 0) {
                 servicesHtml = `
@@ -214,11 +352,11 @@
                     </section>
                 `;
             }
-            
-            const githubLink = project.github 
+
+            const githubLink = project.github
                 ? `<a href="https://github.com/${project.github}" target="_blank" style="color:var(--brand);text-decoration:none;">${project.github}</a>`
                 : '<span style="color:var(--text-3)">-</span>';
-            
+
             document.getElementById('projectDetail').innerHTML = `
                 <div class="project-header">
                     <div class="project-name">
@@ -231,13 +369,18 @@
                         <div class="meta-item"><strong>更新</strong> ${project.lastUpdate}</div>
                     </div>
                     <div class="meta-row">
+                        <div class="meta-item"><strong>路径</strong> <code style="background:var(--border);padding:2px 6px;border-radius:4px;">${project.path || '-'}</code></div>
                         <div class="meta-item"><strong>GitHub</strong> ${githubLink}</div>
                     </div>
-                    <div class="tags">
-                        ${project.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                    </div>
+                    ${project.tags ? `
+                        <div class="tags">
+                            ${project.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
                 </div>
-                
+
+                ${healthCardHtml}
+
                 ${servicesHtml}
             `;
         }

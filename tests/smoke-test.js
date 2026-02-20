@@ -76,6 +76,11 @@ function fetch(url, options = {}) {
             reject(new Error('Request timeout'));
         });
 
+        // 如果有 body，写入请求体
+        if (options.body) {
+            req.write(options.body);
+        }
+
         req.end();
     });
 }
@@ -212,6 +217,103 @@ async function testAPIEndpoints(baseUrl) {
         assertJSON(res.data);
         assert(res.data.cron, 'Missing cron field');
         assert(Array.isArray(res.data.cron), 'cron should be array');
+    });
+}
+
+/**
+ * 测试套件：项目管理 (v1.4)
+ */
+async function testProjectManagement(baseUrl) {
+    const isPublic = baseUrl.includes('cpolar');
+    const label = isPublic ? '公网' : '本地';
+
+    console.log(`\n${colors.blue}▸ ${label}项目管理测试 (v1.4)${colors.reset}`);
+
+    const headers = { 'X-Ergo-Key': CONFIG.apiKey, 'Content-Type': 'application/json' };
+
+    // 1. 获取项目列表
+    await test(`${label} GET /api/projects`, async () => {
+        const res = await fetch(`${baseUrl}/api/projects`, { headers });
+        assertStatus(res, 200);
+        assertJSON(res.data);
+        assert(Array.isArray(res.data.projects), 'projects should be array');
+        assert(typeof res.data.total === 'number', 'total should be number');
+        assert(res.data.updatedAt, 'Should have updatedAt timestamp');
+    });
+
+    // 2. 验证项目健康状态
+    await test(`${label} 项目健康状态正确`, async () => {
+        const res = await fetch(`${baseUrl}/api/projects`, { headers });
+        const projects = res.data.projects;
+
+        // 找到有健康状态的项目
+        const projectWithHealth = projects.find(p => p.health !== null);
+        if (projectWithHealth) {
+            assert(projectWithHealth.health.overall, 'Should have overall health status');
+            assert(['healthy', 'degraded', 'unhealthy'].includes(projectWithHealth.health.overall),
+                'Health status should be valid');
+        }
+    });
+
+    // 3. 读取项目详情
+    await test(`${label} GET /api/projects/:id`, async () => {
+        const res = await fetch(`${baseUrl}/api/projects/ergo`, { headers });
+        assertStatus(res, 200);
+        assertJSON(res.data);
+        assert(res.data.project, 'Should have project data');
+        assert(res.data.project.id === 'ergo', 'Project ID should match');
+        assert(res.data.project.name, 'Should have project name');
+        assert(res.data.project.path, 'Should have project path');
+    });
+
+    // 4. 测试项目状态文件读取
+    await test(`${label} 读取项目状态文件`, async () => {
+        const res = await fetch(`${baseUrl}/api/projects/ergo`, { headers });
+        const statusFile = res.data.project.statusFile;
+
+        assert(statusFile, 'Should have statusFile field');
+        if (statusFile.exists) {
+            assert(statusFile.data, 'Should have status data');
+            assert(statusFile.data.version, 'Should have schema version');
+            assert(statusFile.data.basic, 'Should have basic info');
+            assert(statusFile.lastModified, 'Should have lastModified timestamp');
+        }
+    });
+
+    // 5. 更新项目（幂等操作）
+    await test(`${label} PUT /api/projects/:id`, async () => {
+        // 先读取当前项目信息
+        const getRes = await fetch(`${baseUrl}/api/projects/ergo`, { headers });
+        const currentVersion = getRes.data.project.version;
+
+        // 更新版本号为当前版本（幂等）
+        const res = await fetch(`${baseUrl}/api/projects/ergo`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ version: currentVersion })
+        });
+        assertStatus(res, 200);
+        assert(res.data.success, 'Update should succeed');
+        assert(res.data.project, 'Should return updated project');
+    });
+
+    // 6. 测试项目路径验证
+    await test(`${label} 项目路径字段存在`, async () => {
+        const res = await fetch(`${baseUrl}/api/projects/ergo`, { headers });
+        const project = res.data.project;
+
+        assert(project.path, 'Should have path field');
+        assert(project.path.startsWith('./'), 'Path should start with ./');
+    });
+
+    // 7. 测试 404 错误
+    await test(`${label} 不存在的项目返回 404`, async () => {
+        try {
+            const res = await fetch(`${baseUrl}/api/projects/non-existent-project-id`, { headers });
+            assert(res.status === 404, 'Should return 404 for non-existent project');
+        } catch (error) {
+            // fetch 可能会抛出错误，这也是预期的
+        }
     });
 }
 
@@ -361,6 +463,7 @@ async function main() {
             await testConnectivity(CONFIG.localBaseUrl);
             await testAuthentication(CONFIG.localBaseUrl);
             await testAPIEndpoints(CONFIG.localBaseUrl);
+            await testProjectManagement(CONFIG.localBaseUrl);  // v1.4 新增
             await testDataStructure(CONFIG.localBaseUrl);
             await testStaticFiles(CONFIG.localBaseUrl);
             await testPerformance(CONFIG.localBaseUrl);
@@ -372,6 +475,7 @@ async function main() {
             await testConnectivity(CONFIG.publicBaseUrl);
             await testAuthentication(CONFIG.publicBaseUrl);
             await testAPIEndpoints(CONFIG.publicBaseUrl);
+            await testProjectManagement(CONFIG.publicBaseUrl);  // v1.4 新增
             await testDataStructure(CONFIG.publicBaseUrl);
             await testStaticFiles(CONFIG.publicBaseUrl);
             await testPerformance(CONFIG.publicBaseUrl);

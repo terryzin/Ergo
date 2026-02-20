@@ -10,10 +10,16 @@ const express = require('express');
 const { exec } = require('child_process');
 const { promisify } = require('util');
 const cors = require('cors');
+const fs = require('fs').promises;
+const path = require('path');
 
 const execAsync = promisify(exec);
 const app = express();
 const PORT = process.env.PORT || 8082;
+
+// 工作空间路径配置
+const WORKSPACE_ROOT = 'D:\\.openclaw\\workspace';
+const PROJECTS_FILE = path.join(__dirname, '../data/projects.json');
 
 // 认证配置
 const ERGO_SECRET = process.env.ERGO_SECRET || 'ergo-default-secret-key-2026';
@@ -432,6 +438,347 @@ app.post('/api/gateway/restart', async (req, res) => {
             success: false,
             error: error.message
         });
+    }
+});
+
+// =====================================================
+// 项目管理 API（v1.4）
+// =====================================================
+
+/**
+ * 读取项目列表
+ */
+async function readProjects() {
+    try {
+        const data = await fs.readFile(PROJECTS_FILE, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            // 文件不存在，返回空列表
+            return { projects: [] };
+        }
+        throw error;
+    }
+}
+
+/**
+ * 写入项目列表
+ */
+async function writeProjects(projectsData) {
+    await fs.writeFile(PROJECTS_FILE, JSON.stringify(projectsData, null, 2), 'utf-8');
+}
+
+/**
+ * 验证项目路径是否存在
+ */
+async function validateProjectPath(projectPath) {
+    const fullPath = path.join(WORKSPACE_ROOT, projectPath);
+    try {
+        const stat = await fs.stat(fullPath);
+        return stat.isDirectory();
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * 路径安全检查（防止路径遍历攻击）
+ */
+function sanitizePath(inputPath) {
+    const normalized = path.normalize(inputPath);
+    if (normalized.includes('..')) {
+        throw new Error('Path traversal detected');
+    }
+    return normalized;
+}
+
+/**
+ * 读取项目状态文件
+ */
+async function readProjectStatus(projectPath) {
+    try {
+        const sanitized = sanitizePath(projectPath);
+        const statusPath = path.join(WORKSPACE_ROOT, sanitized, 'project-status.json');
+
+        const stat = await fs.stat(statusPath);
+        const data = await fs.readFile(statusPath, 'utf-8');
+
+        return {
+            exists: true,
+            path: statusPath,
+            data: JSON.parse(data),
+            lastModified: stat.mtime.toISOString()
+        };
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return { exists: false };
+        }
+        throw error;
+    }
+}
+
+/**
+ * 计算项目健康度
+ */
+function calculateHealth(statusData) {
+    if (!statusData || !statusData.health) {
+        return null;
+    }
+
+    const health = statusData.health;
+
+    // 服务健康度
+    const servicesOk = health.services?.every(s => s.status === 'running') ?? true;
+    const servicesRunning = health.services?.filter(s => s.status === 'running').length || 0;
+    const servicesTotal = health.services?.length || 0;
+
+    // 测试健康度
+    const testsOk = health.tests ? (health.tests.failed === 0) : true;
+
+    // 构建健康度
+    const buildOk = health.build?.status === 'success' ?? true;
+
+    // 综合评估
+    let overall = 'healthy';
+    if (!servicesOk || !buildOk) {
+        overall = 'unhealthy';
+    } else if (!testsOk) {
+        overall = 'degraded';
+    }
+
+    return {
+        overall,
+        servicesRunning,
+        servicesTotal,
+        testsOk,
+        buildOk
+    };
+}
+
+/**
+ * GET /api/projects
+ * 获取项目列表（含健康状态）
+ */
+app.get('/api/projects', async (req, res) => {
+    try {
+        const projectsData = await readProjects();
+
+        // 并行读取所有项目的状态文件
+        const projectsWithStatus = await Promise.all(
+            projectsData.projects.map(async (project) => {
+                const statusFile = await readProjectStatus(project.path);
+
+                const health = statusFile.exists
+                    ? calculateHealth(statusFile.data)
+                    : null;
+
+                return { ...project, health };
+            })
+        );
+
+        res.json({
+            projects: projectsWithStatus,
+            total: projectsWithStatus.length,
+            updatedAt: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('[API] Error fetching projects:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/projects
+ * 创建项目
+ */
+app.post('/api/projects', async (req, res) => {
+    try {
+        const { id, name, path: projectPath, version } = req.body;
+
+        // 验证必填字段
+        if (!id || !name || !projectPath || !version) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                required: ['id', 'name', 'path', 'version']
+            });
+        }
+
+        // 验证 ID 格式
+        if (!/^[a-z0-9-]{3,50}$/.test(id)) {
+            return res.status(400).json({
+                error: 'Invalid project ID',
+                message: 'ID must be 3-50 characters, lowercase letters, numbers, and hyphens only'
+            });
+        }
+
+        // 验证版本格式
+        if (!/^\d+\.\d+\.\d+$/.test(version)) {
+            return res.status(400).json({
+                error: 'Invalid version',
+                message: 'Version must be in semantic versioning format (e.g., 1.0.0)'
+            });
+        }
+
+        // 路径安全检查
+        try {
+            sanitizePath(projectPath);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid path',
+                message: error.message
+            });
+        }
+
+        // 验证路径存在性
+        const pathExists = await validateProjectPath(projectPath);
+        if (!pathExists) {
+            return res.status(400).json({
+                error: 'Directory not found',
+                message: `Path ${projectPath} does not exist in workspace`
+            });
+        }
+
+        const projectsData = await readProjects();
+
+        // 检查 ID 重复
+        if (projectsData.projects.some(p => p.id === id)) {
+            return res.status(400).json({
+                error: 'Project ID already exists',
+                message: `A project with ID "${id}" already exists`
+            });
+        }
+
+        const newProject = {
+            ...req.body,
+            lastUpdate: new Date().toISOString().split('T')[0]
+        };
+
+        projectsData.projects.push(newProject);
+        await writeProjects(projectsData);
+
+        res.status(201).json({ success: true, project: newProject });
+    } catch (error) {
+        console.error('[API] Error creating project:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/projects/:id
+ * 获取项目详情
+ */
+app.get('/api/projects/:id', async (req, res) => {
+    try {
+        const projectsData = await readProjects();
+        const project = projectsData.projects.find(p => p.id === req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        const statusFile = await readProjectStatus(project.path);
+
+        res.json({
+            project: {
+                ...project,
+                statusFile
+            }
+        });
+    } catch (error) {
+        console.error('[API] Error fetching project:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * PUT /api/projects/:id
+ * 更新项目
+ */
+app.put('/api/projects/:id', async (req, res) => {
+    try {
+        const projectsData = await readProjects();
+        const index = projectsData.projects.findIndex(p => p.id === req.params.id);
+
+        if (index === -1) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        // 部分更新
+        projectsData.projects[index] = {
+            ...projectsData.projects[index],
+            ...req.body,
+            id: projectsData.projects[index].id, // 不允许修改 ID
+            lastUpdate: new Date().toISOString().split('T')[0]
+        };
+
+        await writeProjects(projectsData);
+
+        res.json({
+            success: true,
+            project: projectsData.projects[index]
+        });
+    } catch (error) {
+        console.error('[API] Error updating project:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * DELETE /api/projects/:id
+ * 删除项目（仅删除记录，不删除文件）
+ */
+app.delete('/api/projects/:id', async (req, res) => {
+    try {
+        const projectsData = await readProjects();
+        const index = projectsData.projects.findIndex(p => p.id === req.params.id);
+
+        if (index === -1) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        projectsData.projects.splice(index, 1);
+        await writeProjects(projectsData);
+
+        res.json({
+            success: true,
+            message: 'Project deleted successfully'
+        });
+    } catch (error) {
+        console.error('[API] Error deleting project:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/projects/:id/status
+ * 读取项目状态文件
+ */
+app.get('/api/projects/:id/status', async (req, res) => {
+    try {
+        const projectsData = await readProjects();
+        const project = projectsData.projects.find(p => p.id === req.params.id);
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        const statusFile = await readProjectStatus(project.path);
+
+        if (!statusFile.exists) {
+            return res.status(404).json({
+                error: 'Status file not found',
+                message: 'project-status.json does not exist in project directory'
+            });
+        }
+
+        res.json({
+            status: statusFile.data,
+            lastModified: statusFile.lastModified,
+            path: statusFile.path
+        });
+    } catch (error) {
+        console.error('[API] Error reading project status:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
