@@ -996,6 +996,300 @@ app.get('/api/projects/:id/status', async (req, res) => {
 // =====================================================
 
 /**
+ * PUT /api/files/update
+ * 更新文件内容（v1.6）
+ */
+app.put('/api/files/update', async (req, res) => {
+    try {
+        const { path: userPath, content, createBackup = true } = req.body;
+
+        // 验证必填参数
+        if (!userPath || content === undefined) {
+            return res.status(400).json({
+                error: 'Missing parameters',
+                message: 'Both path and content are required'
+            });
+        }
+
+        // 路径安全检查
+        let resolvedPath;
+        try {
+            resolvedPath = sanitizePath(userPath);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid path',
+                message: error.message
+            });
+        }
+
+        // 检查是否为受保护文件
+        if (isProtectedFile(resolvedPath)) {
+            return res.status(403).json({
+                error: 'File protected',
+                message: 'Cannot modify protected files',
+                hint: 'Protected files: .env, credentials, SSH keys, etc.'
+            });
+        }
+
+        // 内容大小限制（5MB）
+        const MAX_CONTENT_SIZE = 5 * 1024 * 1024;
+        if (Buffer.byteLength(content, 'utf-8') > MAX_CONTENT_SIZE) {
+            return res.status(413).json({
+                error: 'Content too large',
+                message: `Content size exceeds limit (5MB)`
+            });
+        }
+
+        // 创建备份
+        let backupPath = null;
+        if (createBackup) {
+            try {
+                // 检查文件是否存在
+                await fs.access(resolvedPath);
+
+                // 创建备份
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                backupPath = `${resolvedPath}.${timestamp}.bak`;
+                await fs.copyFile(resolvedPath, backupPath);
+
+                console.log(`[FILE] Backup created: ${backupPath}`);
+            } catch (error) {
+                // 文件不存在时不创建备份（新文件）
+                if (error.code !== 'ENOENT') {
+                    console.warn(`[FILE] Backup failed: ${error.message}`);
+                }
+            }
+        }
+
+        // 写入新内容
+        await fs.writeFile(resolvedPath, content, 'utf-8');
+
+        const stats = await fs.stat(resolvedPath);
+
+        console.log(`[FILE] Updated: ${userPath} (${stats.size} bytes)`);
+
+        res.json({
+            success: true,
+            path: path.relative(WORKSPACE_ROOT, resolvedPath).replace(/\\/g, '/'),
+            backupPath: backupPath ? path.relative(WORKSPACE_ROOT, backupPath).replace(/\\/g, '/') : null,
+            size: stats.size,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('[FILE] Update error:', error);
+        res.status(500).json({
+            error: 'Failed to update file',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/files/upload
+ * 上传文件（v1.6）
+ */
+app.post('/api/files/upload', async (req, res) => {
+    try {
+        const { path: userPath, filename, content } = req.body;
+
+        // 验证必填参数
+        if (!userPath || !filename || !content) {
+            return res.status(400).json({
+                error: 'Missing parameters',
+                message: 'path, filename, and content are required'
+            });
+        }
+
+        // 路径安全检查（目标目录）
+        let resolvedDir;
+        try {
+            resolvedDir = sanitizePath(userPath);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid path',
+                message: error.message
+            });
+        }
+
+        // 检查目录是否存在
+        try {
+            const stats = await fs.stat(resolvedDir);
+            if (!stats.isDirectory()) {
+                return res.status(400).json({
+                    error: 'Not a directory',
+                    message: 'Target path must be a directory'
+                });
+            }
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Directory not found',
+                message: `Directory "${userPath}" does not exist`
+            });
+        }
+
+        // 文件名安全检查
+        if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+            return res.status(400).json({
+                error: 'Invalid filename',
+                message: 'Filename cannot contain path separators'
+            });
+        }
+
+        // 构造完整文件路径
+        const filePath = path.join(resolvedDir, filename);
+
+        // 检查文件是否已存在
+        let fileExists = false;
+        try {
+            await fs.access(filePath);
+            fileExists = true;
+        } catch {
+            // 文件不存在，可以创建
+        }
+
+        // Base64解码内容
+        let fileContent;
+        try {
+            fileContent = Buffer.from(content, 'base64');
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid content',
+                message: 'Content must be base64 encoded'
+            });
+        }
+
+        // 文件大小限制（10MB）
+        const MAX_FILE_SIZE = 10 * 1024 * 1024;
+        if (fileContent.length > MAX_FILE_SIZE) {
+            return res.status(413).json({
+                error: 'File too large',
+                message: `File size exceeds limit (10MB)`,
+                size: fileContent.length
+            });
+        }
+
+        // 写入文件
+        await fs.writeFile(filePath, fileContent);
+
+        const stats = await fs.stat(filePath);
+
+        console.log(`[FILE] Uploaded: ${filename} to ${userPath} (${stats.size} bytes)`);
+
+        res.json({
+            success: true,
+            path: path.relative(WORKSPACE_ROOT, filePath).replace(/\\/g, '/'),
+            filename,
+            size: stats.size,
+            overwritten: fileExists,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('[FILE] Upload error:', error);
+        res.status(500).json({
+            error: 'Failed to upload file',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * DELETE /api/files/delete
+ * 删除文件（v1.6）
+ */
+app.delete('/api/files/delete', async (req, res) => {
+    try {
+        const { path: userPath, moveToTrash = true } = req.body;
+
+        // 验证必填参数
+        if (!userPath) {
+            return res.status(400).json({
+                error: 'Missing parameter',
+                message: 'Path is required'
+            });
+        }
+
+        // 路径安全检查
+        let resolvedPath;
+        try {
+            resolvedPath = sanitizePath(userPath);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid path',
+                message: error.message
+            });
+        }
+
+        // 检查文件是否存在
+        try {
+            await fs.access(resolvedPath);
+        } catch (error) {
+            return res.status(404).json({
+                error: 'File not found',
+                message: `File "${userPath}" does not exist`
+            });
+        }
+
+        // 获取文件信息
+        const stats = await fs.stat(resolvedPath);
+
+        // 不允许删除目录
+        if (stats.isDirectory()) {
+            return res.status(400).json({
+                error: 'Cannot delete directory',
+                message: 'Use file manager to delete directories'
+            });
+        }
+
+        let trashPath = null;
+
+        if (moveToTrash) {
+            // 移动到回收站
+            const trashDir = path.join(WORKSPACE_ROOT, '.trash');
+
+            // 确保回收站目录存在
+            try {
+                await fs.mkdir(trashDir, { recursive: true });
+            } catch (error) {
+                console.warn('[FILE] Failed to create trash directory:', error.message);
+            }
+
+            // 生成回收站文件名（带时间戳）
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            const filename = path.basename(resolvedPath);
+            trashPath = path.join(trashDir, `${filename}.${timestamp}`);
+
+            // 移动文件
+            await fs.rename(resolvedPath, trashPath);
+
+            console.log(`[FILE] Moved to trash: ${userPath} -> ${path.relative(WORKSPACE_ROOT, trashPath)}`);
+        } else {
+            // 永久删除
+            await fs.unlink(resolvedPath);
+
+            console.log(`[FILE] Permanently deleted: ${userPath}`);
+        }
+
+        res.json({
+            success: true,
+            path: userPath,
+            trashPath: trashPath ? path.relative(WORKSPACE_ROOT, trashPath).replace(/\\/g, '/') : null,
+            deleted: !moveToTrash,
+            size: stats.size,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('[FILE] Delete error:', error);
+        res.status(500).json({
+            error: 'Failed to delete file',
+            message: error.message
+        });
+    }
+});
+
+/**
  * GET /api/files/browse
  * 浏览文件树（v1.6）
  */
