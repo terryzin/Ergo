@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>终端 - Ergo</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1d1d1f 100%);
+            color: #f5f5f7;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: #2997ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #147ce5;
+            transform: translateY(-2px);
+        }
+
+        /* Terminal Panel */
+        .terminal-panel {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f5f5f7;
+        }
+
+        .terminal-info {
+            font-size: 13px;
+            color: #86868b;
+        }
+
+        .terminal-output {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            background: #1c1c1e;
+        }
+
+        .terminal-line {
+            margin: 8px 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-prompt {
+            color: #30d158;  /* Green */
+        }
+
+        .terminal-command {
+            color: #64d2ff;  /* Cyan */
+        }
+
+        .terminal-output-text {
+            color: #f5f5f7;
+        }
+
+        .terminal-error {
+            color: #ff453a;  /* Red */
+        }
+
+        .terminal-warning {
+            color: #ffd60a;  /* Yellow */
+        }
+
+        .terminal-info {
+            color: #86868b;  /* Gray */
+        }
+
+        .terminal-timestamp {
+            color: #636366;
+            font-size: 11px;
+            margin-right: 10px;
+        }
+
+        /* Input Area */
+        .terminal-input-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+        }
+
+        .terminal-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .terminal-cwd {
+            color: #30d158;
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f5f5f7;
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+            font-size: 13px;
+            padding: 8px 0;
+            outline: none;
+        }
+
+        .terminal-send-btn {
+            background: #2997ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .terminal-send-btn:hover {
+            background: #147ce5;
+        }
+
+        .terminal-send-btn:disabled {
+            background: #3a3a3c;
+            color: #636366;
+            cursor: not-allowed;
+        }
+
+        /* Shortcuts Panel */
+        .shortcuts-panel {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-top: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .shortcuts-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f5f5f7;
+            margin-bottom: 10px;
+        }
+
+        .shortcut-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .shortcut-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f5f5f7;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+        }
+
+        .shortcut-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .shortcut-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.clear {
+            color: #ff453a;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #2997ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .terminal-input-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .terminal-cwd {
+                margin-bottom: 5px;
+            }
+
+            .terminal-send-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💻 终端</h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">← 返回首页</button>
+        </div>
+
+        <div class="terminal-panel">
+            <div class="terminal-header">
+                <h2>命令执行</h2>
+                <div class="action-bar">
+                    <button class="action-btn" onclick="terminal.exportHistory()">💾 导出</button>
+                    <button class="action-btn clear" onclick="terminal.clear()">🗑️ 清空</button>
+                </div>
+            </div>
+
+            <div class="terminal-output" id="terminalOutput">
+                <div class="terminal-line">
+                    <span class="terminal-info">Welcome to Ergo Terminal v1.6</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="terminal-info">Type commands below or use shortcuts</span>
+                </div>
+                <div class="terminal-line"></div>
+            </div>
+
+            <div class="terminal-input-wrapper">
+                <div class="terminal-input-row">
+                    <span class="terminal-cwd" id="terminalCwd">./my-dashboard $</span>
+                    <input
+                        type="text"
+                        class="terminal-input"
+                        id="terminalInput"
+                        placeholder="输入命令..."
+                        autocomplete="off"
+                        spellcheck="false"
+                    />
+                    <button class="terminal-send-btn" id="sendBtn" onclick="terminal.executeCommand()">
+                        发送
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="shortcuts-panel">
+            <div class="shortcuts-title">快捷命令</div>
+            <div class="shortcut-buttons">
+                <button class="shortcut-btn" onclick="terminal.setCommand('ls -la')">ls -la</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('pwd')">pwd</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('git status')">git status</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('git log --oneline -5')">git log</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('npm test')">npm test</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('node --version')">node version</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('df -h')">disk usage</button>
+                <button class="shortcut-btn" onclick="terminal.setCommand('ps aux | head -10')">processes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'ergo-default-secret-key-2026';
+        const API_BASE = 'http://localhost:8082';
+
+        class Terminal {
+            constructor() {
+                this.currentPath = './my-dashboard';
+                this.history = [];
+                this.historyIndex = -1;
+            }
+
+            init() {
+                // Enter key to execute
+                const input = document.getElementById('terminalInput');
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.executeCommand();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        this.navigateHistory(-1);
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        this.navigateHistory(1);
+                    }
+                });
+
+                input.focus();
+            }
+
+            setCommand(command) {
+                document.getElementById('terminalInput').value = command;
+                document.getElementById('terminalInput').focus();
+            }
+
+            async executeCommand() {
+                const input = document.getElementById('terminalInput');
+                const command = input.value.trim();
+
+                if (!command) return;
+
+                // Add to history
+                this.history.push(command);
+                this.historyIndex = this.history.length;
+
+                // Display command in output
+                this.appendOutput('command', command);
+
+                // Disable input während execution
+                this.setInputEnabled(false);
+
+                try {
+                    const res = await fetch(`${API_BASE}/api/command/exec`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Ergo-Key': API_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            command: command,
+                            cwd: this.currentPath,
+                            timeout: 30000
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.error || `HTTP ${res.status}`);
+                    }
+
+                    if (data.success) {
+                        // Display output
+                        if (data.stdout) {
+                            this.appendOutput('output', data.stdout);
+                        }
+
+                        // Update working directory if cd command
+                        if (command.startsWith('cd ')) {
+                            this.currentPath = data.cwd || this.currentPath;
+                            document.getElementById('terminalCwd').textContent = this.currentPath + ' $';
+                        }
+
+                        // Show execution time
+                        this.appendOutput('info', `✓ Executed in ${data.executionTime}ms (exit code: ${data.exitCode})`);
+                    } else {
+                        throw new Error(data.error || 'Command failed');
+                    }
+                } catch (error) {
+                    this.appendOutput('error', `❌ Error: ${error.message}`);
+                }
+
+                // Clear input and re-enable
+                input.value = '';
+                this.setInputEnabled(true);
+                input.focus();
+
+                // Scroll to bottom
+                this.scrollToBottom();
+            }
+
+            appendOutput(type, text) {
+                const output = document.getElementById('terminalOutput');
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+
+                const timestamp = document.createElement('span');
+                timestamp.className = 'terminal-timestamp';
+                timestamp.textContent = this.getTimestamp();
+
+                const content = document.createElement('span');
+
+                switch (type) {
+                    case 'command':
+                        content.className = 'terminal-prompt';
+                        content.textContent = `${this.currentPath} $ `;
+                        const cmd = document.createElement('span');
+                        cmd.className = 'terminal-command';
+                        cmd.textContent = text;
+                        line.appendChild(timestamp);
+                        line.appendChild(content);
+                        line.appendChild(cmd);
+                        break;
+
+                    case 'output':
+                        content.className = 'terminal-output-text';
+                        content.textContent = text;
+                        line.appendChild(content);
+                        break;
+
+                    case 'error':
+                        content.className = 'terminal-error';
+                        content.textContent = text;
+                        line.appendChild(timestamp);
+                        line.appendChild(content);
+                        break;
+
+                    case 'warning':
+                        content.className = 'terminal-warning';
+                        content.textContent = text;
+                        line.appendChild(timestamp);
+                        line.appendChild(content);
+                        break;
+
+                    case 'info':
+                        content.className = 'terminal-info';
+                        content.textContent = text;
+                        line.appendChild(timestamp);
+                        line.appendChild(content);
+                        break;
+
+                    default:
+                        content.textContent = text;
+                        line.appendChild(content);
+                }
+
+                output.appendChild(line);
+            }
+
+            navigateHistory(direction) {
+                if (this.history.length === 0) return;
+
+                this.historyIndex += direction;
+
+                if (this.historyIndex < 0) {
+                    this.historyIndex = 0;
+                } else if (this.historyIndex >= this.history.length) {
+                    this.historyIndex = this.history.length;
+                    document.getElementById('terminalInput').value = '';
+                    return;
+                }
+
+                document.getElementById('terminalInput').value = this.history[this.historyIndex];
+            }
+
+            setInputEnabled(enabled) {
+                const input = document.getElementById('terminalInput');
+                const btn = document.getElementById('sendBtn');
+
+                input.disabled = !enabled;
+                btn.disabled = !enabled;
+
+                if (!enabled) {
+                    btn.innerHTML = '<span class="spinner"></span>';
+                } else {
+                    btn.textContent = '发送';
+                }
+            }
+
+            clear() {
+                if (confirm('确定要清空终端输出吗?')) {
+                    const output = document.getElementById('terminalOutput');
+                    output.innerHTML = '';
+                    this.appendOutput('info', 'Terminal cleared');
+                }
+            }
+
+            exportHistory() {
+                const output = document.getElementById('terminalOutput').innerText;
+                const blob = new Blob([output], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `terminal-history-${Date.now()}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            scrollToBottom() {
+                const output = document.getElementById('terminalOutput');
+                output.scrollTop = output.scrollHeight;
+            }
+
+            getTimestamp() {
+                const now = new Date();
+                return now.toLocaleTimeString('zh-CN', { hour12: false });
+            }
+        }
+
+        // Initialize
+        const terminal = new Terminal();
+        document.addEventListener('DOMContentLoaded', () => {
+            terminal.init();
+        });
+    </script>
+</body>
+</html>
