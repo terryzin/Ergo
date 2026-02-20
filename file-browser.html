@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件浏览器 - Ergo</title>
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1d1d1f 100%);
+            color: #f5f5f7;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: #2997ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #147ce5;
+            transform: translateY(-2px);
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .breadcrumb-item {
+            color: #2997ff;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .breadcrumb-item:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #86868b;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        /* File Tree */
+        .file-tree-panel {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-y: auto;
+        }
+
+        .file-tree-panel h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #f5f5f7;
+        }
+
+        .file-item {
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .file-item.selected {
+            background: #2997ff;
+        }
+
+        .file-item.directory {
+            font-weight: 500;
+        }
+
+        .file-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            display: block;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-meta {
+            font-size: 11px;
+            color: #86868b;
+            margin-top: 2px;
+        }
+
+        /* File Viewer */
+        .file-viewer-panel {
+            background: rgba(29, 29, 31, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .viewer-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .viewer-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.primary {
+            background: #2997ff;
+        }
+
+        .action-btn.primary:hover {
+            background: #147ce5;
+        }
+
+        .file-content {
+            flex: 1;
+            background: #1c1c1e;
+            border-radius: 12px;
+            padding: 20px;
+            overflow: auto;
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            color: #86868b;
+        }
+
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #86868b;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #2997ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            color: #ff453a;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 280px 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .file-tree-panel {
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 文件浏览器</h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">← 返回首页</button>
+        </div>
+
+        <div class="breadcrumb" id="breadcrumb">
+            <span class="breadcrumb-item" onclick="fileBrowser.navigateTo('./')">工作空间</span>
+        </div>
+
+        <div class="main-content">
+            <div class="file-tree-panel">
+                <h2>文件列表</h2>
+                <div id="fileTree">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 15px;">加载中...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-viewer-panel">
+                <div class="viewer-header">
+                    <h2 id="viewerTitle">文件预览</h2>
+                    <div class="viewer-actions">
+                        <button class="action-btn" id="editBtn" onclick="fileBrowser.editFile()" style="display:none">✏️ 编辑</button>
+                        <button class="action-btn" id="downloadBtn" onclick="fileBrowser.downloadFile()" style="display:none">⬇️ 下载</button>
+                    </div>
+                </div>
+                <div class="file-content" id="fileContent">
+                    <div class="placeholder">
+                        <div class="placeholder-icon">📄</div>
+                        <p>选择一个文件以查看内容</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'ergo-default-secret-key-2026';
+        const API_BASE = 'http://localhost:8082';
+
+        class FileBrowser {
+            constructor() {
+                this.currentPath = './';
+                this.selectedFile = null;
+                this.files = [];
+            }
+
+            async init() {
+                await this.loadDirectory('./');
+            }
+
+            async loadDirectory(path) {
+                try {
+                    document.getElementById('fileTree').innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top: 15px;">加载中...</p></div>';
+
+                    const res = await fetch(`${API_BASE}/api/files/browse?path=${encodeURIComponent(path)}`, {
+                        headers: { 'X-Ergo-Key': API_KEY }
+                    });
+
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+                    }
+
+                    const data = await res.json();
+                    this.currentPath = data.path;
+                    this.files = data.files;
+
+                    this.updateBreadcrumb();
+                    this.renderFileTree();
+                } catch (error) {
+                    console.error('Failed to load directory:', error);
+                    document.getElementById('fileTree').innerHTML = `
+                        <div class="error">
+                            ❌ 加载失败: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            updateBreadcrumb() {
+                const parts = this.currentPath.split('/').filter(p => p && p !== '.');
+                let breadcrumbHTML = '<span class="breadcrumb-item" onclick="fileBrowser.navigateTo(\'./\')">工作空间</span>';
+
+                let accumulatedPath = './';
+                parts.forEach((part, index) => {
+                    accumulatedPath += part + '/';
+                    breadcrumbHTML += '<span class="breadcrumb-separator">/</span>';
+                    breadcrumbHTML += `<span class="breadcrumb-item" onclick="fileBrowser.navigateTo('${accumulatedPath}')">${part}</span>`;
+                });
+
+                document.getElementById('breadcrumb').innerHTML = breadcrumbHTML;
+            }
+
+            renderFileTree() {
+                // Sort: directories first, then files, both alphabetically
+                const sorted = this.files.sort((a, b) => {
+                    if (a.type !== b.type) {
+                        return a.type === 'directory' ? -1 : 1;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+
+                const html = sorted.map(file => {
+                    const icon = file.type === 'directory' ? '📁' :
+                                 file.protected ? '🔒' :
+                                 file.name.endsWith('.js') ? '📜' :
+                                 file.name.endsWith('.json') ? '📋' :
+                                 file.name.endsWith('.md') ? '📝' :
+                                 file.name.endsWith('.html') ? '🌐' :
+                                 '📄';
+
+                    const sizeText = file.type === 'directory' ? '' : this.formatBytes(file.size);
+                    const className = file.type === 'directory' ? 'file-item directory' : 'file-item';
+
+                    return `
+                        <div class="${className}" onclick="fileBrowser.selectFile('${file.name}', '${file.type}')">
+                            <span class="file-icon">${icon}</span>
+                            <div class="file-info">
+                                <span class="file-name">${file.name}</span>
+                                <div class="file-meta">${sizeText}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('fileTree').innerHTML = html || '<div class="placeholder" style="padding: 40px 20px; color: #86868b;">📭 空目录</div>';
+            }
+
+            async selectFile(filename, type) {
+                if (type === 'directory') {
+                    // Navigate into directory
+                    const newPath = this.currentPath + (this.currentPath.endsWith('/') ? '' : '/') + filename;
+                    await this.loadDirectory(newPath);
+                } else {
+                    // Load file content
+                    this.selectedFile = filename;
+                    await this.loadFileContent(filename);
+                }
+            }
+
+            async loadFileContent(filename) {
+                try {
+                    document.getElementById('fileContent').innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top: 15px;">读取中...</p></div>';
+                    document.getElementById('viewerTitle').textContent = filename;
+                    document.getElementById('editBtn').style.display = 'inline-block';
+                    document.getElementById('downloadBtn').style.display = 'inline-block';
+
+                    const filePath = this.currentPath + (this.currentPath.endsWith('/') ? '' : '/') + filename;
+                    const res = await fetch(`${API_BASE}/api/files/read?path=${encodeURIComponent(filePath)}`, {
+                        headers: { 'X-Ergo-Key': API_KEY }
+                    });
+
+                    if (!res.ok) {
+                        const error = await  res.json();
+                        throw new Error(error.error || `HTTP ${res.status}`);
+                    }
+
+                    const data = await res.json();
+                    document.getElementById('fileContent').textContent = data.content;
+                } catch (error) {
+                    console.error('Failed to load file:', error);
+                    document.getElementById('fileContent').innerHTML = `
+                        <div class="error">
+                            ❌ 读取失败: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            navigateTo(path) {
+                this.loadDirectory(path);
+                this.selectedFile = null;
+                document.getElementById('fileContent').innerHTML = '<div class="placeholder"><div class="placeholder-icon">📄</div><p>选择一个文件以查看内容</p></div>';
+                document.getElementById('viewerTitle').textContent = '文件预览';
+                document.getElementById('editBtn').style.display = 'none';
+                document.getElementById('downloadBtn').style.display = 'none';
+            }
+
+            editFile() {
+                if (!this.selectedFile) return;
+                alert('编辑功能开发中...');
+                // TODO: Implement file editing
+            }
+
+            downloadFile() {
+                if (!this.selectedFile) return;
+                const filePath = this.currentPath + (this.currentPath.endsWith('/') ? '' : '/') + this.selectedFile;
+                const url = `${API_BASE}/api/files/read?path=${encodeURIComponent(filePath)}`;
+                window.open(url, '_blank');
+            }
+
+            formatBytes(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return Math.round(bytes / Math.pow(k, i) * 10) / 10 + ' ' + sizes[i];
+            }
+        }
+
+        // Initialize
+        const fileBrowser = new FileBrowser();
+        document.addEventListener('DOMContentLoaded', () => {
+            fileBrowser.init();
+        });
+    </script>
+</body>
+</html>
