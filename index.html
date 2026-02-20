@@ -632,7 +632,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <div class="logo">
+            <div class="logo" onclick="window.location.href='index.html'" style="cursor:pointer;">
                 <div class="logo-mark">
                     <img src="assets/logo.png" alt="Ergo">
                 </div>
@@ -1393,7 +1393,37 @@
             document.getElementById('dataPill').innerHTML = '<span>加载失败</span>';
             document.getElementById('dataPill').className = 'status-pill err';
 
-            showToast('无法连接到 Gateway');
+            // 检查是否是 API Bridge 未启动
+            checkApiBridgeStatus();
+        }
+
+        // 检查 API Bridge 状态
+        async function checkApiBridgeStatus() {
+            try {
+                const response = await fetch(`${GATEWAY_CONFIG.url}/api/health`);
+                if (!response.ok) {
+                    showApiBridgeWarning();
+                }
+            } catch (error) {
+                // API Bridge 未运行
+                showApiBridgeWarning();
+            }
+        }
+
+        function showApiBridgeWarning() {
+            const message = '⚠️ API Bridge 未运行\n\n请运行 start-ergo.bat 启动所有服务\n或查看 QUICK_START.md 了解详情';
+
+            // 只显示一次警告
+            if (!sessionStorage.getItem('apiBridgeWarningShown')) {
+                setTimeout(() => {
+                    if (confirm(message + '\n\n是否查看启动指南？')) {
+                        window.open('QUICK_START.md', '_blank');
+                    }
+                    sessionStorage.setItem('apiBridgeWarningShown', 'true');
+                }, 2000);
+            }
+
+            showToast('请启动 API Bridge 服务器');
         }
 
         // ============================
