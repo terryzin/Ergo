@@ -576,6 +576,27 @@ const PROTECTED_FILES = [
 ];
 
 /**
+ * 危险命令模式黑名单（v1.6 安全增强）
+ */
+const DANGEROUS_PATTERNS = [
+    /rm\s+-rf\s+\/$/,                    // rm -rf /
+    /rm\s+-rf\s+\*$/,                    // rm -rf *
+    /sudo/i,                             // sudo 命令
+    /:\(\)\{:\|:&\};:/,                  // fork bomb
+    /shutdown/i,                         // 关机
+    /reboot/i,                           // 重启
+    /halt/i,                             // 停止系统
+    /mkfs/i,                             // 格式化磁盘
+    /dd\s+.*of=\/dev\//,                 // dd 写入设备
+    /chmod\s+777\s+\//,                  // 递归修改根目录权限
+    /chown\s+.*\/$/,                     // 修改根目录所有者
+    /fdisk/i,                            // 磁盘分区
+    /format\s+[A-Z]:/i,                  // Windows 格式化
+    /del\s+\/[fqs]\s+[A-Z]:\\/i,         // Windows 批量删除
+    />`echo.*>/,                         // IO重定向攻击
+];
+
+/**
  * 检查是否为受保护文件
  */
 function isProtectedFile(filename) {
@@ -592,6 +613,77 @@ function isProtectedFile(filename) {
         }
         // 精确匹配文件名
         return basename === pattern.toLowerCase();
+    });
+}
+
+/**
+ * 检查是否为危险命令
+ */
+function isDangerousCommand(cmd) {
+    return DANGEROUS_PATTERNS.some(pattern => pattern.test(cmd));
+}
+
+/**
+ * 执行Shell命令（带安全控制）
+ */
+function execCommand(command, cwd, timeout = 30000) {
+    return new Promise((resolve, reject) => {
+        const { spawn } = require('child_process');
+
+        // Windows下使用 cmd.exe，Linux/Mac使用 bash
+        const shell = process.platform === 'win32' ? 'cmd.exe' : 'bash';
+        const shellArgs = process.platform === 'win32' ? ['/c', command] : ['-c', command];
+
+        const proc = spawn(shell, shellArgs, {
+            cwd,
+            timeout,
+            env: { ...process.env }
+        });
+
+        let stdout = '';
+        let stderr = '';
+        const MAX_OUTPUT_SIZE = 500 * 1024; // 500KB
+
+        proc.stdout.on('data', (data) => {
+            stdout += data.toString();
+            // 限制输出大小
+            if (stdout.length > MAX_OUTPUT_SIZE) {
+                proc.kill();
+                reject(new Error('Output too large (max 500KB)'));
+            }
+        });
+
+        proc.stderr.on('data', (data) => {
+            stderr += data.toString();
+            if (stderr.length > MAX_OUTPUT_SIZE) {
+                proc.kill();
+                reject(new Error('Error output too large (max 500KB)'));
+            }
+        });
+
+        proc.on('close', (code) => {
+            resolve({
+                stdout: stdout.trimEnd(),
+                stderr: stderr.trimEnd(),
+                exitCode: code
+            });
+        });
+
+        proc.on('error', (err) => {
+            reject(err);
+        });
+
+        // 超时处理
+        const timeoutId = setTimeout(() => {
+            if (!proc.killed) {
+                proc.kill();
+                reject(new Error(`Command timeout after ${timeout}ms`));
+            }
+        }, timeout);
+
+        proc.on('exit', () => {
+            clearTimeout(timeoutId);
+        });
     });
 }
 
@@ -1080,6 +1172,113 @@ app.get('/api/files/read', async (req, res) => {
 
         res.status(500).json({
             error: 'Failed to read file',
+            message: error.message
+        });
+    }
+});
+
+/**
+ * POST /api/command/exec
+ * 执行Shell命令（v1.6）
+ */
+app.post('/api/command/exec', async (req, res) => {
+    try {
+        const { command, cwd = './', timeout = 30000, project } = req.body;
+
+        // 验证必填参数
+        if (!command) {
+            return res.status(400).json({
+                error: 'Missing parameter',
+                message: 'Command is required'
+            });
+        }
+
+        // 危险命令检查
+        if (isDangerousCommand(command)) {
+            console.warn(`[SECURITY] Dangerous command blocked: ${command}`);
+            return res.status(403).json({
+                error: 'Dangerous command blocked',
+                message: '此命令可能造成系统损坏，已被安全策略拦截',
+                command,
+                hint: '如需执行此类命令，请直接登录服务器操作'
+            });
+        }
+
+        // 路径安全检查
+        let resolvedCwd;
+        try {
+            resolvedCwd = sanitizePath(cwd);
+        } catch (error) {
+            return res.status(400).json({
+                error: 'Invalid working directory',
+                message: error.message
+            });
+        }
+
+        // 检查工作目录是否存在
+        try {
+            const stats = await fs.stat(resolvedCwd);
+            if (!stats.isDirectory()) {
+                return res.status(400).json({
+                    error: 'Not a directory',
+                    message: `The specified path "${cwd}" is not a directory`
+                });
+            }
+        } catch (error) {
+            return res.status(404).json({
+                error: 'Directory not found',
+                message: `Working directory "${cwd}" does not exist`
+            });
+        }
+
+        // 超时限制（最大5分钟）
+        const safeTimeout = Math.min(timeout, 5 * 60 * 1000);
+
+        console.log(`[COMMAND] Executing: ${command} (cwd: ${cwd}, timeout: ${safeTimeout}ms)`);
+
+        const startTime = Date.now();
+        const result = await execCommand(command, resolvedCwd, safeTimeout);
+        const duration = Date.now() - startTime;
+
+        console.log(`[COMMAND] Completed in ${duration}ms, exit code: ${result.exitCode}`);
+
+        res.json({
+            success: result.exitCode === 0,
+            command,
+            output: result.stdout,
+            stderr: result.stderr,
+            exitCode: result.exitCode,
+            duration,
+            cwd,
+            timestamp: new Date().toISOString()
+        });
+
+        // TODO: 记录审计日志（v1.6 P1）
+        // await logAudit('command_exec', { command, cwd, exitCode: result.exitCode });
+
+    } catch (error) {
+        console.error('[COMMAND] Execution error:', error);
+
+        // 超时错误
+        if (error.message.includes('timeout')) {
+            return res.status(408).json({
+                error: 'Command timeout',
+                message: error.message,
+                command: req.body.command
+            });
+        }
+
+        // 输出过大错误
+        if (error.message.includes('too large')) {
+            return res.status(413).json({
+                error: 'Output too large',
+                message: error.message,
+                hint: 'Consider using tail or head to limit output'
+            });
+        }
+
+        res.status(500).json({
+            error: 'Command execution failed',
             message: error.message
         });
     }

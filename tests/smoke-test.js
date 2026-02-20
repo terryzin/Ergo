@@ -634,6 +634,207 @@ async function testFileManagement(baseUrl) {
 }
 
 /**
+ * v1.6 命令执行 API 测试
+ */
+async function testCommandExecution(baseUrl) {
+    const isPublic = baseUrl.includes('cpolar');
+    const label = isPublic ? '公网' : '本地';
+
+    // 使用正确的 API 端口
+    const apiBaseUrl = isPublic ? baseUrl : CONFIG.localApiBaseUrl;
+
+    console.log(`\n${colors.blue}▸ ${label}命令执行测试 (v1.6)${colors.reset}`);
+
+    // 测试基础命令执行
+    await test(`${label} POST /api/command/exec 执行简单命令`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: 'echo "Hello from Ergo"',
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 200);
+        assert(res.data.success, 'Command should succeed');
+        assert(res.data.output.includes('Hello from Ergo'), 'Should return command output');
+        assert(res.data.exitCode === 0, 'Exit code should be 0');
+        assert(res.data.duration >= 0, 'Should have duration');
+    });
+
+    await test(`${label} POST /api/command/exec 执行 dir/ls 命令`, async () => {
+        const cmd = process.platform === 'win32' ? 'dir package.json' : 'ls package.json';
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: cmd,
+                cwd: 'my-dashboard'
+            })
+        });
+        assertStatus(res, 200);
+        assert(res.data.success, 'Command should succeed');
+        assert(res.data.output.includes('package.json'), 'Should list package.json');
+    });
+
+    // 测试危险命令拦截
+    await test(`${label} POST /api/command/exec 拦截 rm -rf 命令`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: 'rm -rf /',
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 403);
+        assert(res.data.error === 'Dangerous command blocked', 'Should block dangerous command');
+        assert(res.data.message.includes('安全策略'), 'Should explain why blocked');
+    });
+
+    await test(`${label} POST /api/command/exec 拦截 sudo 命令`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: 'sudo rm -rf /tmp/test',
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 403);
+        assert(res.data.error === 'Dangerous command blocked', 'Should block sudo');
+    });
+
+    await test(`${label} POST /api/command/exec 拦截 shutdown 命令`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: 'shutdown -h now',
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 403);
+        assert(res.data.error === 'Dangerous command blocked', 'Should block shutdown');
+    });
+
+    // 测试路径安全
+    await test(`${label} POST /api/command/exec 路径遍历防护`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: 'echo test',
+                cwd: '../../../etc'
+            })
+        });
+        assertStatus(res, 400);
+        assert(res.data.message.includes('traversal'), 'Should block path traversal');
+    });
+
+    await test(`${label} POST /api/command/exec 工作目录不存在`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: 'echo test',
+                cwd: 'nonexistent-dir-12345'
+            })
+        });
+        assertStatus(res, 404);
+        assert(res.data.error === 'Directory not found', 'Should return directory not found');
+    });
+
+    // 测试参数验证
+    await test(`${label} POST /api/command/exec 缺少 command 参数`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 400);
+        assert(res.data.error === 'Missing parameter', 'Should require command');
+    });
+
+    // 测试命令失败处理
+    await test(`${label} POST /api/command/exec 命令执行失败返回非零`, async () => {
+        const cmd = process.platform === 'win32' ? 'dir nonexistent-file.txt' : 'ls nonexistent-file.txt';
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': CONFIG.apiKey
+            },
+            body: JSON.stringify({
+                command: cmd,
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 200);  // API 调用成功
+        assert(res.data.success === false || res.data.exitCode !== 0, 'Command should fail');
+        assert(res.data.stderr || res.data.output, 'Should have error output');
+    });
+
+    // 测试认证
+    await test(`${label} POST /api/command/exec 无密钥访问`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                command: 'echo test',
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 401);
+        assert(res.data.error === 'Missing API key', 'Should require API key');
+    });
+
+    await test(`${label} POST /api/command/exec 错误的密钥`, async () => {
+        const res = await fetch(`${apiBaseUrl}/api/command/exec`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Ergo-Key': 'wrong-key'
+            },
+            body: JSON.stringify({
+                command: 'echo test',
+                cwd: '.'
+            })
+        });
+        assertStatus(res, 401);
+        assert(res.data.error === 'Invalid API key', 'Should reject invalid key');
+    });
+}
+
+/**
  * v1.5 实时监控与自动化测试
  */
 async function testRealtimeFeatures(baseUrl) {
@@ -736,6 +937,7 @@ async function main() {
             await testErrorHandling(CONFIG.localBaseUrl);
             await testRealtimeFeatures(CONFIG.localBaseUrl);  // v1.5 新增
             await testFileManagement(CONFIG.localBaseUrl);  // v1.6 新增
+            await testCommandExecution(CONFIG.localBaseUrl);  // v1.6 新增
         }
 
         // 公网测试
@@ -751,6 +953,7 @@ async function main() {
             await testErrorHandling(CONFIG.publicBaseUrl);
             await testRealtimeFeatures(CONFIG.publicBaseUrl);  // v1.5 新增
             await testFileManagement(CONFIG.publicBaseUrl);  // v1.6 新增
+            await testCommandExecution(CONFIG.publicBaseUrl);  // v1.6 新增
         }
     } catch (error) {
         console.error(`\n${colors.red}Fatal error: ${error.message}${colors.reset}`);
