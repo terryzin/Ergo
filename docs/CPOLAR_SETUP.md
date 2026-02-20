@@ -10,7 +10,15 @@ localhost:8082/api/status:1 Failed to load resource: net::ERR_CONNECTION_REFUSED
 
 **原因：**`localhost` 在外部网络中指向访问者自己的设备，而不是服务器。
 
-## 解决方案：为 API Bridge 配置 cpolar 隧道
+## 最终解决方案：前端反向代理（推荐）
+
+**v1.3.0 采用此方案** - 使用 Express 将前端和 API 合并到同一端口，无需第三个隧道。
+
+详细文档：[PROXY_SOLUTION.md](./PROXY_SOLUTION.md)
+
+---
+
+## ~~方案 A：三隧道架构（已废弃）~~
 
 ### 第1步：更新 cpolar 配置
 

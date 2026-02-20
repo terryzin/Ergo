@@ -971,18 +971,10 @@
         // DATA LOADING (v1.2: 直连 Gateway)
         // ============================
 
-        // Gateway 配置 - 自动检测本地或公网环境
+        // Gateway 配置 - 使用相对路径（通过前端代理）
         const GATEWAY_CONFIG = {
-            // 根据当前访问方式自动选择 API 地址
-            url: (() => {
-                const hostname = window.location.hostname;
-                // 如果通过 cpolar 公网域名访问，使用 API Bridge 的 cpolar 地址
-                if (hostname.includes('cpolar.top') || hostname.includes('cpolar.cn')) {
-                    return 'https://terryapi.cpolar.top';
-                }
-                // 本地访问
-                return 'http://localhost:8082';
-            })(),
+            // 使用相对路径，由前端服务器代理到 API Bridge
+            url: '',  // 空字符串表示使用相对路径 /api/*
             timeout: 20000  // 20秒超时（API Bridge 需要 15 秒执行 openclaw CLI）
         };
 
