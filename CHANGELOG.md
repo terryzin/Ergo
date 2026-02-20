@@ -10,19 +10,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v1.3.0] - 2026-02-20
 
 ### Added
-- **🔐 自动配对系统**：预配置密钥方案 ⭐ 核心功能
-  - API Bridge 认证中间件（X-Ergo-Key Header）
-  - 前端自动密钥管理（localStorage 持久化）
-  - 首次访问自动使用默认密钥
-  - 401 错误自动触发重新配对
-  - 环境变量支持（ERGO_SECRET）
-  - 可选禁用认证（AUTH_ENABLED=false）
+- **🔐 自动配对系统**：双层认证 + 自动审批 ⭐ 核心功能
+  - **Layer 1 - OpenClaw Gateway 自动审批**：
+    - 自动配对监听器（auto-pairing-watcher.js）
+    - 每 10 秒检查 `openclaw devices list` 的 pending 设备
+    - 自动执行 `openclaw devices approve --latest`
+    - 支持环境变量（AUTO_APPROVE, PAIRING_CHECK_INTERVAL, LOG_LEVEL）
+    - 详细审批日志（设备 ID、平台、客户端类型）
+  - **Layer 2 - API Bridge 密钥认证**：
+    - X-Ergo-Key Header 验证
+    - 前端自动密钥管理（localStorage 持久化）
+    - 首次访问自动使用默认密钥
+    - 401 错误自动触发重新配对
+    - 环境变量支持（ERGO_SECRET, AUTH_ENABLED）
 - **设置页面**（settings.html）：独立的密钥配置界面
   - 可视化密钥管理
   - 显示/隐藏当前密钥
   - 一键使用默认密钥
   - 使用说明和安全提示
 - **首页设置入口**：系统设置卡片
+- **统一启动脚本**（start-ergo.bat）：同时启动三个服务
+  - 前端服务器 (8081)
+  - API Bridge (8082)
+  - 自动配对监听器
 
 ### Improved
 - **多端使用体验**：一次配置，多端同步（浏览器云同步）

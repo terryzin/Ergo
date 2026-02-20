@@ -7,8 +7,10 @@
     "start": "python -m http.server 8081",
     "dev": "python -m http.server 8081",
     "api": "node server/api-bridge.js",
-    "start:all": "concurrently \"npm run start\" \"npm run api\"",
-    "test": "node tests/api.test.js"
+    "pairing": "node server/auto-pairing-watcher.js",
+    "start:all": "concurrently \"npm run start\" \"npm run api\" \"npm run pairing\"",
+    "test": "node tests/api.test.js",
+    "test:auth": "node tests/run-auth-tests.js"
   },
   "dependencies": {
     "express": "^4.18.2",

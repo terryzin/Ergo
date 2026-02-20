@@ -27,12 +27,17 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 REM 启动 API Bridge（后台）
-echo [1/2] 启动 API Bridge (http://localhost:8082)...
+echo [1/3] 启动 API Bridge (http://localhost:8082)...
 start /B "Ergo API Bridge" cmd /c "node server\api-bridge.js"
 timeout /t 2 /nobreak >nul
 
+REM 启动自动配对监听器（后台）
+echo [2/3] 启动自动配对监听器...
+start /B "Auto-Pairing Watcher" cmd /c "node server\auto-pairing-watcher.js"
+timeout /t 1 /nobreak >nul
+
 REM 启动前端服务器
-echo [2/2] 启动 Ergo 前端 (http://localhost:8081)...
+echo [3/3] 启动 Ergo 前端 (http://localhost:8081)...
 echo.
 echo ════════════════════════════════════════════
 echo   Ergo 已启动！
@@ -40,6 +45,7 @@ echo ═════════════════════════
 echo.
 echo   前端:  http://localhost:8081
 echo   API:   http://localhost:8082/api/status
+echo   自动配对: 已启用 ✓
 echo.
 echo   按 Ctrl+C 停止服务器
 echo ════════════════════════════════════════════
