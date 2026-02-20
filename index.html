@@ -695,7 +695,8 @@
             <div class="kpi-card">
                 <div class="kpi-label">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        <circle cx="12" cy="12" r="2"/>
+                        <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
                     </svg>
                     网络
                 </div>
@@ -703,6 +704,19 @@
                 <div class="status-pill ok" id="networkPill">
                     <span class="status-dot"></span>
                     <span>检测中</span>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    数据
+                </div>
+                <div class="kpi-value" id="dataStatus">--</div>
+                <div class="status-pill ok" id="dataPill">
+                    <span class="status-dot"></span>
+                    <span>加载中</span>
                 </div>
             </div>
         </section>
@@ -906,6 +920,37 @@
         }
 
         // ============================
+        // NETWORK HEALTH CHECK
+        // ============================
+
+        // 快速网络健康检查（通过 /health 端点，无需认证）
+        async function checkNetworkHealth() {
+            try {
+                const start = Date.now();
+                const response = await fetch('/api/health', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(3000)  // 3秒超时
+                });
+
+                const latency = Date.now() - start;
+
+                if (response.ok) {
+                    document.getElementById('networkStatus').textContent = '在线';
+                    document.getElementById('networkPill').innerHTML = `<span class="status-dot"></span><span>${latency}ms</span>`;
+                    document.getElementById('networkPill').className = 'status-pill ok';
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                document.getElementById('networkStatus').textContent = '离线';
+                document.getElementById('networkPill').innerHTML = '<span>连接失败</span>';
+                document.getElementById('networkPill').className = 'status-pill err';
+                return false;
+            }
+        }
+
+        // ============================
         // INIT
         // ============================
         document.addEventListener('DOMContentLoaded', () => {
@@ -915,8 +960,12 @@
             renderDevProjects();
             renderChangelog();
 
-            // 启动轮询（每 10 秒刷新一次）
+            // 启动数据轮询（每 10 秒刷新一次）
             setInterval(loadData, 10000);
+
+            // 启动网络健康检查（每 3 秒检测一次）
+            checkNetworkHealth();
+            setInterval(checkNetworkHealth, 3000);
         });
 
         function initVersion() {
@@ -1061,16 +1110,19 @@
 
                 renderAllData(data);
 
-                // 更新网络状态
+                // 更新数据状态（新增的 KPI 卡片）
                 if (hasError) {
-                    document.getElementById('networkStatus').textContent = '离线';
-                    document.getElementById('networkPill').innerHTML = '<span>连接失败</span>';
-                    document.getElementById('networkPill').className = 'status-pill err';
+                    document.getElementById('dataStatus').textContent = '异常';
+                    document.getElementById('dataPill').innerHTML = '<span>加载失败</span>';
+                    document.getElementById('dataPill').className = 'status-pill err';
                 } else {
                     const statusText = isCached ? '缓存' : '实时';
-                    document.getElementById('networkStatus').textContent = statusText;
-                    document.getElementById('networkPill').innerHTML = `<span class="status-dot"></span><span>${statusText}</span>`;
-                    document.getElementById('networkPill').className = 'status-pill ok';
+                    const cacheAge = data._meta?.cacheAge;
+                    const pillText = isCached && cacheAge ? `缓存 ${cacheAge}s` : statusText;
+
+                    document.getElementById('dataStatus').textContent = statusText;
+                    document.getElementById('dataPill').innerHTML = `<span class="status-dot"></span><span>${pillText}</span>`;
+                    document.getElementById('dataPill').className = isCached ? 'status-pill' : 'status-pill ok';
                 }
 
                 // 更新时间显示
@@ -1156,9 +1208,12 @@
             document.getElementById('panelGatewayStatus').style.color = 'var(--err)';
             document.getElementById('panelGatewayUptime').textContent = '--';
             document.getElementById('panelGatewayVersion').textContent = '--';
-            document.getElementById('networkStatus').textContent = '异常';
-            document.getElementById('networkPill').innerHTML = '<span>断开</span>';
-            document.getElementById('networkPill').className = 'status-pill err';
+
+            // 更新数据状态（网络状态由独立的 checkNetworkHealth 处理）
+            document.getElementById('dataStatus').textContent = '异常';
+            document.getElementById('dataPill').innerHTML = '<span>加载失败</span>';
+            document.getElementById('dataPill').className = 'status-pill err';
+
             showToast('无法连接到 Gateway');
         }
 

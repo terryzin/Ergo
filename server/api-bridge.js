@@ -45,7 +45,7 @@ function authMiddleware(req, res, next) {
     }
 
     // 健康检查端点不需要认证
-    if (req.path === '/health') {
+    if (req.path === '/health' || req.path === '/api/health') {
         return next();
     }
 
@@ -320,9 +320,17 @@ app.get('/api/status/refresh', async (req, res) => {
 
 /**
  * GET /health
- * 健康检查
+ * 健康检查（无需认证）
  */
 app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+/**
+ * GET /api/health
+ * API 健康检查（无需认证，用于前端快速检测）
+ */
+app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
