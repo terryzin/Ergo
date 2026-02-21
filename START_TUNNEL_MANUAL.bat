@@ -35,7 +35,7 @@ echo [INFO] Tunnel config:
 echo   Local Port: 8081
 echo   Subdomain: terryzin
 echo   Region: cn
-echo   Public URL: https://terryzin.cpolar.top
+echo   Public URL: https://terryzin.cpolar.cn
 echo.
 echo [INFO] Starting tunnel...
 echo.
@@ -52,7 +52,7 @@ echo ========================================
 echo   Tunnel Started!
 echo ========================================
 echo   Web UI: http://localhost:4040
-echo   Public URL: https://terryzin.cpolar.top
+echo   Public URL: https://terryzin.cpolar.cn
 echo ========================================
 echo.
 
@@ -63,7 +63,7 @@ start http://localhost:4040
 echo.
 echo [INFO] Opening public URL to test...
 timeout /t 2 /nobreak >nul
-start https://terryzin.cpolar.top
+start https://terryzin.cpolar.cn
 
 echo.
 echo [SUCCESS] Tunnel started!

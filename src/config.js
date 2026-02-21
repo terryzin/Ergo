@@ -30,7 +30,7 @@ class ErgoConfig {
         }
 
         // 外网环境 - 使用相对路径（静态文件和 API 同服务器）
-        // terryzin.cpolar.top → 8082 (API Bridge 同时服务静态文件和 API)
+        // terryzin.cpolar.cn → 8081 (Frontend Proxy) → 8082 (API Bridge)
         return '';
     }
 

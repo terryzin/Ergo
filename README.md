@@ -60,7 +60,7 @@ npm test
 ### 访问地址
 
 - **本地访问**：http://localhost:8081
-- **公网访问**：https://terryzin.cpolar.top
+- **公网访问**：https://terryzin.cpolar.cn
 - **Gateway WebUI**：http://localhost:18789
 - **Cpolar 管理**：http://localhost:4040
 
@@ -132,8 +132,8 @@ const API_BASE = 'http://localhost:18789';  // Gateway API 地址
 
 | 服务 | 域名 | 本地端口 |
 |------|------|---------|
-| Ergo Dashboard | https://terryzin.cpolar.top | 8081 |
-| OpenClaw Gateway | https://terrysopenclaw.cpolar.top | 18789 |
+| Ergo Dashboard | https://terryzin.cpolar.cn | 8081 |
+| OpenClaw Gateway | https://terrysopenclaw.cpolar.cn | 18789 |
 
 **架构特点：**
 - 双子域名独立隧道（无自定义代理）

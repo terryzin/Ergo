@@ -80,13 +80,13 @@ echo ║          验证步骤                         ║
 echo ╠════════════════════════════════════════════╣
 echo ║  1. 查看 http://localhost:4040            ║
 echo ║  2. 确认看到隧道: ergo → 8081            ║
-echo ║  3. 确认公网地址: terryzin.cpolar.top    ║
-echo ║  4. 访问测试: https://terryzin.cpolar.top ║
+echo ║  3. 确认公网地址: terryzin.cpolar.cn    ║
+echo ║  4. 访问测试: https://terryzin.cpolar.cn ║
 echo ╚════════════════════════════════════════════╝
 echo.
 
 timeout /t 5 /nobreak >nul
-start https://terryzin.cpolar.top
+start https://terryzin.cpolar.cn
 
 echo.
 echo [SUCCESS] 修复完成！

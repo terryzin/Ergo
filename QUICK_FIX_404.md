@@ -1,6 +1,6 @@
 # 🚨 404 快速修复指南
 
-**问题**: https://terryzin.cpolar.top 返回 404
+**问题**: https://terryzin.cpolar.cn 返回 404
 **根本原因**: cpolar 隧道没有正确连接到端口 8081
 
 ---
@@ -38,12 +38,12 @@
 5. **验证隧道**:
    - 在 Web UI 中应该看到：
      ```
-     https://terryzin.cpolar.top → http://localhost:8081
+     https://terryzin.cpolar.cn → http://localhost:8081
      ```
 
 6. **测试访问**:
    ```
-   https://terryzin.cpolar.top
+   https://terryzin.cpolar.cn
    ```
 
 ---
@@ -66,12 +66,12 @@ Session Status                online
 Account                       terryzin (Plan: Pro)
 Region                        China (cn)
 Web Interface                 http://127.0.0.1:4040
-Forwarding                    https://terryzin.cpolar.top -> http://localhost:8081
+Forwarding                    https://terryzin.cpolar.cn -> http://localhost:8081
 ```
 
 **步骤 4**: 保持该窗口打开，测试访问：
 ```
-https://terryzin.cpolar.top
+https://terryzin.cpolar.cn
 ```
 
 **重要**:
@@ -114,7 +114,7 @@ curl http://localhost:8081
 
 **应该看到**:
 - Tunnel Status: **online** ✅
-- Forwarding: **https://terryzin.cpolar.top** → **http://localhost:8081** ✅
+- Forwarding: **https://terryzin.cpolar.cn** → **http://localhost:8081** ✅
 
 **如果配置错误**:
 - Local address 不是 8081 → 需要重新创建隧道
@@ -125,7 +125,7 @@ curl http://localhost:8081
 ```bash
 # 等待 10 秒让隧道稳定
 # 然后访问
-https://terryzin.cpolar.top
+https://terryzin.cpolar.cn
 ```
 
 ---
@@ -151,7 +151,7 @@ cpolar http 8081 -subdomain=terryzin -region=cn
 2. 登录 cpolar 官网检查账号状态: https://dashboard.cpolar.com
 3. 确认 `terryzin` 子域名绑定到当前设备
 
-### 症状 3: 隧道地址不是 terryzin.cpolar.top
+### 症状 3: 隧道地址不是 terryzin.cpolar.cn
 
 **原因**:
 - 子域名已被占用
@@ -224,13 +224,13 @@ cpolar http 8081 -subdomain=terryzin -region=cn
 
 访问 http://localhost:4040 确认：
 - Status: online
-- Forwarding: terryzin.cpolar.top → 8081
+- Forwarding: terryzin.cpolar.cn → 8081
 
 ### 第 4 步: 测试访问
 
 等待 10 秒，然后访问：
 ```
-https://terryzin.cpolar.top
+https://terryzin.cpolar.cn
 ```
 
 ---
@@ -272,7 +272,7 @@ https://terryzin.cpolar.top
 - [ ] 本地 8081 可以访问（curl http://localhost:8081）
 - [ ] cpolar Web UI 可以打开（http://localhost:4040）
 - [ ] 隧道状态显示 online
-- [ ] 隧道地址是 terryzin.cpolar.top
+- [ ] 隧道地址是 terryzin.cpolar.cn
 - [ ] 隧道指向 localhost:8081（不是 18789）
 - [ ] 等待了至少 1 分钟让隧道初始化
 
@@ -286,7 +286,7 @@ scripts\check-cpolar-status.bat
 拍照或截图发给我：
 1. cpolar Web UI 页面（http://localhost:4040）
 2. 命令行启动 cpolar 的输出
-3. 浏览器访问 terryzin.cpolar.top 的错误信息
+3. 浏览器访问 terryzin.cpolar.cn 的错误信息
 
 ---
 

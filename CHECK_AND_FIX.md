@@ -14,7 +14,7 @@
 
 ```
 状态: 在线 / online
-公网地址: https://xxx.cpolar.top
+公网地址: https://xxx.cpolar.cn
 本地地址: http://localhost:????
 ```
 
@@ -28,7 +28,7 @@
 
 **问题 2**: 公网地址是什么？
 
-- ✅ **正确**: `https://terryzin.cpolar.top`
+- ✅ **正确**: `https://terryzin.cpolar.cn`
 - ⚠️ **可能问题**: 其他随机域名（说明子域名未生效）
 
 ---
@@ -58,10 +58,10 @@ cpolar http 8081 -subdomain=terryzin -region=cn
 
 3. 看到输出：
 ```
-Forwarding    https://terryzin.cpolar.top -> http://localhost:8081
+Forwarding    https://terryzin.cpolar.cn -> http://localhost:8081
 ```
 
-4. **保持窗口打开**，访问：https://terryzin.cpolar.top
+4. **保持窗口打开**，访问：https://terryzin.cpolar.cn
 
 **成功！** ✅
 
@@ -79,7 +79,7 @@ Forwarding    https://terryzin.cpolar.top -> http://localhost:8081
 cpolar http 8081 -subdomain=terryzin -region=cn
 ```
 
-保持窗口打开，访问：https://terryzin.cpolar.top
+保持窗口打开，访问：https://terryzin.cpolar.cn
 
 ---
 
@@ -102,7 +102,7 @@ curl http://localhost:8081
 
 3. **刷新浏览器**：
 
-按 `Ctrl+F5` 强制刷新 https://terryzin.cpolar.top
+按 `Ctrl+F5` 强制刷新 https://terryzin.cpolar.cn
 
 ---
 
@@ -119,7 +119,7 @@ curl http://localhost:8081
    ```
 
 3. **错误信息**：
-   - 浏览器访问 https://terryzin.cpolar.top 的完整错误页面
+   - 浏览器访问 https://terryzin.cpolar.cn 的完整错误页面
 
 ---
 
@@ -153,7 +153,7 @@ npm run start:all
 cpolar http 8081 -subdomain=terryzin -region=cn
 ```
 
-**保持窗口打开，访问：https://terryzin.cpolar.top**
+**保持窗口打开，访问：https://terryzin.cpolar.cn**
 
 ---
 

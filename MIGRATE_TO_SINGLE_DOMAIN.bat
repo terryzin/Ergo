@@ -54,7 +54,7 @@ echo ╔════════════════════════
 echo ║          迁移完成！                       ║
 echo ╠════════════════════════════════════════════╣
 echo ║  查看状态: http://localhost:4040          ║
-echo ║  公网访问: https://terryzin.cpolar.top    ║
+echo ║  公网访问: https://terryzin.cpolar.cn    ║
 echo ║  隧道数量: 1 (ergo)                       ║
 echo ║  释放域名: 1 (留给其他项目)              ║
 echo ╚════════════════════════════════════════════╝

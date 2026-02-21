@@ -3,7 +3,7 @@
 ## 问题现状
 - 本地服务 (8081, 8082, 18789): ✅ 全部正常
 - cpolar 隧道配置: ❌ 可能指向错误端口或未启动
-- 公网访问: ❌ https://terryzin.cpolar.top 返回 404
+- 公网访问: ❌ https://terryzin.cpolar.cn 返回 404
 
 ---
 
@@ -41,20 +41,20 @@ Session Status                online
 Account                       terryzin (Plan: Pro)
 Region                        China (cn)
 Web Interface                 http://127.0.0.1:4040
-Forwarding                    https://terryzin.cpolar.top -> http://localhost:8081
+Forwarding                    https://terryzin.cpolar.cn -> http://localhost:8081
 
 Connections                   ttl     opn     rt1
                               0       0       0.00
 ```
 
-**关键行**: `Forwarding   https://terryzin.cpolar.top -> http://localhost:8081`
+**关键行**: `Forwarding   https://terryzin.cpolar.cn -> http://localhost:8081`
 
 如果看到这行，说明**隧道启动成功**！✅
 
 #### 步骤 4: 测试访问
 
 1. **保持命令提示符窗口打开**（关闭会断开隧道）
-2. 打开浏览器访问：https://terryzin.cpolar.top
+2. 打开浏览器访问：https://terryzin.cpolar.cn
 3. 应该能看到 Ergo Dashboard 页面
 
 #### 步骤 5: 长期运行
@@ -132,10 +132,10 @@ D:\.openclaw\workspace\my-dashboard\START_TUNNEL_NOW.bat
 ### ✅ 命令行输出检查
 
 ```
-Forwarding    https://terryzin.cpolar.top -> http://localhost:8081
+Forwarding    https://terryzin.cpolar.cn -> http://localhost:8081
 ```
 
-- [ ] 域名是 terryzin.cpolar.top
+- [ ] 域名是 terryzin.cpolar.cn
 - [ ] 本地端口是 8081（不是 18789）
 - [ ] Status 是 online
 
@@ -157,7 +157,7 @@ curl http://localhost:8081
 
 ### ✅ 公网访问检查
 
-浏览器访问 https://terryzin.cpolar.top
+浏览器访问 https://terryzin.cpolar.cn
 
 - [ ] 能看到 Ergo Dashboard 页面
 - [ ] 无 404 错误
@@ -170,11 +170,11 @@ curl http://localhost:8081
 ### 问题根源
 
 迁移前的双域名架构：
-- terryzin.cpolar.top → 8081 (Frontend)
-- terrysopenclaw.cpolar.top → 18789 (Gateway)
+- terryzin.cpolar.cn → 8081 (Frontend)
+- terrysopenclaw.cpolar.cn → 18789 (Gateway)
 
 迁移后应该只有一个域名：
-- terryzin.cpolar.top → 8081 (Frontend)
+- terryzin.cpolar.cn → 8081 (Frontend)
 
 **但是**: cpolar 服务可能还在使用旧配置，指向了 18789 或根本没有启动隧道。
 
@@ -230,7 +230,7 @@ curl http://localhost:8081
    ```
 
 4. **浏览器错误详情**:
-   - 访问 https://terryzin.cpolar.top 的完整错误页面
+   - 访问 https://terryzin.cpolar.cn 的完整错误页面
    - F12 开发者工具的 Console 和 Network 标签
 
 ---
@@ -247,7 +247,7 @@ REM 2. 启动隧道
 cpolar http 8081 -subdomain=terryzin -region=cn
 
 REM 3. 测试公网（在另一个窗口）
-curl https://terryzin.cpolar.top
+curl https://terryzin.cpolar.cn
 ```
 
 ### 查看实时连接

@@ -1,6 +1,6 @@
 # 🔍 Cpolar 404 错误诊断和解决方案
 
-**问题**: 访问 `https://terryzin.cpolar.top` 返回 404 错误
+**问题**: 访问 `https://terryzin.cpolar.cn` 返回 404 错误
 
 **时间**: 2026-02-21 14:05
 
@@ -37,7 +37,7 @@ D:\.openclaw\workspace\my-dashboard\FIX_CPOLAR_TUNNEL.bat
 
 # 4. 验证隧道
 # - 访问 http://localhost:4040
-# - 确认看到: ergo → 8081 → terryzin.cpolar.top
+# - 确认看到: ergo → 8081 → terryzin.cpolar.cn
 ```
 
 **脚本会自动执行**:
@@ -85,7 +85,7 @@ start http://localhost:4040
 在 Web UI 中确认：
 - ✅ 隧道名称: `ergo`
 - ✅ 本地地址: `http://localhost:8081`
-- ✅ 公网地址: `https://terryzin.cpolar.top`
+- ✅ 公网地址: `https://terryzin.cpolar.cn`
 
 ---
 
@@ -126,7 +126,7 @@ scripts\start-cpolar.bat
 Tunnels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ergo
-  URL: https://terryzin.cpolar.top
+  URL: https://terryzin.cpolar.cn
   Forwards: http://localhost:8081
   Protocol: http
 ```
@@ -153,7 +153,7 @@ curl http://localhost:8082/api/health
 timeout /t 60
 
 # 访问 Dashboard
-start https://terryzin.cpolar.top
+start https://terryzin.cpolar.cn
 ```
 
 ---
@@ -167,7 +167,7 @@ start https://terryzin.cpolar.top
 **解决**:
 1. 等待 1-2 分钟
 2. 访问 http://localhost:4040 查看隧道状态
-3. 如果状态显示 "online"，刷新 https://terryzin.cpolar.top
+3. 如果状态显示 "online"，刷新 https://terryzin.cpolar.cn
 
 ### Q2: Web UI 显示 "offline"
 
@@ -243,7 +243,7 @@ start http://localhost:4040
 # 确认隧道配置:
 # - Name: ergo
 # - Local: 8081
-# - Public: terryzin.cpolar.top
+# - Public: terryzin.cpolar.cn
 ```
 
 ### 第三步: 等待初始化
@@ -256,7 +256,7 @@ start http://localhost:4040
 
 ```bash
 # 刷新浏览器
-start https://terryzin.cpolar.top
+start https://terryzin.cpolar.cn
 ```
 
 ### 第五步: 如果仍然失败
@@ -295,6 +295,6 @@ scripts\check-cpolar-status.bat
 
 ---
 
-**下一步**: 运行 `FIX_CPOLAR_TUNNEL.bat`，等待 1-2 分钟后访问 https://terryzin.cpolar.top
+**下一步**: 运行 `FIX_CPOLAR_TUNNEL.bat`，等待 1-2 分钟后访问 https://terryzin.cpolar.cn
 
 **预计修复时间**: 5 分钟

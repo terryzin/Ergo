@@ -83,7 +83,7 @@ const server = app.listen(PORT, () => {
     console.log('║   /*     → Static files                   ║');
     console.log('╚════════════════════════════════════════════╝');
     console.log('');
-    console.log('Public access: https://terryzin.cpolar.top');
+    console.log('Public access: https://terryzin.cpolar.cn');
     console.log('');
 });
 
