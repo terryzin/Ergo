@@ -1676,7 +1676,20 @@
         function openDashboard() {
             // 跳转到 OpenClaw Gateway Dashboard (带 token 自动登录)
             const token = 'f2009973e92e96b0e31c30b30500e997';
-            window.open(`https://terrysopenclaw.cpolar.top?token=${token}`, '_blank');
+
+            // v1.6.2 环境自动切换
+            const hostname = window.location.hostname;
+            let gatewayUrl;
+
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                // 本地开发环境
+                gatewayUrl = 'http://localhost:18789';
+            } else {
+                // 外网环境 - OpenClaw Gateway 独立隧道
+                gatewayUrl = 'https://terrysopenclaw.cpolar.top';
+            }
+
+            window.open(`${gatewayUrl}?token=${token}`, '_blank');
         }
 
         function openUrl(url) {

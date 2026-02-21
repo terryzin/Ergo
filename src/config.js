@@ -15,26 +15,22 @@ class ErgoConfig {
     /**
      * 自动检测 API Base URL
      *
+     * v1.6.2 统一架构：静态文件和 API 同服务器 (8082)
+     *
      * 规则：
-     * 1. 如果 hostname 是 localhost 或 127.0.0.1，使用 http://localhost:8082
-     * 2. 如果是外网域名（cpolar.top），使用 API Bridge 隧道域名
-     * 3. 其他域名使用相对路径（由前端代理转发）
+     * 1. 本地开发：http://localhost:8082
+     * 2. 外网部署：相对路径（静态文件和 API 在同一域名）
      */
     detectApiBase() {
         const hostname = window.location.hostname;
 
-        // 本地开发环境
+        // 本地开发环境 - 明确指定端口
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
             return 'http://localhost:8082';
         }
 
-        // 外网访问（cpolar 域名）- 使用 API Bridge 隧道
-        if (hostname.includes('cpolar.top')) {
-            // 临时隧道域名（TODO: 在 Web UI 启动保留域名后改为 https://terryapi.cpolar.top）
-            return 'https://737b33c9.r35.cpolar.top';
-        }
-
-        // 其他域名 - 相对路径（由前端代理转发）
+        // 外网环境 - 使用相对路径（静态文件和 API 同服务器）
+        // terryzin.cpolar.top → 8082 (API Bridge 同时服务静态文件和 API)
         return '';
     }
 

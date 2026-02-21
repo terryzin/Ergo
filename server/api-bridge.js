@@ -31,6 +31,19 @@ const AUTH_ENABLED = process.env.AUTH_ENABLED !== 'false'; // 默认启用认证
 app.use(cors());
 app.use(express.json());
 
+// 静态文件服务（v1.6.2 统一架构）
+// 优先级：静态文件在认证中间件之前，API 路由在认证之后
+const staticPath = path.join(__dirname, '..');
+app.use(express.static(staticPath, {
+    index: 'index.html',
+    setHeaders: (res, filePath) => {
+        // 防止 HTML 文件被缓存
+        if (filePath.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        }
+    }
+}));
+
 // 状态缓存
 let statusCache = null;
 let lastUpdateTime = null;
@@ -45,14 +58,20 @@ app.use((req, res, next) => {
     next();
 });
 
-// 认证中间件
+// 认证中间件（v1.6.2 优化：只对 API 请求认证，静态文件豁免）
 function authMiddleware(req, res, next) {
+    // 静态文件请求不需要认证（HTML, CSS, JS, 图片等）
+    // 只对 /api/* 路径进行认证
+    if (!req.path.startsWith('/api/')) {
+        return next();
+    }
+
     // 如果认证被禁用，直接放行
     if (!AUTH_ENABLED) {
         return next();
     }
 
-    // WebSocket 升级请求不需要认证（升级请求会被 server.on('upgrade') 处理）
+    // WebSocket 升级请求不需要认证
     if (req.headers.upgrade === 'websocket') {
         return next();
     }
