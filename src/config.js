@@ -29,9 +29,9 @@ class ErgoConfig {
             return 'http://localhost:8082';
         }
 
-        // 外网环境 - 使用相对路径（静态文件和 API 同服务器）
-        // terryzin.cpolar.cn → 8081 (Frontend Proxy) → 8082 (API Bridge)
-        return '';
+        // 外网环境 - 通过前端代理访问 API
+        // terryzin.cpolar.cn → 8081 (Frontend Proxy) → /api/* → 8082 (API Bridge)
+        return '/api';
     }
 
     /**

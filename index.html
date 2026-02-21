@@ -1685,10 +1685,9 @@
                 // 本地开发环境 - 直接访问 Gateway
                 gatewayUrl = 'http://localhost:18789';
             } else {
-                // 外网环境 - Gateway 不直接暴露，通过 API Bridge 访问
-                // 注意：这里打开 Gateway WebUI 需要通过端口转发或 VPN
-                alert('外网环境下无法直接访问 Gateway WebUI\n请使用本地网络或 VPN 连接');
-                return;
+                // 外网环境 - 通过 API Bridge 访问 Gateway
+                // 使用相对路径，通过前端代理转发到 API Bridge
+                gatewayUrl = '/api/gateway/webui';
             }
 
             window.open(`${gatewayUrl}?token=${token}`, '_blank');
