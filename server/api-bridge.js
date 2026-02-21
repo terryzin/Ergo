@@ -1760,10 +1760,12 @@ app.post('/api/command/exec', async (req, res) => {
         res.json({
             success: result.exitCode === 0,
             command,
-            output: result.stdout,
+            stdout: result.stdout,      // 标准输出
+            output: result.stdout,      // 兼容旧字段名
             stderr: result.stderr,
             exitCode: result.exitCode,
-            duration,
+            executionTime: duration,    // 执行时间（毫秒）
+            duration,                   // 兼容旧字段名
             cwd,
             timestamp: new Date().toISOString()
         });
