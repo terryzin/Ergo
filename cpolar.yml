@@ -55,7 +55,7 @@ log_level: info
 # 架构说明
 # ============================
 # 单域名三层架构（DHH Majestic Monolith 风格）：
-#   terryzin.cpolar.top (外网)
+#   terryzin.cpolar.cn (外网)
 #      ↓
 #   localhost:8081 (Frontend Proxy - 路由层)
 #      ├─ /           → 静态文件 (HTML/CSS/JS)

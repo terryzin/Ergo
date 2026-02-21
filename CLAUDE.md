@@ -15,9 +15,8 @@ Ergo（二狗）是基于 OpenClaw 平台的个人 AI 管家控制台，作为�
 
 - OpenClaw Gateway 端口: 18789
 - OpenClaw Gateway Token: f2009973e92e96b0e31c30b30500e997
-- Cpolar 域名（双子域名架构）:
-  - Ergo Dashboard: https://terryzin.cpolar.top (端口 8081)
-  - OpenClaw Gateway: https://terrysopenclaw.cpolar.top (端口 18789)
+- Cpolar 域名（单域名架构）:
+  - Ergo Dashboard: https://terryzin.cpolar.cn (端口 8081)
 - OpenClaw 工作空间: D:\.openclaw\workspace
 
 ## 文件结构
@@ -238,7 +237,7 @@ npm test
 ```
 外部访问
   │
-  └─ https://terryzin.cpolar.top (唯一入口)
+  └─ https://terryzin.cpolar.cn (唯一入口)
        └─ cpolar tunnel → localhost:8081 (Frontend Proxy)
             ├─ /           → 静态文件 (HTML/CSS/JS)
             └─ /api/*      → Proxy → localhost:8082 (API Bridge)
