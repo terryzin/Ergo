@@ -11,24 +11,17 @@
 # - 免费版会分配随机域名，需要在 Web 管理界面查看
 
 # ============================
-# 隧道定义
+# 隧道定义（单域名架构）
 # ============================
 tunnels:
-  # Ergo Dashboard (静态服务 + API 代理)
-  ergo-frontend:
+  # Ergo 统一入口（静态文件 + API 代理）
+  # 架构：前端(8081) → API Bridge(8082) → OpenClaw Gateway(18789)
+  ergo:
     proto: http
     addr: 8081
-    # subdomain: terryzin  # Pro 版可指定子域名
-    # region: cn           # 区域：cn/us/eu/ap
-    inspect: false         # 是否启用流量监控
-
-  # OpenClaw Gateway (WebUI + API)
-  openclaw-gateway:
-    proto: http
-    addr: 18789
-    # subdomain: terrysopenclaw
-    # region: cn
-    inspect: false
+    subdomain: terryzin  # Pro 版可指定子域名
+    # region: cn         # 区域：cn/us/eu/ap
+    inspect: false       # 是否启用流量监控
 
 # ============================
 # 全局配置
@@ -46,14 +39,10 @@ log_level: info
 # log: /var/log/cpolar.log
 
 # ============================
-# 使用示例
+# 使用示例（单域名架构）
 # ============================
-# 启动所有隧道:
-#   cpolar start-all
-#
-# 启动单个隧道:
-#   cpolar start ergo-frontend
-#   cpolar start openclaw-gateway
+# 启动隧道:
+#   cpolar start ergo
 #
 # 查看隧道状态:
 #   访问 http://localhost:4040
@@ -61,3 +50,22 @@ log_level: info
 # 安装为 Windows 服务:
 #   cpolar service install -config cpolar.yml
 #   cpolar service start
+#
+# ============================
+# 架构说明
+# ============================
+# 单域名三层架构（DHH Majestic Monolith 风格）：
+#   terryzin.cpolar.top (外网)
+#      ↓
+#   localhost:8081 (Frontend Proxy - 路由层)
+#      ├─ /           → 静态文件 (HTML/CSS/JS)
+#      └─ /api/*      → Proxy to localhost:8082
+#           ↓
+#   localhost:8082 (API Bridge - 业务层)
+#      └─ OpenClaw CLI → localhost:18789 (Gateway)
+#
+# 优势：
+# - ✅ 单域名，节约 cpolar 配额
+# - ✅ 统一入口，简化访问
+# - ✅ 内部服务（18789）不暴露，更安全
+# - ✅ 遵循 DHH 的 Majestic Monolith 原则

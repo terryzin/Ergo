@@ -7,6 +7,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [v1.7.0] - 2026-02-21
+
+### Changed
+- **🏗️ 架构重构：双域名 → 单域名**（Majestic Monolith 风格）⭐ 重要变更
+  - 删除 `openclaw-gateway` 隧道配置（`cpolar.yml`）
+  - 统一入口：`https://terryzin.cpolar.top`（释放 1 个域名配额）
+  - Gateway 不再直接暴露，通过 API Bridge 代理访问（更安全）
+  - 前端、API、Gateway 三层架构统一在单域名下
+
+### Added
+- **📖 迁移指南**：
+  - `docs/architecture/single-domain-migration.md` - 完整的迁移步骤和验证清单
+  - 3 分钟快速迁移（仅需调整配置，无代码改动）
+  - 回滚方案（Git 一键回滚）
+  - 常见问题排查
+
+- **🚀 启动脚本**：
+  - `scripts/start-cpolar.bat` - Cpolar 隧道一键启动脚本
+  - 自动检查 cpolar 安装
+  - 验证配置文件存在性
+  - 启动后自动打开 Web UI
+
+### Changed
+- **环境配置简化**：
+  - `.env` - 删除 `CPOLAR_GATEWAY_URL`，改为统一的 `CPOLAR_URL`
+  - `.env.example` - 同步更新配置模板
+  - `CLAUDE.md` - 更新部署架构说明（单域名三层架构）
+
+- **Cpolar 配置优化**：
+  - `cpolar.yml` - 删除 `openclaw-gateway` 隧道
+  - 重命名 `ergo-frontend` → `ergo`
+  - 增加架构说明注释
+
+### Technical
+- **架构演进（DHH 原则）**：
+  - ✅ **Majestic Monolith**：单一部署单元，统一入口
+  - ✅ **Convention over Configuration**：约定 `/api` 路由，无需配置反向代理
+  - ✅ **Choose Boring Technology**：复用现有 Express 代理，拒绝引入 Nginx/Caddy
+  - ✅ **Security by Default**：Gateway 不直接暴露，降低攻击面
+
+- **请求流转（单域名）**：
+  ```
+  https://terryzin.cpolar.top/api/status
+    ↓ cpolar tunnel
+  localhost:8081/api/status (Frontend Proxy - 路由层)
+    ↓ Express Proxy
+  localhost:8082/api/status (API Bridge - 业务层)
+    ↓ OpenClaw CLI
+  localhost:18789 (OpenClaw Gateway)
+  ```
+
+### Migration Notes
+- ⚠️ 需要重新配置 Cpolar 隧道（删除 `openclaw-gateway`）
+- ⚠️ 需要重启 Cpolar 服务（`cpolar service restart`）
+- ✅ 无需修改代码，仅调整配置文件
+- ✅ 支持 Git 一键回滚（如有问题）
+
+---
+
 ## [v1.6.1] - 2026-02-21
 
 ### Fixed

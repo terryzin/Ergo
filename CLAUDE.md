@@ -233,38 +233,38 @@ npm test
 
 ## 部署架构
 
-### 当前架构（v1.2 - 双子域名）
+### 当前架构（v1.7.0 - 单域名三层架构）
 
 ```
 外部访问
   │
-  ├─ https://terryzin.cpolar.top
-  │    └─ cpolar tunnel → localhost:8081 (Python http.server)
-  │         └─ Ergo Dashboard (静态 HTML/CSS/JS)
-  │
-  └─ https://terrysopenclaw.cpolar.top
-       └─ cpolar tunnel → localhost:18789
-            └─ OpenClaw Gateway WebUI + API
+  └─ https://terryzin.cpolar.top (唯一入口)
+       └─ cpolar tunnel → localhost:8081 (Frontend Proxy)
+            ├─ /           → 静态文件 (HTML/CSS/JS)
+            └─ /api/*      → Proxy → localhost:8082 (API Bridge)
+                                └─ OpenClaw CLI → localhost:18789 (Gateway)
 ```
 
-**架构特点：**
-- ✅ 零自定义代理代码（删除了 proxy-server.js）
-- ✅ WebSocket 原生支持（OpenClaw Gateway 实时连接）
-- ✅ 两个独立服务互不干扰
-- ✅ Cpolar Pro 版多隧道配置
+**架构特点（Majestic Monolith）：**
+- ✅ 单域名入口，节约 cpolar 配额（释放 1 个域名给其他项目）
+- ✅ 三层架构：前端路由(8081) → API 业务(8082) → Gateway(18789)
+- ✅ Gateway 不直接暴露，更安全
+- ✅ 前端自动环境检测（本地 vs 外网）
+- ✅ WebSocket 原生支持（通过代理层转发）
 
-**本地服务启动：**
+**本地服务启动（一键启动）：**
 ```bash
-# Ergo 静态服务
 cd D:\.openclaw\workspace\my-dashboard
-python -m http.server 8081
 
-# OpenClaw Gateway（通常已自动运行）
-# 端口: 18789
-# 无需手动启动
+# 方式 1：使用启动脚本（推荐）
+scripts\start.bat
+
+# 方式 2：手动启动
+npm run start:all
 ```
 
 **架构设计原则（遵循 DHH 思维）：**
-- Convention over Configuration（cpolar 原生配置）
-- Choose Boring Technology（Python http.server + cpolar）
-- No Over-engineering（拒绝自建反向代理）
+- **Majestic Monolith**：单一部署单元，统一入口
+- **Convention over Configuration**：约定 `/api` 路由，自动环境检测
+- **Choose Boring Technology**：Express + HTTP Proxy（最简单的代理）
+- **No Over-engineering**：拒绝 Nginx/Caddy（项目不需要）
