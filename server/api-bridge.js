@@ -83,6 +83,11 @@ function authMiddleware(req, res, next) {
         return next();
     }
 
+    // Gateway WebUI 重定向不需要认证（已通过 Gateway 自身的 token 认证）
+    if (req.path === '/api/gateway/webui') {
+        return next();
+    }
+
     const apiKey = req.headers['x-ergo-key'];
 
     if (!apiKey) {
