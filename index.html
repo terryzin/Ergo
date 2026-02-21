@@ -1227,7 +1227,7 @@
                 const timeoutId = setTimeout(() => controller.abort(), GATEWAY_CONFIG.timeout);
 
                 // 根据参数选择端点
-                const endpoint = forceRefresh ? '/api/status/refresh' : '/api/status';
+                const endpoint = forceRefresh ? '/status/refresh' : '/status';
 
                 const response = await fetch(`${GATEWAY_CONFIG.url}${endpoint}`, {
                     method: 'GET',
