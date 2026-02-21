@@ -445,6 +445,20 @@ app.get('/api/changelog', async (req, res) => {
 });
 
 /**
+ * GET /api/gateway/webui
+ * 代理 OpenClaw Gateway WebUI（外网访问）
+ */
+app.get('/api/gateway/webui', (req, res) => {
+    const token = req.query.token || '';
+    const gatewayUrl = `http://localhost:18789?token=${token}`;
+
+    console.log('[PROXY] Redirecting to Gateway WebUI:', gatewayUrl);
+
+    // 重定向到 Gateway WebUI
+    res.redirect(gatewayUrl);
+});
+
+/**
  * POST /api/gateway/restart
  * 重启 Gateway
  */
