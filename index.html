@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Ergo · AI 管家</title>
     <link rel="icon" type="image/png" href="assets/logo.png">
+    <script src="src/config.js"></script>
     <style>
         /* ============================
            ERGO v1.0 — Apple-grade UI
@@ -1204,10 +1205,10 @@
         // DATA LOADING (v1.2: 直连 Gateway)
         // ============================
 
-        // Gateway 配置 - 使用相对路径（通过前端代理）
+        // Gateway 配置 - 使用环境自动检测（v1.6.1）
         const GATEWAY_CONFIG = {
-            // 使用相对路径，由前端服务器代理到 API Bridge
-            url: '',  // 空字符串表示使用相对路径 /api/*
+            // 自动检测环境：本地 → http://localhost:8082，外网 → 相对路径
+            url: ergoConfig.API_BASE,
             timeout: 20000  // 20秒超时（API Bridge 需要 15 秒执行 openclaw CLI）
         };
 
