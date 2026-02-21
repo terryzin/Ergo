@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>项目管理 - Ergo</title>
     <link rel="icon" type="image/png" href="assets/logo.png">
+    <script src="src/config.js"></script>
     <style>
         * {
             margin: 0;
@@ -425,9 +426,8 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // 使用相对路径，通过前端代理访问 API Bridge
-        // 外网访问时不能直接访问 localhost:8082，必须使用代理
-        const API_BASE = ''; // 空字符串表示使用当前域名 + /api 前缀
+        // 使用环境自动检测（v1.6.1）
+        const API_BASE = ergoConfig.API_BASE;
         let editingProjectId = null;
 
         // 获取 API Key

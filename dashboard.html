@@ -486,6 +486,8 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- v1.6.1: 环境配置 -->
+    <script src="src/config.js"></script>
     <!-- v1.5: WebSocket 实时连接 -->
     <script src="src/realtime.js"></script>
 
@@ -493,9 +495,9 @@
         // ============================
         // CONFIG
         // ============================
-        // 使用相对路径，通过前端服务器代理访问 API
+        // 使用环境自动检测（v1.6.1）
         const GATEWAY_CONFIG = {
-            url: '' // 空字符串表示使用当前域名，前端服务器会代理 /api/* 到 8082
+            url: ergoConfig.API_BASE
         };
 
         const DEFAULT_API_KEY = 'ergo-default-secret-key-2026';
