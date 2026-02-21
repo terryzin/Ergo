@@ -1,34 +1,33 @@
+# Environment variables
+.env
+.env.local
+
 # Dependencies
 node_modules/
-package-lock.json
 
-# Test coverage
-coverage/
-
-# Claude Code local settings
-.claude/settings.local.json
-
-# OpenClaw task queue (runtime data)
-.openclaw/tasks/pending/*.json
-.openclaw/tasks/in_progress/*.json
-.openclaw/tasks/completed/*.json
-.openclaw/tasks/failed/*.json
-.openclaw/logs/*.log
-
-# Development
-.DS_Store
+# Logs
+logs/
 *.log
-*.tmp
+npm-debug.log*
 
-# Build output (if any)
-dist/
-build/
+# OS
+.DS_Store
+Thumbs.db
 
-# IDE
+# Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 
+# Local settings
+.claude/settings.local.json
+
+# Build outputs
+dist/
+build/
+
 # Temporary files
-.cleanup-plan.md
+tmp/
+temp/
+*.tmp

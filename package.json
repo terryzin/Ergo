@@ -10,6 +10,8 @@
     "api": "node server/api-bridge.js",
     "pairing": "node server/auto-pairing-watcher.js",
     "start:all": "concurrently \"npm run start\" \"npm run api\" \"npm run pairing\"",
+    "health": "node scripts/health-check.js",
+    "health-check": "node scripts/health-check.js",
     "test": "node tests/smoke-test.js",
     "test:local": "node tests/smoke-test.js --local",
     "test:public": "node tests/smoke-test.js --public",

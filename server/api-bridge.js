@@ -17,14 +17,16 @@ const chokidar = require('chokidar');
 
 const execAsync = promisify(exec);
 const app = express();
-const PORT = process.env.PORT || 8082;
 
-// 工作空间路径配置
-const WORKSPACE_ROOT = 'D:\\.openclaw\\workspace';
+// ============================
+// 环境变量配置（Convention over Configuration）
+// ============================
+const PORT = process.env.API_BRIDGE_PORT || 8082;
+const WORKSPACE_ROOT = process.env.OPENCLAW_WORKSPACE || 'D:\\.openclaw\\workspace';
 const PROJECTS_FILE = path.join(__dirname, '../data/projects.json');
 
 // 认证配置
-const ERGO_SECRET = process.env.ERGO_SECRET || 'ergo-default-secret-key-2026';
+const ERGO_SECRET = process.env.ERGO_API_KEY || 'ergo-default-secret-key-2026';
 const AUTH_ENABLED = process.env.AUTH_ENABLED !== 'false'; // 默认启用认证
 
 // 启用 CORS（允许 Ergo 前端跨域访问）

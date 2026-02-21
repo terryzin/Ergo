@@ -14,8 +14,14 @@ const { createProxyServer } = require('http-proxy');
 const path = require('path');
 
 const app = express();
+
+// ============================
+// 环境变量配置（Convention over Configuration）
+// ============================
 const PORT = process.env.PORT || 8081;
-const API_BRIDGE_URL = process.env.API_BRIDGE_URL || 'http://localhost:8082';
+const API_BRIDGE_PORT = process.env.API_BRIDGE_PORT || 8082;
+const API_BRIDGE_URL = process.env.API_BRIDGE_URL || `http://localhost:${API_BRIDGE_PORT}`;
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 
 // API 代理中间件（支持 HTTP 和 WebSocket）
 // 注意：app.use('/api', ...) 会自动strip /api 前缀，所以需要用 pathRewrite 加回来
@@ -27,7 +33,7 @@ const apiProxy = createProxyMiddleware({
         // 将 /status 重写为 /api/status
         return '/api' + path;
     },
-    logLevel: 'debug',
+    logLevel: LOG_LEVEL === 'debug' ? 'debug' : 'warn',
     onProxyReq: (proxyReq, req, res) => {
         const targetUrl = `${API_BRIDGE_URL}/api${req.url}`;
         console.log(`[PROXY] ${req.method} ${req.originalUrl} → ${targetUrl}`);

@@ -19,40 +19,54 @@ Ergo（二狗）是基于 OpenClaw 平台的个人 AI 管家控制台，作为�
 
 ## 快速开始
 
-### 安装依赖
+### 第一次使用（3 步启动）
 
 ```bash
+# 1. 配置环境变量
+cp .env.example .env
+notepad .env  # 编辑配置（必须设置 OPENCLAW_TOKEN）
+
+# 2. 安装依赖
 npm install
+
+# 3. 启动服务
+scripts\start.bat  # Windows
+./scripts/start.sh  # Unix/Linux/macOS
 ```
 
-### 运行测试
+### 日常启动
 
 ```bash
-# 运行所有测试
+# Windows
+scripts\start.bat
+
+# Unix/Linux/macOS
+./scripts/start.sh
+
+# 或使用 npm
+npm run start:all
+```
+
+### 验证部署
+
+```bash
+# 健康检查
+npm run health
+
+# 完整测试
 npm test
-
-# 监听模式运行测试
-npm run test:watch
-
-# 生成覆盖率报告
-npm run test:ui
 ```
 
-### 启动开发服务器
+### 访问地址
 
-```bash
-# 方法 1: Python 静态服务器（推荐）
-python -m http.server 8081
+- **本地访问**：http://localhost:8081
+- **公网访问**：https://terryzin.cpolar.top
+- **Gateway WebUI**：http://localhost:18789
+- **Cpolar 管理**：http://localhost:4040
 
-# 方法 2: 使用 npm scripts
-npm run start        # 使用 serve (端口 3000)
-npm run dev          # 自动打开浏览器
-```
+### 遇到问题？
 
-### 访问页面
-
-- 本地开发：http://localhost:8081
-- 公网访问：https://terryzin.cpolar.top
+查看 [快速启动指南](QUICK_START.md) 和 [故障排查清单](docs/deployment/TROUBLESHOOTING.md)
 
 ## 项目结构
 
