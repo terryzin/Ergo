@@ -35,7 +35,7 @@ npm run pairing
 ## 📍 访问地址
 
 - **本地开发**: http://localhost:8081
-- **公网访问**: https://terryzin.cpolar.top
+- **公网访问**: https://terryzin.cpolar.cn
 - **API 端点**: http://localhost:8082/api/*
 
 ---

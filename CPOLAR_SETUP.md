@@ -9,12 +9,12 @@
 ### 当前隧道配置
 
 1. **Ergo Dashboard** (8081)
-   - 域名: https://terryzin.cpolar.top
+   - 域名: https://terryzin.cpolar.cn
    - 映射: localhost:8081
    - 状态: ✅ 正常
 
 2. **OpenClaw Gateway** (18789)
-   - 域名: https://terrysopenclaw.cpolar.top
+   - 域名: https://terrysopenclaw.cpolar.cn
    - 映射: localhost:18789
    - 状态: ✅ 正常
 
@@ -22,7 +22,7 @@
 
 3. **Ergo API Bridge** (8082) - **缺失！**
    - 映射: localhost:8082
-   - 建议域名: `https://terryapi.cpolar.top`
+   - 建议域名: `https://terryapi.cpolar.cn`
 
 ## 配置步骤
 
@@ -45,7 +45,7 @@
 
 3. **启动隧道**
    - 点击"启动"按钮
-   - 复制生成的公网域名（如 `https://terryapi.cpolar.top`）
+   - 复制生成的公网域名（如 `https://terryapi.cpolar.cn`）
 
 ### 方式 2：通过命令行
 
@@ -94,7 +94,7 @@ cpolar restart
 
 ```bash
 # 测试健康检查接口
-curl https://terryapi.cpolar.top/api/health
+curl https://terryapi.cpolar.cn/api/health
 
 # 应该返回：
 # {"status":"ok","timestamp":"..."}
@@ -104,7 +104,7 @@ curl https://terryapi.cpolar.top/api/health
 
 ```bash
 curl -H "X-Ergo-Key: ergo-default-secret-key-2026" \
-  https://terryapi.cpolar.top/api/status
+  https://terryapi.cpolar.cn/api/status
 ```
 
 ## 更新前端配置
@@ -121,8 +121,8 @@ detectApiBase() {
     }
 
     // 外网访问 - 使用 API Bridge 隧道
-    if (hostname.includes('cpolar.top')) {
-        return 'https://terryapi.cpolar.top';  // 你的 API 隧道域名
+    if (hostname.includes('cpolar.cn')) {
+        return 'https://terryapi.cpolar.cn';  // 你的 API 隧道域名
     }
 
     // 其他域名 - 相对路径（如果有反向代理）
@@ -156,13 +156,13 @@ detectApiBase() {
 ```
 外网用户
   │
-  ├─ https://terryzin.cpolar.top (Ergo Dashboard)
+  ├─ https://terryzin.cpolar.cn (Ergo Dashboard)
   │    └─ cpolar tunnel → localhost:8081 (静态 HTML/CSS/JS)
   │
-  ├─ https://terryapi.cpolar.top (Ergo API Bridge) ⚠️ 需要创建
+  ├─ https://terryapi.cpolar.cn (Ergo API Bridge) ⚠️ 需要创建
   │    └─ cpolar tunnel → localhost:8082 (Express API Server)
   │
-  └─ https://terrysopenclaw.cpolar.top (OpenClaw Gateway)
+  └─ https://terrysopenclaw.cpolar.cn (OpenClaw Gateway)
        └─ cpolar tunnel → localhost:18789 (OpenClaw WebUI + CLI)
 ```
 

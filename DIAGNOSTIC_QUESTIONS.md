@@ -19,7 +19,7 @@ cpolar http 8081 -subdomain=terryzin -region=cn
 
 **A.** 看到类似这样的输出：
 ```
-Forwarding    https://terryzin.cpolar.top -> http://localhost:8081
+Forwarding    https://terryzin.cpolar.cn -> http://localhost:8081
 Session Status    online
 ```
 
@@ -47,7 +47,7 @@ Session Status    online
 ```
 Tunnel Name: ???
 Status: online / offline
-Public URL: https://???.cpolar.top
+Public URL: https://???.cpolar.cn
 Local Address: http://localhost:????
 ```
 
@@ -110,7 +110,7 @@ tasklist | findstr cpolar
 
 2. **Web UI 截图**：http://localhost:4040 的页面（如果能打开）
 
-3. **错误信息**：浏览器访问 https://terryzin.cpolar.top 时的完整错误页面
+3. **错误信息**：浏览器访问 https://terryzin.cpolar.cn 时的完整错误页面
 
 ---
 

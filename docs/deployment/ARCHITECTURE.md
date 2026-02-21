@@ -38,8 +38,8 @@
 │                        外部访问                              │
 │                                                              │
 │   ┌──────────────────────┐    ┌──────────────────────┐     │
-│   │  terryzin.cpolar.top │    │ terrysopenclaw.      │     │
-│   │  (Ergo Dashboard)    │    │ cpolar.top           │     │
+│   │  terryzin.cpolar.cn │    │ terrysopenclaw.      │     │
+│   │  (Ergo Dashboard)    │    │ cpolar.cn           │     │
 │   └──────────┬───────────┘    └──────────┬───────────┘     │
 │              │                            │                  │
 └──────────────┼────────────────────────────┼─────────────────┘
@@ -134,7 +134,7 @@ AUTH_ENABLED=true
 
 **访问地址：**
 - 本地：http://localhost:18789
-- 公网：https://terrysopenclaw.cpolar.top
+- 公网：https://terrysopenclaw.cpolar.cn
 
 **配置：**
 - Token: 从 Gateway 设置页获取
@@ -184,8 +184,8 @@ OPENCLAW_TOKEN=f2009973...  # Gateway 认证 Token
 ```bash
 PORT=8081
 API_BRIDGE_PORT=8082
-CPOLAR_FRONTEND_URL=https://terryzin.cpolar.top
-CPOLAR_GATEWAY_URL=https://terrysopenclaw.cpolar.top
+CPOLAR_FRONTEND_URL=https://terryzin.cpolar.cn
+CPOLAR_GATEWAY_URL=https://terrysopenclaw.cpolar.cn
 ```
 
 **可选配置：**
@@ -216,7 +216,7 @@ OpenClaw Gateway (18789)
 ### 场景 2: 外网访问
 
 ```
-浏览器 (terryzin.cpolar.top)
+浏览器 (terryzin.cpolar.cn)
   ↓
 Cpolar 隧道
   ↓
@@ -232,7 +232,7 @@ OpenClaw Gateway (18789)
 ### 场景 3: Gateway WebUI 访问
 
 ```
-浏览器 (terrysopenclaw.cpolar.top)
+浏览器 (terrysopenclaw.cpolar.cn)
   ↓
 Cpolar 隧道
   ↓
@@ -282,8 +282,8 @@ scripts\cpolar-service-install.bat
 ### 域名管理
 
 **Pro 版（固定子域名）：**
-- terryzin.cpolar.top (固定)
-- terrysopenclaw.cpolar.top (固定)
+- terryzin.cpolar.cn (固定)
+- terrysopenclaw.cpolar.cn (固定)
 
 **免费版（随机域名）：**
 - 每次启动域名会变
@@ -402,7 +402,7 @@ node_modules/
 
 ```
 1. 浏览器发起请求
-   GET https://terryzin.cpolar.top/api/status
+   GET https://terryzin.cpolar.cn/api/status
 
 2. Cpolar 隧道转发
    → http://localhost:8081/api/status
@@ -429,7 +429,7 @@ node_modules/
 
 ```
 1. 浏览器建立 WebSocket 连接
-   wss://terryzin.cpolar.top/api/ws
+   wss://terryzin.cpolar.cn/api/ws
 
 2. Cpolar 隧道转发（需 Pro 版）
    → ws://localhost:8081/api/ws

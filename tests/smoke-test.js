@@ -17,7 +17,7 @@ const CONFIG = {
     apiKey: 'ergo-default-secret-key-2026',
     localBaseUrl: 'http://localhost:8081',
     localApiBaseUrl: 'http://localhost:8082',  // API Bridge 端口
-    publicBaseUrl: 'https://terryzin.cpolar.top',
+    publicBaseUrl: 'https://terryzin.cpolar.cn',
     timeout: 10000
 };
 

@@ -12,7 +12,7 @@
 2. **OpenClaw Gateway** - OpenClaw控制台
 
 目标：
-- 使用单一域名 `terryzin.cpolar.top`
+- 使用单一域名 `terryzin.cpolar.cn`
 - Ergo作为根路径 `/`
 - OpenClaw作为子路径 `/openclaw`
 
@@ -50,8 +50,8 @@ tunnels:
 ### 方案1: 双 subdomain（付费版）
 
 **配置:**
-- `terryzin.cpolar.top` → Ergo (8081)
-- `openclaw.terryzin.cpolar.top` → OpenClaw (8082)
+- `terryzin.cpolar.cn` → Ergo (8081)
+- `openclaw.terryzin.cpolar.cn` → OpenClaw (8082)
 
 **问题:** 陈磊要求用单一域名 + 子路径
 
@@ -165,8 +165,8 @@ tunnels:
 
 ### 方案A: 直接暴露Gateway（放弃路径方案）
 - Cpolar两个独立隧道:
-  - `terryzin.cpolar.top` → Ergo (8081)
-  - `openclaw.terryzin.cpolar.top` → Gateway (18789)
+  - `terryzin.cpolar.cn` → Ergo (8081)
+  - `openclaw.terryzin.cpolar.cn` → Gateway (18789)
 
 **优点:** 简单稳定，无需代理
 **缺点:** 需要两个子域名
@@ -185,8 +185,8 @@ tunnels:
 ## 建议的下一步
 
 1. **先验证当前代理是否工作:**
-   - 访问 `terryzin.cpolar.top/` 看Ergo是否正常
-   - 访问 `terryzin.cpolar.top/openclaw` 看OpenClaw是否正常
+   - 访问 `terryzin.cpolar.cn/` 看Ergo是否正常
+   - 访问 `terryzin.cpolar.cn/openclaw` 看OpenClaw是否正常
 
 2. **如果WebSocket仍失败:**
    - 考虑方案A（双域名）

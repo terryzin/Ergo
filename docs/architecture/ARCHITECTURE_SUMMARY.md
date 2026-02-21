@@ -30,7 +30,7 @@ Ergo 采用**单域名三层架构**，遵循 DHH（Ruby on Rails 作者）的�
 ```
                      外部用户
                         ↓
-        https://terryzin.cpolar.top (单域名入口)
+        https://terryzin.cpolar.cn (单域名入口)
                         ↓
                  [Cpolar Tunnel]
                         ↓
@@ -83,7 +83,7 @@ Ergo 采用**单域名三层架构**，遵循 DHH（Ruby on Rails 作者）的�
 ### 示例 1：访问 Dashboard（静态文件）
 
 ```
-User → https://terryzin.cpolar.top/index.html
+User → https://terryzin.cpolar.cn/index.html
   ↓ (Cpolar Tunnel)
 Frontend Proxy (8081) → /index.html
   ↓ (Express Static Middleware)
@@ -93,7 +93,7 @@ Frontend Proxy (8081) → /index.html
 ### 示例 2：获取 Gateway 状态（API 调用）
 
 ```
-User → https://terryzin.cpolar.top/api/status
+User → https://terryzin.cpolar.cn/api/status
   ↓ (Cpolar Tunnel)
 Frontend Proxy (8081) → /api/status
   ↓ (Express Proxy Middleware)
@@ -107,7 +107,7 @@ OpenClaw Gateway (18789)
 ### 示例 3：WebSocket 连接（实时通知）
 
 ```
-User → wss://terryzin.cpolar.top/api/realtime
+User → wss://terryzin.cpolar.cn/api/realtime
   ↓ (Cpolar Tunnel - WebSocket Upgrade)
 Frontend Proxy (8081) → WebSocket Proxy
   ↓ (HTTP Proxy - ws: true)
@@ -122,7 +122,7 @@ API Bridge (8082) → WebSocket Server
 
 ### 1. Gateway 不直接暴露
 
-- ❌ 旧架构：`https://terrysopenclaw.cpolar.top` → Gateway (18789)
+- ❌ 旧架构：`https://terrysopenclaw.cpolar.cn` → Gateway (18789)
 - ✅ 新架构：Gateway 仅在 localhost 监听，通过 API Bridge 代理访问
 
 **优势：**
@@ -212,7 +212,7 @@ npm run start:all
 cpolar start ergo -config cpolar.yml
 
 # 访问地址
-- 外网: https://terryzin.cpolar.top
+- 外网: https://terryzin.cpolar.cn
 - Cpolar Web UI: http://localhost:4040
 ```
 

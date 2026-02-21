@@ -82,7 +82,7 @@ fix: 修复代理路径重写问题 - 保持 /api 前缀
 // 硬编码在代码中
 const PORT = 8081;
 const API_BASE = 'http://localhost:8082';
-const CPOLAR_URL = 'https://terryzin.cpolar.top';
+const CPOLAR_URL = 'https://terryzin.cpolar.cn';
 ```
 
 **After:**
@@ -97,7 +97,7 @@ const CPOLAR_FRONTEND_URL = process.env.CPOLAR_FRONTEND_URL || '';
 ```bash
 PORT=8081
 API_BRIDGE_PORT=8082
-CPOLAR_FRONTEND_URL=https://terryzin.cpolar.top
+CPOLAR_FRONTEND_URL=https://terryzin.cpolar.cn
 OPENCLAW_TOKEN=f2009973e92e96b0e31c30b30500e997
 ```
 
@@ -312,7 +312,7 @@ async function checkService(service) {
   ✓ ONLINE OpenClaw Gateway (HTTP 200)
 
 [Cpolar 隧道]
-  ✓ ONLINE https://terryzin.cpolar.top
+  ✓ ONLINE https://terryzin.cpolar.cn
 
 ╔════════════════════════════════════════════╗
 ║  ✓ 所有服务运行正常                       ║

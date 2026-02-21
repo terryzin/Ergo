@@ -2,12 +2,12 @@
 
 ## 问题描述
 
-用户从公网访问 `https://terryzin.cpolar.top` 时，WebSocket 连接失败：
+用户从公网访问 `https://terryzin.cpolar.cn` 时，WebSocket 连接失败：
 
 ```javascript
-[v1.5] Initializing WebSocket: wss://terryzin.cpolar.top
-[Realtime] Connecting to wss://terryzin.cpolar.top
-WebSocket connection to 'wss://terryzin.cpolar.top/' failed
+[v1.5] Initializing WebSocket: wss://terryzin.cpolar.cn
+[Realtime] Connecting to wss://terryzin.cpolar.cn
+WebSocket connection to 'wss://terryzin.cpolar.cn/' failed
 [Realtime] Disconnected 1006
 ```
 
@@ -183,17 +183,17 @@ ws.on('message', (data) => { console.log('✅', data.toString()); });
 
 ### 公网测试（Cpolar）
 
-**URL**: `wss://terryzin.cpolar.top/`
+**URL**: `wss://terryzin.cpolar.cn/`
 
 **浏览器测试**：
 1. 打开开发者工具（F12）
-2. 访问 `https://terryzin.cpolar.top/`
+2. 访问 `https://terryzin.cpolar.cn/`
 3. 在 Console 查看 WebSocket 日志
 
 **预期日志**：
 ```
-[v1.5] Initializing WebSocket: wss://terryzin.cpolar.top
-[Realtime] Connecting to wss://terryzin.cpolar.top
+[v1.5] Initializing WebSocket: wss://terryzin.cpolar.cn
+[Realtime] Connecting to wss://terryzin.cpolar.cn
 [Realtime] Connected ✅
 ```
 
@@ -289,7 +289,7 @@ wss.on('connection', (ws, req) => {
 
 ### 问题：公网 WebSocket 仍然失败
 
-**症状**：本地测试通过，但 `wss://terryzin.cpolar.top/` 仍报错 1006
+**症状**：本地测试通过，但 `wss://terryzin.cpolar.cn/` 仍报错 1006
 
 **可能原因**：
 1. **Cpolar 不支持 WebSocket**（Free/Basic 版限制）
@@ -299,13 +299,13 @@ wss.on('connection', (ws, req) => {
 **诊断命令**：
 ```bash
 # 检查 Cpolar 隧道状态
-curl -I https://terryzin.cpolar.top/
+curl -I https://terryzin.cpolar.cn/
 
 # 测试 WebSocket 升级
 curl -I --http1.1 \
   -H "Connection: Upgrade" \
   -H "Upgrade: websocket" \
-  https://terryzin.cpolar.top/
+  https://terryzin.cpolar.cn/
 ```
 
 **预期响应**（如果支持 WebSocket）：

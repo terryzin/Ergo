@@ -279,7 +279,7 @@ curl -H "X-Ergo-Key: ergo-default-secret-key-2026" \
 
 **在浏览器中访问：**
 ```
-https://terryzin.cpolar.top
+https://terryzin.cpolar.cn
 ```
 
 **验证要点：**

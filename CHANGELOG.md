@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **🏗️ 架构重构：双域名 → 单域名**（Majestic Monolith 风格）⭐ 重要变更
   - 删除 `openclaw-gateway` 隧道配置（`cpolar.yml`）
-  - 统一入口：`https://terryzin.cpolar.top`（释放 1 个域名配额）
+  - 统一入口：`https://terryzin.cpolar.cn`（释放 1 个域名配额）
   - Gateway 不再直接暴露，通过 API Bridge 代理访问（更安全）
   - 前端、API、Gateway 三层架构统一在单域名下
 
@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **请求流转（单域名）**：
   ```
-  https://terryzin.cpolar.top/api/status
+  https://terryzin.cpolar.cn/api/status
     ↓ cpolar tunnel
   localhost:8081/api/status (Frontend Proxy - 路由层)
     ↓ Express Proxy

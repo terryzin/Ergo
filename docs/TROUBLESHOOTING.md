@@ -33,7 +33,7 @@
 
 如仍遇到缓存问题，可在 URL 后添加版本参数强制刷新：
 ```
-https://terryzin.cpolar.top/projects-manage.html?v=1.5.0
+https://terryzin.cpolar.cn/projects-manage.html?v=1.5.0
 ```
 
 ---
@@ -151,8 +151,8 @@ net start cpolar
 访问 cpolar 控制台：http://localhost:9200
 
 确认以下隧道已启动：
-- `ergo-dashboard`: `localhost:8081` → `https://terryzin.cpolar.top`
-- `openclaw-gateway`: `localhost:18789` → `https://terrysopenclaw.cpolar.top`
+- `ergo-dashboard`: `localhost:8081` → `https://terryzin.cpolar.cn`
+- `openclaw-gateway`: `localhost:18789` → `https://terrysopenclaw.cpolar.cn`
 
 ---
 

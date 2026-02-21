@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 
 **响应头验证**：
 ```bash
-$ curl -I https://terryzin.cpolar.top/projects-manage.html
+$ curl -I https://terryzin.cpolar.cn/projects-manage.html
 
 HTTP/1.1 200 OK
 Cache-Control: no-cache, no-store, must-revalidate
@@ -108,7 +108,7 @@ projects-manage.html → 纯 CRUD 页面，不包含 WebSocket ✅
 ### URL 版本参数（可选）
 如果仍遇到缓存问题，可在 URL 后添加版本号：
 ```
-https://terryzin.cpolar.top/projects-manage.html?v=1.5.0
+https://terryzin.cpolar.cn/projects-manage.html?v=1.5.0
 ```
 修改 `v=` 后的数字即可强制刷新。
 

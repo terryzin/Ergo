@@ -100,7 +100,7 @@ curl -H "Authorization: Bearer $OPENCLAW_TOKEN" \
      http://localhost:18789/api/status
 
 # 3. 检查 Cpolar 域名
-curl https://terryzin.cpolar.top
+curl https://terryzin.cpolar.cn
 ```
 
 ### 安全检查
@@ -184,7 +184,7 @@ ls -l .env
   # 检查所有核心功能
 
 □ 外网访问测试
-  # 访问 https://terryzin.cpolar.top
+  # 访问 https://terryzin.cpolar.cn
   # 验证 Cpolar 隧道正常
 ```
 
@@ -394,14 +394,14 @@ ls -l .env
 影响范围: 外网访问不可用
 
 故障现象:
-访问 https://terryzin.cpolar.top 返回 502 错误
+访问 https://terryzin.cpolar.cn 返回 502 错误
 
 故障原因:
 Cpolar 隧道断开
 
 处理措施:
 1. 重启 Cpolar: cpolar start-all
-2. 验证恢复: curl https://terryzin.cpolar.top
+2. 验证恢复: curl https://terryzin.cpolar.cn
 
 结果:
 服务恢复正常

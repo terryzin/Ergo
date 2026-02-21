@@ -9,10 +9,10 @@
 ```
 外网访问
   │
-  ├─ https://terryzin.cpolar.top
+  ├─ https://terryzin.cpolar.cn
   │    └─ cpolar tunnel → localhost:8081 (Frontend Proxy)
   │
-  └─ https://terrysopenclaw.cpolar.top
+  └─ https://terrysopenclaw.cpolar.cn
        └─ cpolar tunnel → localhost:18789 (OpenClaw Gateway)
 ```
 
@@ -26,7 +26,7 @@
 ```
 外网访问
   │
-  └─ https://terryzin.cpolar.top (唯一入口)
+  └─ https://terryzin.cpolar.cn (唯一入口)
        └─ cpolar tunnel → localhost:8081
             ├─ /           → 静态文件 (HTML/CSS/JS)
             └─ /api/*      → Proxy → localhost:8082 (API Bridge)
@@ -56,13 +56,13 @@
 ```diff
 # Cpolar 配置
 - # Ergo Dashboard 公网域名
-- CPOLAR_FRONTEND_URL=https://terryzin.cpolar.top
+- CPOLAR_FRONTEND_URL=https://terryzin.cpolar.cn
 -
 - # OpenClaw Gateway 公网域名
-- CPOLAR_GATEWAY_URL=https://terrysopenclaw.cpolar.top
+- CPOLAR_GATEWAY_URL=https://terrysopenclaw.cpolar.cn
 
 + # Ergo 公网域名（所有服务统一入口）
-+ CPOLAR_URL=https://terryzin.cpolar.top
++ CPOLAR_URL=https://terryzin.cpolar.cn
 ```
 
 ### 步骤 2：更新 Cpolar 配置
@@ -112,16 +112,16 @@ cpolar start ergo -config D:\.openclaw\workspace\my-dashboard\cpolar.yml
 
 1. 访问 http://localhost:4040 查看 cpolar 隧道状态
    - ✅ 只有 1 个隧道：`ergo` → `http://localhost:8081`
-   - ✅ 公网地址：https://terryzin.cpolar.top
+   - ✅ 公网地址：https://terryzin.cpolar.cn
 
-2. 访问 https://terryzin.cpolar.top
+2. 访问 https://terryzin.cpolar.cn
    - ✅ Dashboard 正常加载
    - ✅ Gateway 状态卡片显示 "Online"
    - ✅ 无跨域错误（CORS）
 
 3. 检查 API 调用（浏览器控制台）
-   - ✅ 请求路径：`https://terryzin.cpolar.top/api/status`
-   - ✅ 无 `localhost` 或 `terrysopenclaw.cpolar.top` 请求
+   - ✅ 请求路径：`https://terryzin.cpolar.cn/api/status`
+   - ✅ 无 `localhost` 或 `terrysopenclaw.cpolar.cn` 请求
    - ✅ 返回数据正常
 
 ---
@@ -133,7 +133,7 @@ cpolar start ergo -config D:\.openclaw\workspace\my-dashboard\cpolar.yml
 **外部访问 API：**
 
 ```
-https://terryzin.cpolar.top/api/status
+https://terryzin.cpolar.cn/api/status
   ↓ (cpolar 隧道)
 localhost:8081/api/status (Frontend Proxy)
   ↓ (Express 代理中间件)
@@ -145,7 +145,7 @@ localhost:18789 (OpenClaw Gateway)
 **外部访问静态文件：**
 
 ```
-https://terryzin.cpolar.top/index.html
+https://terryzin.cpolar.cn/index.html
   ↓ (cpolar 隧道)
 localhost:8081/index.html (Frontend Proxy)
   ↓ (Express Static)
@@ -204,7 +204,7 @@ detectApiBase() {
 迁移完成后，请逐项检查：
 
 - [ ] ✅ Cpolar 只有 1 个隧道（`ergo`）
-- [ ] ✅ 可以访问 https://terryzin.cpolar.top
+- [ ] ✅ 可以访问 https://terryzin.cpolar.cn
 - [ ] ✅ Dashboard 加载正常
 - [ ] ✅ Gateway 状态显示 "Online"
 - [ ] ✅ 项目列表正常显示
@@ -249,7 +249,7 @@ openclaw gateway start
 2. 确认隧道指向 `localhost:8081`
 3. 重启 cpolar 服务
 
-### Q4: 迁移后原来的 `terrysopenclaw.cpolar.top` 还能用吗？
+### Q4: 迁移后原来的 `terrysopenclaw.cpolar.cn` 还能用吗？
 
 **答案：** 可以保留，但不推荐。
 

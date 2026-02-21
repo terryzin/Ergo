@@ -31,17 +31,17 @@
 ```
 外网用户
   │
-  ├─ cpolar 隧道 (terryzin.cpolar.top)
+  ├─ cpolar 隧道 (terryzin.cpolar.cn)
   │   └─ localhost:8081 (前端)
   │       └─ Express 服务器
   │           └─ 静态文件 (HTML/CSS/JS)
   │
-  ├─ cpolar 隧道 (terryapi.cpolar.top)  ← 可选
+  ├─ cpolar 隧道 (terryapi.cpolar.cn)  ← 可选
   │   └─ localhost:8082 (API Bridge)
   │       └─ Express API 服务器
   │           └─ exec openclaw CLI
   │
-  └─ cpolar 隧道 (terrysopenclaw.cpolar.top)
+  └─ cpolar 隧道 (terrysopenclaw.cpolar.cn)
       └─ localhost:18789 (OpenClaw Gateway)
           └─ OpenClaw WebUI + API
 ```
@@ -374,7 +374,7 @@ pgrep cpolar || echo "cpolar not running"
 curl http://localhost:4040/api/tunnels
 
 # 3. 测试公网 URL
-curl https://terryzin.cpolar.top
+curl https://terryzin.cpolar.cn
 ```
 
 **可能原因**：
@@ -460,8 +460,8 @@ detectApiBase() {
     }
 
     // ✅ 正确：检测 cpolar 域名
-    if (hostname.includes('cpolar.top')) {
-        return 'https://terryapi.cpolar.top';  // 或使用相对路径
+    if (hostname.includes('cpolar.cn')) {
+        return 'https://terryapi.cpolar.cn';  // 或使用相对路径
     }
 
     // 其他情况：相对路径
@@ -653,9 +653,9 @@ app.get('/api/status', async (req, res) => {
 - **Freshping**
 
 监控 URL：
-- `https://terryzin.cpolar.top` (前端)
-- `https://terryapi.cpolar.top/api/health` (API)
-- `https://terrysopenclaw.cpolar.top/api/health` (Gateway)
+- `https://terryzin.cpolar.cn` (前端)
+- `https://terryapi.cpolar.cn/api/health` (API)
+- `https://terrysopenclaw.cpolar.cn/api/health` (Gateway)
 
 告警渠道：
 - Email

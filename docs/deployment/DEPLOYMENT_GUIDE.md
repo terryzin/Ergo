@@ -76,13 +76,13 @@ npm test
 ```
 外部访问
   │
-  ├─ https://terryzin.cpolar.top (Cpolar 隧道)
+  ├─ https://terryzin.cpolar.cn (Cpolar 隧道)
   │    └─ localhost:8081 (Ergo Frontend + API Proxy)
   │         ├─ 静态文件服务
   │         └─ /api/* → localhost:8082 (API Bridge)
   │              └─ → localhost:18789 (OpenClaw Gateway)
   │
-  └─ https://terrysopenclaw.cpolar.top (Cpolar 隧道)
+  └─ https://terrysopenclaw.cpolar.cn (Cpolar 隧道)
        └─ localhost:18789 (OpenClaw Gateway WebUI)
 ```
 
@@ -167,7 +167,7 @@ scripts\start.bat
 
 **症状：**
 ```
-Cannot access https://terryzin.cpolar.top
+Cannot access https://terryzin.cpolar.cn
 ```
 
 **排查步骤：**
@@ -260,7 +260,7 @@ npm run health
 # ✓ ONLINE Ergo Frontend (HTTP 200)
 # ✓ ONLINE API Bridge (HTTP 200)
 # ✓ ONLINE OpenClaw Gateway (HTTP 200)
-# ✓ ONLINE https://terryzin.cpolar.top
+# ✓ ONLINE https://terryzin.cpolar.cn
 ```
 
 ### 自动化监控（可选）

@@ -64,8 +64,8 @@
 
 **已完成：**
 - ✅ cpolar 双子域名架构
-  - Ergo: https://terryzin.cpolar.top
-  - Gateway: https://terrysopenclaw.cpolar.top
+  - Ergo: https://terryzin.cpolar.cn
+  - Gateway: https://terrysopenclaw.cpolar.cn
 - ✅ 删除自定义代理服务器（proxy-server.js）
 - ✅ OpenClaw ↔ Claude Code 协作机制设计
 - ✅ 项目目录重组
@@ -578,8 +578,8 @@ node scripts/task-watcher.js
 ### 访问地址
 
 - **本地开发**: http://localhost:8081
-- **公网访问**: https://terryzin.cpolar.top
-- **OpenClaw Gateway**: https://terrysopenclaw.cpolar.top
+- **公网访问**: https://terryzin.cpolar.cn
+- **OpenClaw Gateway**: https://terrysopenclaw.cpolar.cn
 
 ---
 

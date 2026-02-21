@@ -187,7 +187,7 @@ json-server --watch mock/data.json --port 8082
 ### 正常场景测试
 ```bash
 # 访问前端，应显示真实数据
-curl https://terryzin.cpolar.top
+curl https://terryzin.cpolar.cn
 ```
 
 ### 失败场景测试
@@ -196,7 +196,7 @@ curl https://terryzin.cpolar.top
 taskkill /F /IM node.exe
 
 # 访问前端，应显示"连接失败"
-curl https://terryzin.cpolar.top
+curl https://terryzin.cpolar.cn
 ```
 
 ## 兼容性

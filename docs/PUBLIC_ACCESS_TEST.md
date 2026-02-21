@@ -1,7 +1,7 @@
 # 公网访问测试指南
 
 ## 测试目标
-验证通过 https://terryzin.cpolar.top 访问时，前端能正常通过代理连接到 API Bridge，不再出现 `localhost:8082` 错误。
+验证通过 https://terryzin.cpolar.cn 访问时，前端能正常通过代理连接到 API Bridge，不再出现 `localhost:8082` 错误。
 
 ## 前提条件
 
@@ -16,8 +16,8 @@ netstat -ano | findstr "8081 8082"
 ```
 
 ✅ **Cpolar 隧道状态：**
-- Ergo 前端：https://terryzin.cpolar.top → localhost:8081
-- OpenClaw Gateway：https://terrysopenclaw.cpolar.top → localhost:18789
+- Ergo 前端：https://terryzin.cpolar.cn → localhost:8081
+- OpenClaw Gateway：https://terrysopenclaw.cpolar.cn → localhost:18789
 
 ## 测试步骤
 
@@ -44,12 +44,12 @@ curl http://localhost:8081 | grep "Ergo"
 **测试 cpolar 通道 + 前端代理：**
 ```bash
 # 健康检查（无需认证）
-curl https://terryzin.cpolar.top/api/health
+curl https://terryzin.cpolar.cn/api/health
 # 预期：{"status":"ok","timestamp":"..."}
 
 # API 状态（带认证）
 curl -H "X-Ergo-Key: ergo-default-secret-key-2026" \
-     https://terryzin.cpolar.top/api/status
+     https://terryzin.cpolar.cn/api/status
 # 预期：Gateway 状态 JSON
 ```
 
@@ -62,7 +62,7 @@ curl -H "X-Ergo-Key: ergo-default-secret-key-2026" \
 
 **B. 访问前端：**
 ```
-https://terryzin.cpolar.top
+https://terryzin.cpolar.cn
 ```
 
 **C. 检查控制台（F12 → Console）：**
@@ -82,7 +82,7 @@ localhost:8082/api/status
 **D. 检查网络请求（F12 → Network）：**
 
 ✅ **正确行为：**
-- 请求 URL: `https://terryzin.cpolar.top/api/status`
+- 请求 URL: `https://terryzin.cpolar.cn/api/status`
 - Status: 200 OK
 - Response: JSON 数据
 
@@ -135,7 +135,7 @@ node server/api-bridge.js
 - [ ] 前端页面正常显示
 - [ ] 控制台无错误
 
-### ✅ 公网访问（terryzin.cpolar.top）
+### ✅ 公网访问（terryzin.cpolar.cn）
 
 - [ ] `/api/health` 返回 200 OK
 - [ ] `/api/status` 返回完整 JSON
@@ -232,7 +232,7 @@ location.reload();
 **负载测试：**
 ```bash
 # 测试 100 个并发请求
-ab -n 100 -c 10 https://terryzin.cpolar.top/api/health
+ab -n 100 -c 10 https://terryzin.cpolar.cn/api/health
 ```
 
 ## 回滚方案

@@ -29,7 +29,7 @@ class ErgoConfig {
 |---------|---------|----------|------|
 | `localhost` | 本地开发 | `http://localhost:8082` | 直连 API Bridge |
 | `127.0.0.1` | 本地开发 | `http://localhost:8082` | 直连 API Bridge |
-| `*.cpolar.top` | 外网访问 | `''` (相对路径) | 前端代理转发 |
+| `*.cpolar.cn` | 外网访问 | `''` (相对路径) | 前端代理转发 |
 | 其他域名 | 外网访问 | `''` (相对路径) | 前端代理转发 |
 
 ### 使用方式
@@ -89,7 +89,7 @@ app.use('/api', createProxyMiddleware({
 
 **工作流程**:
 ```
-浏览器 → https://terryzin.cpolar.top/api/status
+浏览器 → https://terryzin.cpolar.cn/api/status
          ↓
 前端服务器 (8081) 接收请求
          ↓
@@ -106,7 +106,7 @@ API Bridge 处理请求
 
 ```
 http://localhost:8081/config-check.html      # 本地环境
-https://terryzin.cpolar.top/config-check.html # 外网环境
+https://terryzin.cpolar.cn/config-check.html # 外网环境
 ```
 
 **功能**:

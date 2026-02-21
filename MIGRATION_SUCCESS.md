@@ -21,7 +21,7 @@
 ## 🏗️ 当前架构（v1.7.0）
 
 ```
-https://terryzin.cpolar.top (唯一入口)
+https://terryzin.cpolar.cn (唯一入口)
   │
   └─ cpolar tunnel → localhost:8081
        │
@@ -54,7 +54,7 @@ https://terryzin.cpolar.top (唯一入口)
 ║   /*     → Static files                   ║
 ╚════════════════════════════════════════════╝
 
-Public access: https://terryzin.cpolar.top
+Public access: https://terryzin.cpolar.cn
 ```
 
 **状态**: ✅ 运行正常
@@ -74,7 +74,7 @@ Public access: https://terryzin.cpolar.top
 - **服务类型**: Windows Service
 - **配置文件**: cpolar.yml (单隧道)
 - **隧道数量**: 1 (ergo)
-- **域名**: terryzin.cpolar.top
+- **域名**: terryzin.cpolar.cn
 - **状态**: ✅ 运行正常
 
 ---
@@ -83,10 +83,10 @@ Public access: https://terryzin.cpolar.top
 
 ### cpolar 域名配额
 - **之前**: 2 个域名全部使用
-  - ~~terryzin.cpolar.top (Frontend)~~
-  - ~~terrysopenclaw.cpolar.top (Gateway)~~
+  - ~~terryzin.cpolar.cn (Frontend)~~
+  - ~~terrysopenclaw.cpolar.cn (Gateway)~~
 - **现在**: 1 个域名使用，1 个空闲
-  - ✅ terryzin.cpolar.top (统一入口)
+  - ✅ terryzin.cpolar.cn (统一入口)
   - ⭐ **1 个域名空闲**（可用于其他项目）
 
 ---
@@ -117,7 +117,7 @@ netstat -ano | grep "18789"
 
 ```bash
 # 访问 Dashboard
-start https://terryzin.cpolar.top
+start https://terryzin.cpolar.cn
 # ✅ 页面正常加载
 
 # 查看 Cpolar 隧道
@@ -129,7 +129,7 @@ start http://localhost:4040
 
 ```bash
 # Gateway 不应该直接从外网访问
-curl https://terrysopenclaw.cpolar.top
+curl https://terrysopenclaw.cpolar.cn
 # ✅ 应该无法访问（隧道已删除）
 
 # Gateway 只监听 localhost
@@ -210,7 +210,7 @@ app.use('/api', createProxyMiddleware({
 ## 🚀 下一步建议
 
 ### 立即可做
-1. **访问 Dashboard**: https://terryzin.cpolar.top
+1. **访问 Dashboard**: https://terryzin.cpolar.cn
 2. **查看 Cpolar 管理**: http://localhost:4040
 3. **测试完整功能**: 登录、API 调用、实时更新
 
@@ -235,7 +235,7 @@ app.use('/api', createProxyMiddleware({
 
 ---
 
-**🎊 恭喜迁移成功！现在可以访问 https://terryzin.cpolar.top 开始使用了！**
+**🎊 恭喜迁移成功！现在可以访问 https://terryzin.cpolar.cn 开始使用了！**
 
 ---
 

@@ -32,7 +32,7 @@ Ergo 项目在短短一个月内进行了 **30+ 次修复提交**，其中 **60%
 │                    外网访问层                           │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
 │  │ terryzin.   │  │ terryapi.   │  │ terrysopen  │     │
-│  │ cpolar.top  │  │ cpolar.top  │  │ claw.cpolar │     │
+│  │ cpolar.cn  │  │ cpolar.cn  │  │ claw.cpolar │     │
 │  │ (静态文件)   │  │ (API)      │  │ .top (GW)   │     │
 │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
 └─────────┼─────────────────┼─────────────────┼───────────┘
@@ -74,15 +74,15 @@ Ergo 项目在短短一个月内进行了 **30+ 次修复提交**，其中 **60%
 | 文件 | 配置内容 | 规则 | 问题 |
 |------|---------|------|------|
 | `src/config.js` | API Base URL | `localhost` → `http://localhost:8082`<br>其他 → `''` (相对路径) | ✅ 正确 |
-| `index.html` | Gateway URL (L1684-1690) | `localhost` → `http://localhost:18789`<br>其他 → `https://terrysopenclaw.cpolar.top` | ⚠️ 硬编码域名 |
-| `CPOLAR_SETUP.md` | 临时隧道域名 | `terryapi.cpolar.top` | ⚠️ 文档与代码不同步 |
+| `index.html` | Gateway URL (L1684-1690) | `localhost` → `http://localhost:18789`<br>其他 → `https://terrysopenclaw.cpolar.cn` | ⚠️ 硬编码域名 |
+| `CPOLAR_SETUP.md` | 临时隧道域名 | `terryapi.cpolar.cn` | ⚠️ 文档与代码不同步 |
 | `start-ergo.bat` | 端口映射 | 8081, 8082 | ✅ 正确 |
 | `server/frontend-with-proxy.js` | 代理规则 | `/api/* → 8082` | ✅ 正确 |
 
 **问题汇总**：
 1. **硬编码 cpolar 域名** - `index.html` L1689，隧道域名变更需要改代码
 2. **环境检测规则分散** - 至少 3 个地方实现了 hostname 检测
-3. **文档与代码不一致** - `CPOLAR_SETUP.md` 提到 `terryapi.cpolar.top`，但代码里没用到
+3. **文档与代码不一致** - `CPOLAR_SETUP.md` 提到 `terryapi.cpolar.cn`，但代码里没用到
 4. **配置无验证** - 服务启动时不检查配置是否正确
 
 ### 1.4 健康检查缺失
@@ -109,7 +109,7 @@ Ergo 项目在短短一个月内进行了 **30+ 次修复提交**，其中 **60%
 
 #### 场景 2：cpolar 隧道域名变更（免费版）
 - **触发条件**：cpolar 重启后随机域名变化
-- **现象**：硬编码的 `terrysopenclaw.cpolar.top` 失效
+- **现象**：硬编码的 `terrysopenclaw.cpolar.cn` 失效
 - **修复成本**：改代码 → 提交 → 重新部署
 - **提交记录**：`633b68e` "配置外网 API 隧道地址 - 临时域名"
 
@@ -269,8 +269,8 @@ class ErgoConfig {
 
 ```bash
 # .env.production
-VITE_API_BASE=https://terryapi.cpolar.top
-VITE_OPENCLAW_URL=https://terrysopenclaw.cpolar.top
+VITE_API_BASE=https://terryapi.cpolar.cn
+VITE_OPENCLAW_URL=https://terrysopenclaw.cpolar.cn
 
 # .env.development
 VITE_API_BASE=http://localhost:8082
@@ -296,8 +296,8 @@ export const config = {
 // public/config.json (生产环境可直接编辑)
 {
     "api": {
-        "base": "https://terryapi.cpolar.top",
-        "openclaw": "https://terrysopenclaw.cpolar.top",
+        "base": "https://terryapi.cpolar.cn",
+        "openclaw": "https://terrysopenclaw.cpolar.cn",
         "timeout": 20000
     },
     "features": {

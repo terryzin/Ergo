@@ -13,9 +13,9 @@ localhost:8082/api/status Failed to load resource: net::ERR_CONNECTION_REFUSED
 ### 尝试过的方案
 
 #### 方案 A：三隧道架构（失败）
-- 为 API Bridge (8082) 配置独立的 cpolar 隧道 `terryapi.cpolar.top`
+- 为 API Bridge (8082) 配置独立的 cpolar 隧道 `terryapi.cpolar.cn`
 - 前端根据访问域名自动检测并切换 API 地址
-- **失败原因：** cpolar 免费版仅支持 2 个隧道，`terryapi.cpolar.top` 返回 404
+- **失败原因：** cpolar 免费版仅支持 2 个隧道，`terryapi.cpolar.cn` 返回 404
 
 ## 最终方案：前端反向代理
 
@@ -24,7 +24,7 @@ localhost:8082/api/status Failed to load resource: net::ERR_CONNECTION_REFUSED
 ```
 外部网络
   ↓
-https://terryzin.cpolar.top (cpolar 隧道)
+https://terryzin.cpolar.cn (cpolar 隧道)
   ↓
 localhost:8081 (Express 前端服务器)
   ↓
@@ -40,8 +40,8 @@ localhost:8081 (Express 前端服务器)
 ### 关键特点
 
 ✅ **仅需 2 个 cpolar 隧道**（不超出免费版限制）
-- `terryzin.cpolar.top` → 前端 (8081)
-- `terrysopenclaw.cpolar.top` → OpenClaw Gateway (18789)
+- `terryzin.cpolar.cn` → 前端 (8081)
+- `terrysopenclaw.cpolar.cn` → OpenClaw Gateway (18789)
 
 ✅ **前后端统一入口**
 - 所有请求都通过同一域名
@@ -93,7 +93,7 @@ app.use((req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Frontend + API Proxy running on http://localhost:${PORT}`);
-    console.log(`Public access: https://terryzin.cpolar.top`);
+    console.log(`Public access: https://terryzin.cpolar.cn`);
 });
 ```
 
@@ -109,8 +109,8 @@ app.listen(PORT, () => {
 const GATEWAY_CONFIG = {
     url: (() => {
         const hostname = window.location.hostname;
-        if (hostname.includes('cpolar.top')) {
-            return 'https://terryapi.cpolar.top'; // 失败
+        if (hostname.includes('cpolar.cn')) {
+            return 'https://terryapi.cpolar.cn'; // 失败
         }
         return 'http://localhost:8082';
     })()
@@ -173,7 +173,7 @@ curl -H "X-Ergo-Key: ergo-default-secret-key-2026" http://localhost:8081/api/sta
 # 预期：返回 Gateway 状态 JSON
 
 # 公网测试
-curl https://terryzin.cpolar.top/api/health
+curl https://terryzin.cpolar.cn/api/health
 # 预期：{"status":"ok","timestamp":"..."}
 ```
 

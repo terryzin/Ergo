@@ -61,7 +61,7 @@ net start cpolar
 
 ```bash
 # 检查隧道状态
-curl https://terryapi.cpolar.top/health
+curl https://terryapi.cpolar.cn/health
 ```
 
 **预期输出：**
@@ -79,8 +79,8 @@ curl https://terryapi.cpolar.top/health
 
 2. **公网访问测试：**
    ```
-   https://terryzin.cpolar.top
-   应该正常工作（使用 https://terryapi.cpolar.top）
+   https://terryzin.cpolar.cn
+   应该正常工作（使用 https://terryapi.cpolar.cn）
    ```
 
 ## 三隧道架构
@@ -93,17 +93,17 @@ curl https://terryapi.cpolar.top/health
 ├─────────────────────────────────────────────┤
 │                                             │
 │  1. Ergo 前端                               │
-│     https://terryzin.cpolar.top             │
+│     https://terryzin.cpolar.cn             │
 │     ↓                                       │
 │     localhost:8081                          │
 │                                             │
 │  2. API Bridge                              │
-│     https://terryapi.cpolar.top  ⬅️ 新增！ │
+│     https://terryapi.cpolar.cn  ⬅️ 新增！ │
 │     ↓                                       │
 │     localhost:8082                          │
 │                                             │
 │  3. OpenClaw Gateway                        │
-│     https://terrysopenclaw.cpolar.top       │
+│     https://terrysopenclaw.cpolar.cn       │
 │     ↓                                       │
 │     localhost:18789                         │
 │                                             │
@@ -119,8 +119,8 @@ const GATEWAY_CONFIG = {
     url: (() => {
         const hostname = window.location.hostname;
         // 公网访问
-        if (hostname.includes('cpolar.top')) {
-            return 'https://terryapi.cpolar.top';
+        if (hostname.includes('cpolar.cn')) {
+            return 'https://terryapi.cpolar.cn';
         }
         // 本地访问
         return 'http://localhost:8082';
@@ -129,7 +129,7 @@ const GATEWAY_CONFIG = {
 ```
 
 **效果：**
-- 用户从 `https://terryzin.cpolar.top` 访问 → 自动使用 `https://terryapi.cpolar.top`
+- 用户从 `https://terryzin.cpolar.cn` 访问 → 自动使用 `https://terryapi.cpolar.cn`
 - 用户从 `http://localhost:8081` 访问 → 自动使用 `http://localhost:8082`
 
 ## 测试清单
@@ -142,7 +142,7 @@ const GATEWAY_CONFIG = {
 - [ ] 更新日志显示正常
 
 ### ✅ 公网访问测试（手机/其他设备）
-- [ ] 访问 https://terryzin.cpolar.top
+- [ ] 访问 https://terryzin.cpolar.cn
 - [ ] Gateway 状态显示正常
 - [ ] Agents 列表显示正常
 - [ ] Cron 任务显示正常

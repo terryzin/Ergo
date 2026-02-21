@@ -102,9 +102,9 @@ tunnels:
 
 | 服务 | 端口 | 子域名 | 完整域名 | 用途 |
 |------|------|--------|---------|------|
-| Ergo 前端 | 8081 | `terryzin` | `https://terryzin.cpolar.top` | 静态文件服务 |
-| API Bridge | 8082 | `terryapi` | `https://terryapi.cpolar.top` | API 接口 |
-| OpenClaw GW | 18789 | `terrysopenclaw` | `https://terrysopenclaw.cpolar.top` | OpenClaw 管理 |
+| Ergo 前端 | 8081 | `terryzin` | `https://terryzin.cpolar.cn` | 静态文件服务 |
+| API Bridge | 8082 | `terryapi` | `https://terryapi.cpolar.cn` | API 接口 |
+| OpenClaw GW | 18789 | `terrysopenclaw` | `https://terrysopenclaw.cpolar.cn` | OpenClaw 管理 |
 
 ⚠️ **注意**：
 - 免费版每次重启域名会变化

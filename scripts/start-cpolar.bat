@@ -33,7 +33,7 @@ echo.
 echo 配置文件: cpolar.yml
 echo 隧道名称: ergo
 echo 本地端口: 8081
-echo 预期域名: https://terryzin.cpolar.top
+echo 预期域名: https://terryzin.cpolar.cn
 echo.
 
 REM 启动 cpolar（单隧道）
@@ -44,7 +44,7 @@ echo ╔════════════════════════
 echo ║          隧道已启动                       ║
 echo ╠════════════════════════════════════════════╣
 echo ║  查看状态: http://localhost:4040          ║
-echo ║  公网访问: https://terryzin.cpolar.top    ║
+echo ║  公网访问: https://terryzin.cpolar.cn    ║
 echo ╚════════════════════════════════════════════╝
 echo.
 echo [INFO] 等待隧道初始化...

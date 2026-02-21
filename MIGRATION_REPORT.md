@@ -35,7 +35,7 @@
 ```
 外部访问
   │
-  └─ https://terryzin.cpolar.top (唯一入口) ✅
+  └─ https://terryzin.cpolar.cn (唯一入口) ✅
        └─ cpolar tunnel → localhost:8081 (Frontend Proxy)
             ├─ /           → 静态文件 (HTML/CSS/JS) ✅
             └─ /api/*      → Proxy → localhost:8082 (API Bridge) ✅
@@ -81,7 +81,7 @@ tunnels:
 
 ### 域名分配
 
-- ✅ **已使用**: `terryzin.cpolar.top` (Ergo 统一入口)
+- ✅ **已使用**: `terryzin.cpolar.cn` (Ergo 统一入口)
 - ⭐ **剩余可用**: 1 个可持久化域名（留给未来项目）
 
 ---
@@ -118,7 +118,7 @@ start http://localhost:4040
 
 ```bash
 # 访问 Dashboard
-start https://terryzin.cpolar.top
+start https://terryzin.cpolar.cn
 
 # 检查项:
 # ✅ 前端页面正常加载
@@ -139,7 +139,7 @@ start https://terryzin.cpolar.top
 
 2. **访问 Dashboard** 测试完整功能:
    ```bash
-   start https://terryzin.cpolar.top
+   start https://terryzin.cpolar.cn
    ```
 
 3. **修复测试用例** (可选):
@@ -176,7 +176,7 @@ start https://terryzin.cpolar.top
 
 **Breaking Changes:** 0（完全向后兼容）
 
-**下一步:** 访问 https://terryzin.cpolar.top 开始使用！
+**下一步:** 访问 https://terryzin.cpolar.cn 开始使用！
 
 ---
 

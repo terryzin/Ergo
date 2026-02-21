@@ -46,7 +46,7 @@ ERGO_API_KEY=your-custom-secret-key
 OPENCLAW_TOKEN=your-openclaw-token
 
 # Ergo 公网域名（Cpolar 分配）
-CPOLAR_URL=https://your-subdomain.cpolar.top
+CPOLAR_URL=https://your-subdomain.cpolar.cn
 ```
 
 ---
@@ -134,7 +134,7 @@ cpolar service start
 确认：
 - ✅ 隧道名称：`ergo`
 - ✅ 本地地址：`http://localhost:8081`
-- ✅ 公网地址：`https://your-subdomain.cpolar.top`
+- ✅ 公网地址：`https://your-subdomain.cpolar.cn`
 - ✅ 状态：`online`
 
 ---
@@ -158,7 +158,7 @@ npm test
 
 ### 公网访问测试
 
-访问你的公网域名：https://your-subdomain.cpolar.top
+访问你的公网域名：https://your-subdomain.cpolar.cn
 
 检查项：
 - [ ] Dashboard 正常加载（无空白页）
@@ -223,7 +223,7 @@ notepad cpolar.yml
 **解决：**
 ```bash
 # 访问配置检查页面
-https://your-subdomain.cpolar.top/config-check.html
+https://your-subdomain.cpolar.cn/config-check.html
 
 # 查看环境信息，确认 API Base 是相对路径
 ```

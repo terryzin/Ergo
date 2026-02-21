@@ -240,7 +240,7 @@ killall node
 
 **症状：**
 ```javascript
-WebSocket connection to 'wss://terryzin.cpolar.top/api/ws' failed
+WebSocket connection to 'wss://terryzin.cpolar.cn/api/ws' failed
 ```
 
 **诊断步骤：**
@@ -285,7 +285,7 @@ http://localhost:8081
 
 **症状：**
 ```
-Cannot access https://terryzin.cpolar.top
+Cannot access https://terryzin.cpolar.cn
 ERR_NAME_NOT_RESOLVED
 ```
 
@@ -308,10 +308,10 @@ ERR_NAME_NOT_RESOLVED
 3. **测试域名解析**
    ```bash
    # Windows
-   nslookup terryzin.cpolar.top
+   nslookup terryzin.cpolar.cn
 
    # Unix/Linux/macOS
-   dig terryzin.cpolar.top
+   dig terryzin.cpolar.cn
    ```
 
 **解决方案：**
@@ -328,7 +328,7 @@ type %USERPROFILE%\.cpolar\cpolar.yml  # Windows
 # 方案 3: 使用最新域名
 # Cpolar 免费版域名会变化，访问 http://localhost:4040 获取最新域名
 # 更新 .env 文件：
-CPOLAR_FRONTEND_URL=https://新域名.cpolar.top
+CPOLAR_FRONTEND_URL=https://新域名.cpolar.cn
 
 # 方案 4: 手动启动隧道
 cpolar http 8081 --region=cn

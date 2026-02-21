@@ -57,8 +57,8 @@
     "tags": ["openclaw", "dashboard", "ai-manager"]
   },
   "custom": {
-    "cpolarDomain": "https://terryzin.cpolar.top",
-    "gatewayDomain": "https://terrysopenclaw.cpolar.top"
+    "cpolarDomain": "https://terryzin.cpolar.cn",
+    "gatewayDomain": "仅本地访问 localhost:18789"
   },
   "logs": {
     "app": "./logs/app.log",
