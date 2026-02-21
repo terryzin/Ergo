@@ -17,8 +17,8 @@ class ErgoConfig {
      *
      * 规则：
      * 1. 如果 hostname 是 localhost 或 127.0.0.1，使用 http://localhost:8082
-     * 2. 如果是外网域名（如 cpolar.top），使用空字符串（相对路径）
-     * 3. 相对路径模式下，前端代理服务器会将 /api/* 转发到 localhost:8082
+     * 2. 如果是外网域名（cpolar.top），使用 API Bridge 隧道域名
+     * 3. 其他域名使用相对路径（由前端代理转发）
      */
     detectApiBase() {
         const hostname = window.location.hostname;
@@ -28,8 +28,13 @@ class ErgoConfig {
             return 'http://localhost:8082';
         }
 
-        // 外网访问（cpolar 或其他域名）
-        // 使用空字符串表示相对路径，由前端代理转发
+        // 外网访问（cpolar 域名）- 使用 API Bridge 隧道
+        if (hostname.includes('cpolar.top')) {
+            // 临时隧道域名（TODO: 在 Web UI 启动保留域名后改为 https://terryapi.cpolar.top）
+            return 'https://737b33c9.r35.cpolar.top';
+        }
+
+        // 其他域名 - 相对路径（由前端代理转发）
         return '';
     }
 
