@@ -970,17 +970,24 @@
             initTheme();
             initRealtimeConnection();  // 初始化 WebSocket（v1.5）
             initNotifications();        // 初始化通知（v1.5）
+            // 立即加载关键数据
             loadData();
             initVersion();
-            renderDevProjects();
-            renderChangelog();
 
-            // 启动数据轮询（降级方案，WebSocket 断线时使用）
-            setInterval(loadData, 10000);
+            // 延迟加载非关键内容（避免页面加载时请求过多）
+            setTimeout(() => {
+                renderDevProjects();
+                renderChangelog();
+            }, 2000);
 
-            // 启动网络健康检查（每 3 秒检测一次）
-            checkNetworkHealth();
-            setInterval(checkNetworkHealth, 3000);
+            // 启动数据轮询（降级方案，WebSocket 断线时使用）- 60 秒一次
+            setInterval(loadData, 60000);
+
+            // 启动网络健康检查（每 60 秒检测一次，减少请求频率）
+            setTimeout(() => {
+                checkNetworkHealth();
+                setInterval(checkNetworkHealth, 60000);
+            }, 5000);
         });
 
         // ============================
@@ -1548,6 +1555,20 @@
         function renderChangelog() {
             const container = document.getElementById('changelogList');
 
+            // 缓存机制：1 小时内使用缓存，避免频繁请求
+            const CACHE_KEY = 'ergo_changelog_cache';
+            const CACHE_TIME_KEY = 'ergo_changelog_cache_time';
+            const CACHE_DURATION = 3600000; // 1 小时
+
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+
+            if (cachedData && cacheTime && (Date.now() - parseInt(cacheTime) < CACHE_DURATION)) {
+                console.log('[Changelog] Using cache');
+                renderChangelogContent(JSON.parse(cachedData));
+                return;
+            }
+
             fetch(`${GATEWAY_CONFIG.url}/api/changelog`, {
                 headers: {
                     'X-Ergo-Key': getApiKey()
@@ -1560,15 +1581,41 @@
                     return res.json();
                 })
                 .then(data => {
-                    if (!data.versions || data.versions.length === 0) {
-                        container.innerHTML = '<div class="list-row"><div class="list-content"><div class="list-title">暂无更新记录</div></div></div>';
-                        return;
-                    }
+                    // 保存到缓存
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
 
-                    // 只显示最新的 3 个版本
-                    const latestVersions = data.versions.slice(0, 3);
+                    renderChangelogContent(data);
+                })
+                .catch(e => {
+                    console.error('Load changelog error:', e);
+                    container.innerHTML = `
+                        <div class="list-row" onclick="window.location.href='changelog.html'">
+                            <div class="list-icon purple">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                </svg>
+                            </div>
+                            <div class="list-content">
+                                <div class="list-title">更新日志</div>
+                                <div class="list-desc">点击查看版本历史</div>
+                            </div>
+                            <span class="list-arrow">›</span>
+                        </div>
+                    `;
+                });
 
-                    container.innerHTML = latestVersions.map(version => {
+            function renderChangelogContent(data) {
+                if (!data.versions || data.versions.length === 0) {
+                    container.innerHTML = '<div class="list-row"><div class="list-content"><div class="list-title">暂无更新记录</div></div></div>';
+                    return;
+                }
+
+                // 只显示最新的 3 个版本
+                const latestVersions = data.versions.slice(0, 3);
+
+                container.innerHTML = latestVersions.map(version => {
                         // 获取第一个特性分类作为简介
                         let description = '';
                         if (version.features && version.features.length > 0) {
@@ -1595,27 +1642,7 @@
                             </div>
                         `;
                     }).join('');
-                })
-                .catch(e => {
-                    console.error('Load changelog error:', e);
-                    container.innerHTML = `
-                        <div class="list-row" onclick="window.location.href='changelog.html'">
-                            <div class="list-icon purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14,2 14,8 20,8"/>
-                                    <line x1="16" y1="13" x2="8" y2="13"/>
-                                    <line x1="16" y1="17" x2="8" y2="17"/>
-                                </svg>
-                            </div>
-                            <div class="list-content">
-                                <div class="list-title">更新日志</div>
-                                <div class="list-desc">点击查看完整日志</div>
-                            </div>
-                            <span class="list-arrow">›</span>
-                        </div>
-                    `;
-                });
+            }
         }
 
         // ============================

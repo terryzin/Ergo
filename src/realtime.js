@@ -13,7 +13,7 @@ class RealtimeService {
         this.ws = null;
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
-        this.reconnectDelay = 1000; // 初始重连延迟 1 秒
+        this.reconnectDelay = 5000; // 初始重连延迟 5 秒（减少频率，避免 429）
         this.listeners = new Map();
         this.heartbeatTimer = null;
         this.reconnectTimer = null;
@@ -45,7 +45,7 @@ class RealtimeService {
         this.ws.onopen = () => {
             console.log('[Realtime] ✅ Connected');
             this.reconnectAttempts = 0;
-            this.reconnectDelay = 1000;
+            this.reconnectDelay = 5000;
             this.emit('connected');
             this.startHeartbeat();
         };
