@@ -940,7 +940,7 @@
         async function checkNetworkHealth() {
             try {
                 const start = Date.now();
-                const response = await fetch(`${GATEWAY_CONFIG.url}/api/health`, {
+                const response = await fetch(`${GATEWAY_CONFIG.url}/health`, {
                     method: 'GET',
                     signal: AbortSignal.timeout(3000)  // 3秒超时
                 });
@@ -1413,7 +1413,7 @@
         // 检查 API Bridge 状态
         async function checkApiBridgeStatus() {
             try {
-                const response = await fetch(`${GATEWAY_CONFIG.url}/api/health`);
+                const response = await fetch(`${GATEWAY_CONFIG.url}/health`);
                 if (!response.ok) {
                     showApiBridgeWarning();
                 }
@@ -1486,7 +1486,7 @@
             const container = document.getElementById('devProjectsList');
 
             // 从 API 加载项目数据（含健康状态）
-            fetch(`${GATEWAY_CONFIG.url}/api/projects`, {
+            fetch(`${GATEWAY_CONFIG.url}/projects`, {
                 headers: {
                     'X-Ergo-Key': getApiKey()
                 }
@@ -1569,7 +1569,7 @@
                 return;
             }
 
-            fetch(`${GATEWAY_CONFIG.url}/api/changelog`, {
+            fetch(`${GATEWAY_CONFIG.url}/changelog`, {
                 headers: {
                     'X-Ergo-Key': getApiKey()
                 }
@@ -1733,7 +1733,7 @@
 
             try {
                 // 调用 API Bridge 的重启接口
-                const response = await fetch(`${GATEWAY_CONFIG.url}/api/gateway/restart`, {
+                const response = await fetch(`${GATEWAY_CONFIG.url}/gateway/restart`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1770,7 +1770,7 @@
 
             try {
                 // 使用新的 API Bridge 端点（v1.5）
-                const response = await fetch(`${GATEWAY_CONFIG.url}/api/cron/${jobId}/trigger`, {
+                const response = await fetch(`${GATEWAY_CONFIG.url}/cron/${jobId}/trigger`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
