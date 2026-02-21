@@ -940,7 +940,7 @@
         async function checkNetworkHealth() {
             try {
                 const start = Date.now();
-                const response = await fetch('/api/health', {
+                const response = await fetch(`${GATEWAY_CONFIG.url}/api/health`, {
                     method: 'GET',
                     signal: AbortSignal.timeout(3000)  // 3秒超时
                 });
